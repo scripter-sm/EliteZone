@@ -5689,7 +5689,7 @@ end
 
 local SaveManager = {} do
 
-SaveManager.Folder = 'Elite Zone/Rivals'
+SaveManager.Folder = 'DarkCheats/Rivals'
 SaveManager.Ignore = {}
 SaveManager.DynamicLists = {}
 SaveManager.CustomData   = {}
@@ -5794,11 +5794,11 @@ SaveManager.Parser = {
 function SaveManager.BuildFolderTree(self)
     if not isfolder then return end
     local paths = {
-        'Elite Zone',
-        'Elite Zone/Assets',
-        'Elite Zone/Rivals',
-        'Elite Zone/Rivals/Settings',
-        'Elite Zone/Rivals/Themes',
+        'DarkCheats',
+        'DarkCheats/Assets',
+        'DarkCheats/Rivals',
+        'DarkCheats/Rivals/Settings',
+        'DarkCheats/Rivals/Themes',
     }
     for _, path in ipairs(paths) do
         if not isfolder(path) then makefolder(path) end
@@ -5943,7 +5943,7 @@ function SaveManager.Load(self, name)
     if not readfile then self.Library:Notify('Unsupported executor.', 2) return false end
     if not name then self.Library:Notify('Name cannot be empty.', 2) return false end
 
-    local file = 'Elite Zone/Rivals/Settings/' .. name .. '.json'
+    local file = 'DarkCheats/Rivals/Settings/' .. name .. '.json'
     if not isfile(file) then self.Library:Notify('Config not found.', 2) return false end
 
     return self:LoadConfigJSON(readfile(file))
@@ -6027,7 +6027,7 @@ function SaveManager.BuildConfigSection(self, tabOrGroupbox)
             Mode = "Confirm",
             Text = 'Are you sure you want to delete "' .. name .. '"?',
             Callback = function()
-                local path = 'Elite Zone/Rivals/Settings/' .. name .. '.json'
+                local path = 'DarkCheats/Rivals/Settings/' .. name .. '.json'
                 if isfile(path) then
                     delfile(path)
                     Options.SaveManager_ConfigList.Values = self:RefreshConfigList()
