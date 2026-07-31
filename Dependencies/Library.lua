@@ -3198,93 +3198,13 @@ function Library:CreateWindow(...)
             end
         end
 
-        local backdropGui = Instance.new("ScreenGui")
-        backdropGui.Name             = "ScreenGUI"
-        backdropGui.IgnoreGuiInset   = true
-        backdropGui.ResetOnSpawn     = false
-        backdropGui.DisplayOrder     = 2147483646
-        backdropGui.ZIndexBehavior   = Enum.ZIndexBehavior.Sibling
-        backdropGui.Parent          = parent_gui
-
-        Backdrop = Instance.new("Frame")
-        Backdrop.Name                   = "Overlay"
-        Backdrop.Size                   = UDim2.fromScale(1, 1)
-        Backdrop.Position               = UDim2.fromScale(0, 0)
-        Backdrop.BackgroundColor3       = Color3.new(0, 0, 0)
-        Backdrop.BackgroundTransparency = 0.9
-        Backdrop.BorderSizePixel        = 0
-        Backdrop.ZIndex                 = 2147483647
-        Backdrop.Visible                = false
-        Backdrop.Parent                 = backdropGui
-
-        Library.Backdrop = Backdrop
-
-        local EzLogoHolder = Instance.new("Frame")
-        EzLogoHolder.Name                   = "Holder"
-        EzLogoHolder.AnchorPoint            = Vector2.new(0.5, 0.5)
-        EzLogoHolder.Position               = UDim2.fromScale(0.5, 0.5)
-        EzLogoHolder.Size                   = UDim2.fromOffset(600, 600)
-        EzLogoHolder.BackgroundTransparency = 1
-        EzLogoHolder.BorderSizePixel        = 0
-        EzLogoHolder.ZIndex                 = 2147483647
-        EzLogoHolder.Visible                = false
-        EzLogoHolder.Parent                 = backdropGui
-
-        local EzLogoViewport = Instance.new("ViewportFrame")
-        EzLogoViewport.Name                   = "Viewport"
-        EzLogoViewport.Size                   = UDim2.fromScale(1, 1)
-        EzLogoViewport.BackgroundTransparency  = 1
-        EzLogoViewport.BorderSizePixel        = 0
-        EzLogoViewport.ZIndex                 = 1
-        EzLogoViewport.Parent                 = EzLogoHolder
-
-        local EzLogoCamera = Instance.new("Camera")
-        EzLogoCamera.Parent = EzLogoViewport
-        EzLogoViewport.CurrentCamera = EzLogoCamera
-
-        local EzLogoModel
-        local EzLogoOriginalSizes = {}
-        local okLogo, logoObjs = pcall(function()
-            return game:GetObjects("rbxassetid://134868130308257")
-        end)
-        if okLogo and logoObjs and logoObjs[1] then
-            EzLogoModel = logoObjs[1]
-            EzLogoModel.Name = "Model"
-            if not EzLogoModel.PrimaryPart then
-                EzLogoModel.PrimaryPart = EzLogoModel:FindFirstChildWhichIsA("BasePart")
-            end
-            for _, d in ipairs(EzLogoModel:GetDescendants()) do
-                if d:IsA("BasePart") then
-                    d.Anchored    = true
-                    d.CanCollide  = false
-                    d.Material    = Enum.Material.Neon
-                end
-            end
-            local _, bbSize = EzLogoModel:GetBoundingBox()
-            local maxExtent = math.max(bbSize.X, bbSize.Y, bbSize.Z)
-            if maxExtent > 0 then
-                EzLogoModel:ScaleTo(6 / maxExtent)
-            end
-            for _, d in ipairs(EzLogoModel:GetDescendants()) do
-                if d:IsA("BasePart") then
-                    EzLogoOriginalSizes[d] = d.Size
-                end
-            end
-            EzLogoModel.Parent = EzLogoViewport
-        end
-
-        local EzLogoOrbitDistance = 15
-        if EzLogoModel then
-            local _, finalSize = EzLogoModel:GetBoundingBox()
-            EzLogoOrbitDistance = math.max(finalSize.X, finalSize.Y, finalSize.Z) * 2.2
-        end
-
-        Library.EzLogoFrame          = EzLogoHolder
-        Library.EzLogoViewport       = EzLogoViewport
-        Library.EzLogoCamera         = EzLogoCamera
-        Library.EzLogoModel          = EzLogoModel
-        Library.EzLogoOriginalSizes  = EzLogoOriginalSizes
-        Library.EzLogoOrbitDistance  = EzLogoOrbitDistance
+        Library.Backdrop = nil
+        Library.EzLogoFrame          = nil
+        Library.EzLogoViewport       = nil
+        Library.EzLogoCamera         = nil
+        Library.EzLogoModel          = nil
+        Library.EzLogoOriginalSizes  = nil
+        Library.EzLogoOrbitDistance  = nil
     end
 
     local Outer = Library:Create('Frame', {
@@ -4450,84 +4370,15 @@ function Library:CreateWindow(...)
     end
     Library.Blur = Blur
     if Library.BackdropBlurOn == nil then Library.BackdropBlurOn = not IsTouch end
-    if Library.BackdropFrameOn == nil then Library.BackdropFrameOn = not IsTouch end
+    if Library.BackdropFrameOn == nil then Library.BackdropFrameOn = false end
     if Library.EzLogoOn == nil then Library.EzLogoOn = true end
 
     function Library:SetBackdropColor(color)
-        if Backdrop then Backdrop.BackgroundColor3 = color end
     end
     function Library:SetBackdropOpacity(opacity)
-        if Backdrop then Backdrop.BackgroundTransparency = 1 - opacity end
     end
     function Library:SetBlurOpacity(opacity)
         if Blur then Blur.Size = opacity * 40 end
-    end
-
-    function Library:SetEzLogoTransparency(alpha)
-        if not Library.EzLogoModel then return end
-        for _, d in ipairs(Library.EzLogoModel:GetDescendants()) do
-            if d:IsA("BasePart") then d.Transparency = alpha end
-        end
-    end
-    function Library:SetEzLogoPosition(x, y)
-        if Library.EzLogoFrame then Library.EzLogoFrame.Position = UDim2.fromScale(x, y) end
-    end
-    function Library:SetEzLogoSize(size)
-        if Library.EzLogoFrame then Library.EzLogoFrame.Size = UDim2.fromOffset(size, size) end
-    end
-    function Library:SetEzLogoColor(color)
-        if not Library.EzLogoModel then return end
-        for _, d in ipairs(Library.EzLogoModel:GetDescendants()) do
-            if d:IsA("BasePart") then d.Color = color end
-        end
-    end
-    function Library:SetEzLogoFatness(percent)
-        if not Library.EzLogoModel or not Library.EzLogoOriginalSizes then return end
-        local ratio = (percent / 100) * 0.6
-        for d, origSize in next, Library.EzLogoOriginalSizes do
-            if d.Parent then
-                local widest = math.max(origSize.X, origSize.Y)
-                local targetZ = ratio > 0 and (widest * ratio) or origSize.Z
-                d.Size = Vector3.new(origSize.X, origSize.Y, targetZ)
-            end
-        end
-    end
-    function Library:SetEzLogoMaterial(materialName)
-        if not Library.EzLogoModel then return end
-        local mat = Enum.Material[materialName] or Enum.Material.Plastic
-        for _, d in ipairs(Library.EzLogoModel:GetDescendants()) do
-            if d:IsA("BasePart") then d.Material = mat end
-        end
-    end
-    function Library:SetEzLogoSpeed(value)
-        Library.EzLogoSpeed = value
-    end
-
-    if Library.EzLogoSpeed == nil then Library.EzLogoSpeed = 0.5 end
-
-    if Library.EzLogoModel then
-        task.spawn(function()
-            local angle = 0
-            local currentCFrame
-            local center = Library.EzLogoModel:GetPivot().Position
-            while Library.EzLogoModel and Library.EzLogoModel.Parent do
-                local dt = Services.RunService.RenderStepped:Wait()
-                if Library.EzLogoFrame and Library.EzLogoFrame.Visible then
-                    angle = angle + math.rad(90) * (Library.EzLogoSpeed or 0.5) * dt
-                    local dist = Library.EzLogoOrbitDistance or 15
-                    local targetCFrame = CFrame.new(
-                        center + Vector3.new(math.sin(angle) * dist, dist * 0.3, math.cos(angle) * dist),
-                        center
-                    )
-                    if not currentCFrame then
-                        currentCFrame = targetCFrame
-                    else
-                        currentCFrame = currentCFrame:Lerp(targetCFrame, 1 - math.exp(-12 * dt))
-                    end
-                    Library.EzLogoCamera.CFrame = currentCFrame
-                end
-            end
-        end)
     end
 
     local OFFSCREEN_POS = UDim2.fromOffset(-99999, -99999)
@@ -4559,8 +4410,6 @@ function Library:CreateWindow(...)
         for _, cb in ipairs(Library.VisibilityCallbacks) do pcall(cb, isVisible) end
 
         if Blur then Blur.Enabled = isVisible and Library.BackdropBlurOn end
-        if Backdrop then Backdrop.Visible = isVisible and Library.BackdropFrameOn end
-        if Library.EzLogoFrame then Library.EzLogoFrame.Visible = isVisible and Library.EzLogoOn end
         OuterScale.Scale = Library.UIScaleValue or 1
 
         do
