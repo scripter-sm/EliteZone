@@ -1,0 +1,83 @@
+[
+  {
+    "date": "2026-07-19",
+    "version": "v3.1",
+    "game": "Rivals",
+    "changes": [
+      "[+] IsManiplutionShootPossible method in API",
+      "[+] ShootManiplution method in API",
+      "[+] IsManipluationShootPossibleFromDesync method in API",
+      "[+] ShootManiplutionFromDesync method in API",
+      "[~] Notifications settings are ignored by config; only saved in theme",
+      "[~] Fixed hit effect",
+      "[~] Fixed mobile issues"
+    ]
+  },
+  {
+    "date": "2026-07-20",
+    "version": "v3.2",
+    "game": "Rivals",
+    "changes": [
+      "[~] Made sliders accurate; right-click to type amount",
+      "[~] Fixed Cosmetic Manager"
+    ]
+  },
+  {
+    "date": "2026-07-20",
+    "version": "v3.3",
+    "game": "Rivals",
+    "changes": [
+      "[+] Slide Speed Multiplier"
+    ]
+  },
+  {
+    "date": "2026-07-20",
+    "version": "v3.4",
+    "game": "Rivals",
+    "changes": [
+      "[+] Keybind Menu Transparency Slider",
+      "[~] Fixed Cosmetic Changer 3D Preview issues; working on all 7-level executors"
+    ]
+  },
+  {
+    "date": "2026-07-26",
+    "version": "v3.5",
+    "game": "Test",
+    "changes": [
+      "[+] Nothing",
+      "[~] Fixed Nothing",
+      "[-] Removed Nothing"
+    ]
+  },
+  {
+    "date": "2026-07-27",
+    "version": "v3.6",
+    "game": "Rivals",
+    "changes": [
+      "[~] Fixed Loader",
+      "[~] Fixed Website"
+    ]
+  },
+  {
+    "date": "2026-08-01",
+    "version": "v3.7",
+    "game": "Rivals",
+    "changes": [
+      "[+] New Anti-Cheat Bypass",
+      "[~] Fixed Normal Mode for Ragebot",
+      "[~] Fixed Ragebot for FFA",
+      "[~] Fixed Background Frame; now behind Cosmetic Changer",
+      "[-] Removed Herobrine",
+      "[-] Void Spam Toggle; now hardcoded"
+    ]
+  },
+  {
+    "date": "2026-08-02",
+    "version": "v3.8",
+    "game": "Rivals",
+    "changes": [
+      "[~] Fixed Ragebot UE Killer Mode",
+      "[~] Fixed Manipulation"
+    ]
+  }
+]
