@@ -21,7 +21,7 @@ local listfiles = listfiles or function(path) return {} end
 local delfile = delfile or function(file) end
 
 local library = {
-    directory = "EliteZone",
+    directory = "Elite Zone",
     folders = {
         "/configs",
         "/assets",
