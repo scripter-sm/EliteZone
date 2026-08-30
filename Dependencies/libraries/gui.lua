@@ -2453,7 +2453,7 @@ function EZ:Uninject()
 
 	shared.ez = nil
 	shared.ezreload = nil
-	shared.ezIndependent = nil
+	shared.EZIndependent = nil
 end
 
 local guiUpdate
