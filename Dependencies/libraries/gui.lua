@@ -177,19 +177,8 @@ do
 end
 
 
-local function getfontbounds(text, size, font)
-	fontsize.Text = text
-	fontsize.Size = size
-	if typeof(font) == 'Font' then
-		fontsize.Font = font
-	end
-
-	return textService:GetTextBoundsAsync(fontsize)
-end
-
-
 do
-	local vapeAssets = {
+	local ezAssets = {
 		['Elite Zone/Assets/add.png'] = 'rbxassetid://121642387707174',
 		['Elite Zone/Assets/aim.png'] = 'rbxassetid://122207028123421',
 		['Elite Zone/Assets/allowedicon.png'] = 'rbxassetid://112336790299036',
@@ -246,8 +235,6 @@ do
 		['Elite Zone/Assets/theme.png'] = 'rbxassetid://111525258317113',
 		['Elite Zone/Assets/utility.png'] = 'rbxassetid://108303206513893',
 		['Elite Zone/Assets/EZ.png'] = 'rbxassetid://92153855792786',
-		['Elite Zone/Assets/vapelogo.png'] = 'rbxassetid://126205920310261',
-		['Elite Zone/Assets/vapelogomini.png'] = 'rbxassetid://109041903452149',
 		['Elite Zone/Assets/v4.png'] = 'rbxassetid://102549752760489',
 		['Elite Zone/Assets/v4mini.png'] = 'rbxassetid://115213099001611',
 		['Elite Zone/Assets/world.png'] = 'rbxassetid://118917453153459'
@@ -277,7 +264,7 @@ do
 			createDownloader(path)
 
 			local success, data = pcall(function()
-				return game:HttpGet('https://raw.githubusercontent.com/7GrandDadPGN/VapeCompiled/'..readfile('Elite Zone/configs/commit.txt')..'/'..select(1, path:gsub('Elite Zone/', '')), true)
+				return game:HttpGet('https://raw.githubusercontent.com/scripter-sm/EliteZone/main/Dependencies/assets/'..select(1, path:gsub('Elite Zone/', '')), true)
 			end)
 
 			if not success or data == '404: Not Found' then
@@ -285,7 +272,7 @@ do
 			end
 
 			if path:find('.lua') then
-				data = '--This watermark is used to delete the file if its cached, remove it to make the file persist after vape updates.\n'..data
+				data = '--This watermark is used to delete the file if its cached, remove it to make the file persist after updates.\n'..data
 			end
 
 			writefile(path, data)
@@ -297,8 +284,19 @@ do
 	get_ez_asset = not inputService.TouchEnabled and getcustomasset and function(path)
 		return downloadFile(path, getcustomasset)
 	end or function(path)
-		return vapeAssets[path] or ''
+		return ezAssets[path] or ''
 	end
+end
+
+
+local function getfontbounds(text, size, font)
+	fontsize.Text = text
+	fontsize.Size = size
+	if typeof(font) == 'Font' then
+		fontsize.Font = font
+	end
+
+	return textService:GetTextBoundsAsync(fontsize)
 end
 
 
@@ -370,8 +368,8 @@ end
 
 EZ.Libraries = {
 	color = color,
+	getezasset = getezasset,
 	getfontbounds = getfontbounds,
-	getvapeasset = getvapeasset,
 	tween = tween,
 	uipallet = uipallet,
 }
@@ -755,7 +753,7 @@ function EZ:Load(skipgui, Config)
 		guiData = loadJson('Elite Zone/configs/'..game.GameId..'.gui.txt')
 		if not guiData then
 			guiData = {Categories = {}}
-			self:CreateNotification('Vape', 'Failed to load GUI settings.', 10, 'alert')
+			self:CreateNotification('Elite Zone', 'Failed to load GUI settings.', 10, 'alert')
 			canSave = false
 		end
 
@@ -787,7 +785,7 @@ function EZ:Load(skipgui, Config)
 		local mainData = loadJson('Elite Zone/configs/'..self.config..self.Place..'.txt')
 		if not mainData then
 			mainData = {Categories = {}, Modules = {}, Legit = {}}
-			self:CreateNotification('Vape', 'Failed to load '..self.config..' Config.', 10, 'alert')
+			self:CreateNotification('Elite Zone', 'Failed to load '..self.config..' Config.', 10, 'alert')
 			canSave = false
 		end
 
@@ -1148,18 +1146,13 @@ function EZ:LoadGUI()
 		Name = 'Reset current Config',
 		Function = function()
 		EZ.Save = function() end
-			if isfile('newEZ/configs/'..EZ.config..EZ.Place..'.txt') and delfile then
-				delfile('newEZ/configs/'..EZ.config..EZ.Place..'.txt')
+			if isfile('Elite Zone/Configs/'..EZ.config..EZ.Place..'.txt') and delfile then
+				delfile('Elite Zone/Configs/'..EZ.config..EZ.Place..'.txt')
 			end
 	
 			shared.EZreload = true
-			if shared.VapeDeveloper then
-				loadstring(readfile('newEZ/loader.lua'), 'loader')()
-			else
-				loadstring(game:HttpGet('https://raw.githubusercontent.com/7GrandDadPGN/VapeCompiled/'..readfile('newEZ/configs/commit.txt')..'/loader.lua', true))()
-			end
 		end,
-		Tooltip = 'This will set your Config to the default settings of Vape'
+		Tooltip = 'This will set your Config to the default settings'
 	})
 	
 	general:CreateButton({
@@ -1174,11 +1167,6 @@ function EZ:LoadGUI()
 		Name = 'Reinject',
 		Function = function()
 			shared.EZreload = true
-			if shared.VapeDeveloper then
-				loadstring(readfile('newEZ/loader.lua'), 'loader')()
-			else
-				loadstring(game:HttpGet('https://raw.githubusercontent.com/7GrandDadPGN/VapeCompiled/'..readfile('newEZ/configs/commit.txt')..'/loader.lua', true))()
-			end
 		end,
 		Tooltip = 'Reloads EZ for debugging purposes'
 	})
@@ -1299,23 +1287,6 @@ function EZ:LoadGUI()
 		Tooltip = 'Adjusts the update rate of rainbow values',
 		Suffix = 'hz'
 	})
-	
-	--[[guipane:CreateDropdown({
-		Name = 'GUI Theme',
-		List = inputService.TouchEnabled and {'new', 'old'} or {'new', 'old', 'rise'},
-		Function = function(val, mouse)
-			if mouse then
-				writefile('newEZ/configs/gui.txt', val)
-				shared.EZreload = true
-				if shared.VapeDeveloper then
-					loadstring(readfile('newEZ/loader.lua'), 'loader')()
-				else
-					loadstring(game:HttpGet('https://raw.githubusercontent.com/7GrandDadPGN/VapeCompiled/'..readfile('newEZ/configs/commit.txt')..'/loader.lua', true))()
-				end
-			end
-		end,
-		Tooltip = 'new - The newest EZ theme to since v4.05\nold - The EZ theme pre v4.05\nrise - Rise 6.0'
-	})]]
 	
 	guipane:CreateDropdown({
 		Name = 'Search bar style',
@@ -1545,7 +1516,7 @@ function EZ:LoadGUI()
 		})
 		Watermark = TextGUI:CreateToggle({
 			Name = 'Watermark',
-			Tooltip = 'Renders a vape watermark',
+			Tooltip = 'Renders a watermark',
 			Function = function()
 				EZ:UpdateTextGUI()
 			end
@@ -1658,7 +1629,7 @@ function EZ:LoadGUI()
 		Logo.BackgroundColor3 = Color3.new()
 		Logo.BackgroundTransparency = 1
 		Logo.BorderSizePixel = 0
-		Logo.Image = get_ez_asset('Elite Zone/Assets/vapelogo.png')
+		Logo.Image = get_ez_asset('Elite Zone/Assets/EZ.png')
 		Logo.Name = 'Logo'
 		Logo.Position = UDim2.new(1, -142, 0, 3)
 		Logo.Size = UDim2.fromOffset(81, 24)
@@ -2480,9 +2451,9 @@ function EZ:Uninject()
 	table.clear(self.Libraries)
 	loopClean(self)
 
-	shared.vape = nil
-	shared.vapereload = nil
-	shared.VapeIndependent = nil
+	shared.ez = nil
+	shared.ezreload = nil
+	shared.ezIndependent = nil
 end
 
 local guiUpdate
@@ -4435,9 +4406,9 @@ components = {
 		addDragHandler(window)
 		local logo = Instance.new('ImageLabel')
 		logo.BackgroundTransparency = 1
-		logo.Image = get_ez_asset('Elite Zone/Assets/vapelogomini.png')
+		logo.Image = get_ez_asset('Elite Zone/Assets/EZ.png')
 		logo.ImageColor3 = select(3, uipallet.Main:ToHSV()) > 0.5 and uipallet.Text or Color3.new(1, 1, 1)
-		logo.Name = 'VapeLogo'
+		logo.Name = 'EZLogo'
 		logo.Position = UDim2.fromOffset(12, 11)
 		logo.Size = UDim2.fromOffset(55, 16)
 		logo.Parent = window
@@ -6537,7 +6508,7 @@ components = {
 		legiticon.Position = UDim2.fromOffset(8, 11)
 		legiticon.Size = UDim2.fromOffset(29, 16)
 		legiticon.Parent = search
-		listenProperty(EZ.Categories.Main.Object.VapeLogo.V4Logo, legiticon, 'ImageColor3', legiticon)
+		listenProperty(EZ.Categories.Main.Object.EZLogo.V4Logo, legiticon, 'ImageColor3', legiticon)
 		local legitdivider = Instance.new('Frame')
 		legitdivider.BackgroundColor3 = color.Light(uipallet.Main, 0.14)
 		legitdivider.BorderSizePixel = 0
@@ -6714,7 +6685,7 @@ components = {
 			versionlabel.Name = 'Version'
 			versionlabel.Position = UDim2.new(0, 0, 1, -16)
 			versionlabel.Size = UDim2.new(1, 0, 0, 16)
-			versionlabel.Text = 'Vape '..EZ.Version..' '..(
+			versionlabel.Text = 'Elite Zone '..EZ.Version..' '..(
 				isfile('Elite Zone/configs/commit.txt') and readfile('Elite Zone/configs/commit.txt'):sub(1, 6) or ''
 			)..' '
 			versionlabel.TextColor3 = color.Dark(uipallet.Text, 0.43)

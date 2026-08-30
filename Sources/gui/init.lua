@@ -275,18 +275,13 @@ general:CreateButton({
 	Name = 'Reset current Config',
 	Function = function()
 	EZ.Save = function() end
-		if isfile('newEZ/configs/'..EZ.config..EZ.Place..'.txt') and delfile then
-			delfile('newEZ/configs/'..EZ.config..EZ.Place..'.txt')
+		if isfile('Elite Zone/Configs/'..EZ.config..EZ.Place..'.txt') and delfile then
+			delfile('Elite Zone/Configs/'..EZ.config..EZ.Place..'.txt')
 		end
 
 		shared.EZreload = true
-		if shared.VapeDeveloper then
-			loadstring(readfile('newEZ/loader.lua'), 'loader')()
-		else
-			loadstring(game:HttpGet('https://raw.githubusercontent.com/7GrandDadPGN/VapeCompiled/'..readfile('newEZ/configs/commit.txt')..'/loader.lua', true))()
-		end
 	end,
-	Tooltip = 'This will set your Config to the default settings of Vape'
+	Tooltip = 'This will set your Config to the default settings'
 })
 
 general:CreateButton({
@@ -301,11 +296,6 @@ general:CreateButton({
 	Name = 'Reinject',
 	Function = function()
 		shared.EZreload = true
-		if shared.VapeDeveloper then
-			loadstring(readfile('newEZ/loader.lua'), 'loader')()
-		else
-			loadstring(game:HttpGet('https://raw.githubusercontent.com/7GrandDadPGN/VapeCompiled/'..readfile('newEZ/configs/commit.txt')..'/loader.lua', true))()
-		end
 	end,
 	Tooltip = 'Reloads EZ for debugging purposes'
 })
@@ -426,23 +416,6 @@ EZ.RainbowUpdateSpeed = guipane:CreateSlider({
 	Tooltip = 'Adjusts the update rate of rainbow values',
 	Suffix = 'hz'
 })
-
---[[guipane:CreateDropdown({
-	Name = 'GUI Theme',
-	List = inputService.TouchEnabled and {'new', 'old'} or {'new', 'old', 'rise'},
-	Function = function(val, mouse)
-		if mouse then
-			writefile('newEZ/configs/gui.txt', val)
-			shared.EZreload = true
-			if shared.VapeDeveloper then
-				loadstring(readfile('newEZ/loader.lua'), 'loader')()
-			else
-				loadstring(game:HttpGet('https://raw.githubusercontent.com/7GrandDadPGN/VapeCompiled/'..readfile('newEZ/configs/commit.txt')..'/loader.lua', true))()
-			end
-		end
-	end,
-	Tooltip = 'new - The newest EZ theme to since v4.05\nold - The EZ theme pre v4.05\nrise - Rise 6.0'
-})]]
 
 guipane:CreateDropdown({
 	Name = 'Search bar style',

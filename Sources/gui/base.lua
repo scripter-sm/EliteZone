@@ -517,7 +517,7 @@ function EZ:Load(skipgui, Config)
 		guiData = loadJson('Elite Zone/configs/'..game.GameId..'.gui.txt')
 		if not guiData then
 			guiData = {Categories = {}}
-			self:CreateNotification('Vape', 'Failed to load GUI settings.', 10, 'alert')
+			self:CreateNotification('Elite Zone', 'Failed to load GUI settings.', 10, 'alert')
 			canSave = false
 		end
 
@@ -549,7 +549,7 @@ function EZ:Load(skipgui, Config)
 		local mainData = loadJson('Elite Zone/configs/'..self.config..self.Place..'.txt')
 		if not mainData then
 			mainData = {Categories = {}, Modules = {}, Legit = {}}
-			self:CreateNotification('Vape', 'Failed to load '..self.config..' Config.', 10, 'alert')
+			self:CreateNotification('Elite Zone', 'Failed to load '..self.config..' Config.', 10, 'alert')
 			canSave = false
 		end
 
@@ -771,9 +771,9 @@ function EZ:Uninject()
 	table.clear(self.Libraries)
 	loopClean(self)
 
-	shared.vape = nil
-	shared.vapereload = nil
-	shared.VapeIndependent = nil
+	shared.ez = nil
+	shared.ezreload = nil
+	shared.ezIndependent = nil
 end
 
 local guiUpdate

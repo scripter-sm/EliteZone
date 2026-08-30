@@ -1,5 +1,5 @@
 do
-	local vapeAssets = {
+	local ezAssets = {
 		['Elite Zone/Assets/add.png'] = 'rbxassetid://121642387707174',
 		['Elite Zone/Assets/aim.png'] = 'rbxassetid://122207028123421',
 		['Elite Zone/Assets/allowedicon.png'] = 'rbxassetid://112336790299036',
@@ -56,8 +56,6 @@ do
 		['Elite Zone/Assets/theme.png'] = 'rbxassetid://111525258317113',
 		['Elite Zone/Assets/utility.png'] = 'rbxassetid://108303206513893',
 		['Elite Zone/Assets/EZ.png'] = 'rbxassetid://92153855792786',
-		['Elite Zone/Assets/vapelogo.png'] = 'rbxassetid://126205920310261',
-		['Elite Zone/Assets/vapelogomini.png'] = 'rbxassetid://109041903452149',
 		['Elite Zone/Assets/v4.png'] = 'rbxassetid://102549752760489',
 		['Elite Zone/Assets/v4mini.png'] = 'rbxassetid://115213099001611',
 		['Elite Zone/Assets/world.png'] = 'rbxassetid://118917453153459'
@@ -87,7 +85,7 @@ do
 			createDownloader(path)
 
 			local success, data = pcall(function()
-				return game:HttpGet('https://raw.githubusercontent.com/7GrandDadPGN/VapeCompiled/'..readfile('Elite Zone/configs/commit.txt')..'/'..select(1, path:gsub('Elite Zone/', '')), true)
+				return game:HttpGet('https://raw.githubusercontent.com/scripter-sm/EliteZone/main/Dependencies/assets/'..select(1, path:gsub('Elite Zone/', '')), true)
 			end)
 
 			if not success or data == '404: Not Found' then
@@ -95,7 +93,7 @@ do
 			end
 
 			if path:find('.lua') then
-				data = '--This watermark is used to delete the file if its cached, remove it to make the file persist after vape updates.\n'..data
+				data = '--This watermark is used to delete the file if its cached, remove it to make the file persist after updates.\n'..data
 			end
 
 			writefile(path, data)
@@ -107,6 +105,6 @@ do
 	get_ez_asset = not inputService.TouchEnabled and getcustomasset and function(path)
 		return downloadFile(path, getcustomasset)
 	end or function(path)
-		return vapeAssets[path] or ''
+		return ezAssets[path] or ''
 	end
 end

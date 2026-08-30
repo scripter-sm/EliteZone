@@ -37,7 +37,7 @@ legiticon.Name = 'Legit'
 legiticon.Position = UDim2.fromOffset(8, 11)
 legiticon.Size = UDim2.fromOffset(29, 16)
 legiticon.Parent = search
-listenProperty(EZ.Categories.Main.Object.VapeLogo.V4Logo, legiticon, 'ImageColor3', legiticon)
+listenProperty(EZ.Categories.Main.Object.EZLogo.V4Logo, legiticon, 'ImageColor3', legiticon)
 local legitdivider = Instance.new('Frame')
 legitdivider.BackgroundColor3 = color.Light(uipallet.Main, 0.14)
 legitdivider.BorderSizePixel = 0

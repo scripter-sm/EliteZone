@@ -115,7 +115,7 @@ Animations = TextGUI:CreateToggle({
 })
 Watermark = TextGUI:CreateToggle({
 	Name = 'Watermark',
-	Tooltip = 'Renders a vape watermark',
+	Tooltip = 'Renders a watermark',
 	Function = function()
 		EZ:UpdateTextGUI()
 	end
@@ -228,7 +228,7 @@ local Logo = Instance.new('ImageLabel')
 Logo.BackgroundColor3 = Color3.new()
 Logo.BackgroundTransparency = 1
 Logo.BorderSizePixel = 0
-Logo.Image = get_ez_asset('Elite Zone/Assets/vapelogo.png')
+Logo.Image = get_ez_asset('Elite Zone/Assets/EZ.png')
 Logo.Name = 'Logo'
 Logo.Position = UDim2.new(1, -142, 0, 3)
 Logo.Size = UDim2.fromOffset(81, 24)
