@@ -22,10 +22,6 @@ jobs:
       run: |
         node Compiler/compile_gui.js
     
-    - name: Remove gui folder from libraries
-      run: |
-        rm -rf Dependencies/libraries/gui
-    
     - name: Commit compiled GUI
       run: |
         git config --local user.email "github-actions[bot]@users.noreply.github.com"
