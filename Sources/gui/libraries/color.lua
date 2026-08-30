@@ -1,4 +1,4 @@
-﻿local color = {}
+local color = {}
 local uipallet = {}
 do
 	function color.Dark(col, num)

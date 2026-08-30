@@ -1,4 +1,4 @@
-﻿local component = {
+local component = {
 	Expanded = false,
 	Name = props.Name,
 	Type = 'Category'

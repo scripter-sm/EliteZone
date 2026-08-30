@@ -1,4 +1,4 @@
-﻿local component = {
+local component = {
 	Enabled = false,
 	Type = 'TargetsButton'
 }

@@ -1,4 +1,4 @@
-﻿local component = {
+local component = {
 	Hold = props.Hold or false,
 	Keys = {},
 	Triggered = createSignal(),

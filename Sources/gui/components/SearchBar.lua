@@ -1,4 +1,4 @@
-﻿local component = {
+local component = {
 	Type = 'SearchBar'
 }
 

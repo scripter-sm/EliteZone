@@ -1,4 +1,4 @@
-﻿local Sort
+local Sort
 local FontOption
 local ColorSlider
 local ColorMode

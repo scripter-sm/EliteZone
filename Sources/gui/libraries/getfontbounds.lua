@@ -1,4 +1,4 @@
-﻿local function getfontbounds(text, size, font)
+local function getfontbounds(text, size, font)
 	fontsize.Text = text
 	fontsize.Size = size
 	if typeof(font) == 'Font' then

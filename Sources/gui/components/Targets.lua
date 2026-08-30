@@ -1,4 +1,4 @@
-﻿local component = {
+local component = {
 	Index = getTableSize(api.Options),
 	Type = 'Targets'
 }

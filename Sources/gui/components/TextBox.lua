@@ -1,4 +1,4 @@
-﻿local component = {
+local component = {
 	Index = 0,
 	Type = 'TextBox',
 	Value = props.Default or ''

@@ -1,4 +1,4 @@
-﻿local component = {
+local component = {
 	Index = 0,
 	Type = 'Dropdown',
 	Value = props.List[1] or 'None'

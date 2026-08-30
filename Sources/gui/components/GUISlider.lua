@@ -1,4 +1,4 @@
-﻿local component = {
+local component = {
 	CustomColor = false,
 	Hue = 0.46,
 	Notch = 4,

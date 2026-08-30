@@ -1,4 +1,4 @@
-﻿local tween = setmetatable({}, {
+local tween = setmetatable({}, {
 	__index = function()
 		return {}
 	end

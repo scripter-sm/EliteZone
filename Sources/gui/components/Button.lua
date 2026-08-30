@@ -1,4 +1,4 @@
-﻿local button = Instance.new('TextButton')
+local button = Instance.new('TextButton')
 button.AutoButtonColor = false
 button.BackgroundColor3 = color.Dark(children.BackgroundColor3, props.Darker and 0.02 or 0)
 button.BorderSizePixel = 0
