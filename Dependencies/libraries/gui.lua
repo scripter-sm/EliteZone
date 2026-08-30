@@ -1,28 +1,60 @@
--- Elite Zone GUI
--- 2026-08-30T10:56:39.347Z
+local EZ = {}
+local function load_assets()
+    local assets_url = "https://raw.githubusercontent.com/scripter-sm/EliteZone/main/Dependencies/assets/"
+    local assets_path = "Elite Zone/Assets"
+    
+    if not isfolder(assets_path) then
+        makefolder(assets_path)
+    end
+    
+    local function download_asset(file_name)
+        local url = assets_url .. file_name
+        local file_path = assets_path .. "/" .. file_name
+        
+        if not isfile(file_path) then
+            local success, content = pcall(function()
+                return game:HttpGet(url, true)
+            end)
+            
+            if success then
+                writefile(file_path, content)
+            end
+        end
+        
+        return getcustomasset and getcustomasset(file_path) or file_path
+    end
+    
+    local function get_ez_asset(asset_path)
+        local file_name = asset_path:match("([^/]+)$")
+        return download_asset(file_name)
+    end
+    
+    return get_ez_asset
+end
 
+local get_ez_asset = load_assets()
 -- base.lua
-local vape = {
-	ActiveBinds = {},
-	Categories = {},
-	GUIColor = {
-		Hue = 0.46,
-		Sat = 0.96,
-		Value = 0.52
+EZ = {
+	active_binds = {},
+	categories = {},
+	gui_color = {
+		hue = 0.46,
+		sat = 0.96,
+		value = 0.52
 	},
-	HeldKeybinds = {},
-	Loaded = false,
-	Libraries = {},
-	Modules = {},
-	Place = game.PlaceId,
-	Profile = 'default',
-	RainbowSliders = {},
-	Settings = {},
-	SettingToggleNotifications = {},
-	ThreadFix = setthreadidentity and true or false,
-	ToggleNotifications = {},
-	Version = '4.22',
-	Windows = {}
+	held_keybinds = {},
+	loaded = false,
+	libraries = {},
+	modules = {},
+	place = game.PlaceId,
+	profile = 'default',
+	rainbow_sliders = {},
+	settings = {},
+	setting_toggle_notifications = {},
+	thread_fix = setthreadidentity and true or false,
+	toggle_notifications = {},
+	version = '1.0',
+	windows = {}
 }
 
 local run = function(func)
@@ -31,23 +63,23 @@ end
 local cloneref = cloneref or function(obj)
 	return obj
 end
-local tweenService = cloneref(game:GetService('TweenService'))
-local inputService = cloneref(game:GetService('UserInputService'))
-local textService = cloneref(game:GetService('TextService'))
-local guiService = cloneref(game:GetService('GuiService'))
-local runService = cloneref(game:GetService('RunService'))
-local httpService = cloneref(game:GetService('HttpService'))
+local tween_service = cloneref(game:GetService('TweenService'))
+local input_service = cloneref(game:GetService('UserInputService'))
+local text_service = cloneref(game:GetService('TextService'))
+local gui_service = cloneref(game:GetService('GuiService'))
+local run_service = cloneref(game:GetService('RunService'))
+local http_service = cloneref(game:GetService('HttpService'))
 
-local fontsize = Instance.new('GetTextBoundsParams')
-fontsize.Width = math.huge
+local font_size = Instance.new('GetTextBoundsParams')
+font_size.Width = math.huge
 local notifications
-local getvapeasset
+local get_ez_asset
 local components
-local clickgui
-local scaledgui
-local toolblur
+local click_gui
+local scaled_gui
+local tool_blur
 local tooltip
-local TextGUI
+local text_gui
 local scale = {Scale = 1}
 local gui
 
@@ -61,7 +93,7 @@ end
 
 local function loadJson(path)
 	local success, data = pcall(function()
-		return httpService:JSONDecode(readfile(path))
+		return http_service:JSONDecode(readfile(path))
 	end)
 
 	return success and type(data) == 'table' and data or nil
@@ -77,7 +109,7 @@ local function addBlur(parent, notif, old)
 		blur.Size = UDim2.new(1, 89, 1, 52)
 		blur.Position = UDim2.fromOffset(-48, -31)
 		blur.BackgroundTransparency = 1
-		blur.Image = getvapeasset('newvape/assets/new/'..(notif and 'blurnoti' or 'blur')..'.png')
+		blur.Image = get_ez_asset('Elite Zone/Assets/'..(notif and 'blurnoti' or 'blur')..'.png')
 		blur.ScaleType = Enum.ScaleType.Slice
 		blur.SliceCenter = Rect.new(52, 31, 261, 502)
 		blur.Parent = parent
@@ -104,8 +136,8 @@ local function addCloseButton(parent, mini, offset)
 	close.AutoButtonColor = false
 	close.BackgroundColor3 = Color3.new(1, 1, 1)
 	close.BackgroundTransparency = 1
-	close.Image = getvapeasset('newvape/assets/new/'..(mini and 'closemini' or 'close')..'.png')
-	close.ImageColor3 = color.Light(uipallet.Text, 0.2)
+	close.Image = get_ez_asset('Elite Zone/Assets/'..(mini and 'closemini' or 'close')..'.png')
+	close.ImageColor3 = color.Light(ui_pallet.Text, 0.2)
 	close.ImageTransparency = 0.5
 	close.Name = 'Close'
 	close.Position = offset or (mini and UDim2.new(1, -28, 0, 11) or UDim2.new(1, -35, 0, 9))
@@ -115,14 +147,14 @@ local function addCloseButton(parent, mini, offset)
 
 	close.MouseEnter:Connect(function()
 		close.ImageTransparency = 0.3
-		tween:Tween(close, uipallet.Tween, {
+		tween:Tween(close, ui_pallet.Tween, {
 			BackgroundTransparency = 0.6
 		})
 	end)
 
 	close.MouseLeave:Connect(function()
 		close.ImageTransparency = 0.5
-		tween:Tween(close, uipallet.Tween, {
+		tween:Tween(close, ui_pallet.Tween, {
 			BackgroundTransparency = 1
 		})
 	end)
@@ -140,14 +172,14 @@ local function addDragHandler(gui, window)
 		then
 			local dragPosition = Vector2.new(
 				gui.AbsolutePosition.X - input.Position.X,
-				gui.AbsolutePosition.Y - input.Position.Y + guiService:GetGuiInset().Y
+				gui.AbsolutePosition.Y - input.Position.Y + gui_service:GetGuiInset().Y
 			) / scale.Scale
 
 			local releaseConnection
-			local moveConnection = inputService.InputChanged:Connect(function(newInput)
+			local moveConnection = input_service.InputChanged:Connect(function(newInput)
 				if newInput.UserInputType == (input.UserInputType == Enum.UserInputType.MouseButton1 and Enum.UserInputType.MouseMovement or Enum.UserInputType.Touch) then
 					local position = newInput.Position
-					if inputService:IsKeyDown(Enum.KeyCode.LeftShift) then
+					if input_service:IsKeyDown(Enum.KeyCode.LeftShift) then
 						dragPosition = (dragPosition // 3) * 3
 						position = (position // 3) * 3
 					end
@@ -209,13 +241,13 @@ local function addTooltip(gui, text, customText, visCheck)
 			((y + 11) - (tooltip.Size.Y.Offset / 2)) / scale.Scale
 		)
 
-		tooltip.Visible = toolblur.Enabled
+		tooltip.Visible = tool_blur.Enabled
 	end
 
 	local function callback()
 		local newText = customText()
 		tooltip.Text = newText
-		local tooltipSize = getfontbounds(tooltip.ContentText, tooltip.TextSize, uipallet.Font)
+		local tooltipSize = get_font_bounds(tooltip.ContentText, tooltip.TextSize, ui_pallet.Font)
 		tooltip.Size = UDim2.fromOffset(tooltipSize.X + 10, tooltipSize.Y + 10)
 	end
 
@@ -225,12 +257,12 @@ local function addTooltip(gui, text, customText, visCheck)
 		end
 
 		tooltip.Text = text
-		local tooltipSize = getfontbounds(tooltip.ContentText, tooltip.TextSize, uipallet.Font)
+		local tooltipSize = get_font_bounds(tooltip.ContentText, tooltip.TextSize, ui_pallet.Font)
 		tooltip.Size = UDim2.fromOffset(tooltipSize.X + 10, tooltipSize.Y + 10)
 		tooltipMoved(x, y)
 
 		if customText then
-			vape.CurrentTooltip = callback
+			EZ.CurrentTooltip = callback
 			callback()
 		end
 	end)
@@ -241,7 +273,7 @@ local function addTooltip(gui, text, customText, visCheck)
 		end
 
 		tooltip.Visible = false
-		vape.CurrentTooltip = nil
+		EZ.CurrentTooltip = nil
 	end)
 end
 
@@ -321,28 +353,28 @@ local function removeTags(text)
 	return text:gsub('<[^<>]->', '')
 end
 
-function vape:BlurCheck()
-	if self.ThreadFix then
+function EZ:BlurCheck()
+	if self.thread_fix then
 		setthreadidentity(8)
-		runService:SetRobloxGuiFocused((clickgui.Visible or guiService:GetErrorType() ~= Enum.ConnectionError.OK) and self.Blur.Enabled)
+		run_service:SetRobloxGuiFocused((click_gui.Visible or gui_service:GetErrorType() ~= Enum.ConnectionError.OK) and self.Blur.Enabled)
 	end
 end
 
-function vape:CreateCategory(props)
+function EZ:CreateCategory(props)
 	return components.Category(props)
 end
 
-function vape:CreateCategoryList(props)
+function EZ:CreateCategoryList(props)
 	return components.CategoryList(props)
 end
 
-function vape:CreateNotification(title, text, duration, type)
+function EZ:CreateNotification(title, text, duration, type)
 	if not self.Notifications.Enabled then
 		return
 	end
 
 	task.delay(0, function()
-		if self.ThreadFix then
+		if self.thread_fix then
 			setthreadidentity(8)
 		end
 
@@ -350,7 +382,7 @@ function vape:CreateNotification(title, text, duration, type)
 		local notification = Instance.new('ImageLabel')
 		notification.BackgroundTransparency = 1
 		notification.Position = UDim2.new(1, 0, 1, -(29 + (78 * index)))
-		notification.Image = getvapeasset('newvape/assets/new/notification.png')
+		notification.Image = get_ez_asset('Elite Zone/Assets/notification.png')
 		notification.ScaleType = Enum.ScaleType.Slice
 		notification.SliceCenter = Rect.new(7, 7, 9, 9)
 		notification.ZIndex = 5
@@ -358,7 +390,7 @@ function vape:CreateNotification(title, text, duration, type)
 		addBlur(notification, true, true)
 		local iconshadow = Instance.new('ImageLabel')
 		iconshadow.BackgroundTransparency = 1
-		iconshadow.Image = getvapeasset('newvape/assets/new/noti_'..(type or 'info')..'.png')
+		iconshadow.Image = get_ez_asset('Elite Zone/Assets/noti_'..(type or 'info')..'.png')
 		iconshadow.ImageColor3 = Color3.new()
 		iconshadow.ImageTransparency = 0.5
 		iconshadow.Position = UDim2.fromOffset(-5, -8)
@@ -372,7 +404,7 @@ function vape:CreateNotification(title, text, duration, type)
 		icon.Parent = iconshadow
 		local label = Instance.new('TextLabel')
 		label.BackgroundTransparency = 1
-		label.FontFace = uipallet.FontSemiBold
+		label.FontFace = ui_pallet.FontSemiBold
 		label.Position = UDim2.fromOffset(46, 16)
 		label.RichText = true
 		label.Size = UDim2.new(1, -56, 0, 20)
@@ -384,14 +416,14 @@ function vape:CreateNotification(title, text, duration, type)
 		label.ZIndex = 5
 		label.Parent = notification
 		local textshadow = label:Clone()
-		textshadow.FontFace = uipallet.Font
+		textshadow.FontFace = ui_pallet.Font
 		textshadow.Position = UDim2.fromOffset(47, 44)
 		textshadow.RichText = false
 		textshadow.Text = removeTags(text)
 		textshadow.TextColor3 = Color3.new()
 		textshadow.TextTransparency = 0.5
 		textshadow.Parent = notification
-		notification.Size = UDim2.fromOffset(math.max(getfontbounds(textshadow.Text, 14, uipallet.Font).X + 80, 266), 75)
+		notification.Size = UDim2.fromOffset(math.max(get_font_bounds(textshadow.Text, 14, ui_pallet.Font).X + 80, 266), 75)
 		local textlabel = textshadow:Clone()
 		textlabel.Position = UDim2.fromOffset(-1, -1)
 		textlabel.RichText = true
@@ -434,11 +466,11 @@ function vape:CreateNotification(title, text, duration, type)
 	end)
 end
 
-function vape:CreateOverlay(props)
+function EZ:CreateOverlay(props)
 	return components.Overlay(props)
 end
 
-function vape:Load(skipgui, profile)
+function EZ:Load(skipgui, profile)
 	local guiData = {Categories = {}}
 	local oldProfile = self.Profile
 	local canSave = true
@@ -448,7 +480,7 @@ function vape:Load(skipgui, profile)
 		guiData = loadJson('newvape/profiles/'..game.GameId..'.gui.txt')
 		if not guiData then
 			guiData = {Categories = {}}
-			self:CreateNotification('Vape', 'Failed to load GUI settings.', 10, 'alert')
+			self:CreateNotification('EZ', 'Failed to load GUI settings.', 10, 'alert')
 			canSave = false
 		end
 
@@ -459,7 +491,7 @@ function vape:Load(skipgui, profile)
 		self.Profile = profile or guiData.Profile or 'default'
 		if self.ProfileLabel then
 			self.ProfileLabel.Text = #self.Profile > 10 and self.Profile:sub(1, 10)..'...' or self.Profile
-			self.ProfileLabel.Size = UDim2.fromOffset(getfontbounds(self.ProfileLabel.Text, self.ProfileLabel.TextSize, self.ProfileLabel.Font).X + 16, 24)
+			self.ProfileLabel.Size = UDim2.fromOffset(get_font_bounds(self.ProfileLabel.Text, self.ProfileLabel.TextSize, self.ProfileLabel.Font).X + 16, 24)
 		end
 
 		if not skipgui then
@@ -480,7 +512,7 @@ function vape:Load(skipgui, profile)
 		local mainData = loadJson('newvape/profiles/'..self.Profile..self.Place..'.txt')
 		if not mainData then
 			mainData = {Categories = {}, Modules = {}, Legit = {}}
-			self:CreateNotification('Vape', 'Failed to load '..self.Profile..' profile.', 10, 'alert')
+			self:CreateNotification('EZ', 'Failed to load '..self.Profile..' profile.', 10, 'alert')
 			canSave = false
 		end
 
@@ -513,7 +545,7 @@ function vape:Load(skipgui, profile)
 			end
 		end
 
-		self:UpdateTextGUI(true)
+		self:Updatetext_gui(true)
 	else
 		self:Save()
 	end
@@ -529,7 +561,7 @@ function vape:Load(skipgui, profile)
 
 	self.Loaded = canSave
 
-	if inputService.TouchEnabled and not skipgui then
+	if input_service.TouchEnabled and not skipgui then
 		local button = Instance.new('TextButton')
 		button.BackgroundColor3 = Color3.new()
 		button.BackgroundTransparency = 0.2
@@ -539,21 +571,21 @@ function vape:Load(skipgui, profile)
 		button.Parent = gui
 		local image = Instance.new('ImageLabel')
 		image.BackgroundTransparency = 1
-		image.Image = getvapeasset('newvape/assets/new/vape.png')
+		image.Image = get_ez_asset('Elite Zone/Assets/EZ.png')
 		image.Position = UDim2.fromOffset(6, 6)
 		image.Size = UDim2.fromOffset(20, 20)
 		image.Parent = button
 		addCorner(button, UDim.new(1, 0))
 
 		button.MouseButton1Click:Connect(function()
-			self.GUIBind.Triggered:Fire(true)
+			self.gui_bind.Triggered:Fire(true)
 		end)
 	end
 
 	return toggleData
 end
 
-function vape:LoadOptions(obj, data)
+function EZ:LoadOptions(obj, data)
 	for name, componentData in data do
 		local component = obj.Options[name]
 
@@ -563,16 +595,16 @@ function vape:LoadOptions(obj, data)
 	end
 end
 
-function vape:LoadGUI()
+function EZ:LoadGUI()
 --Init
 end
 
-function vape:Remove(obj)
+function EZ:Remove(obj)
 	local container = (self.Modules[obj] and self.Modules or self.Legit.Modules[obj] and self.Legit.Modules or self.Categories)
 	if container and container[obj] then
 		local component = container[obj]
 		local isModule = component.Type == 'Module'
-		if self.ThreadFix then
+		if self.thread_fix then
 			setthreadidentity(8)
 		end
 
@@ -598,7 +630,7 @@ function vape:Remove(obj)
 	end
 end
 
-function vape:Save(newProfile)
+function EZ:Save(newProfile)
 	if not self.Loaded then
 		return
 	end
@@ -628,11 +660,11 @@ function vape:Save(newProfile)
 		module:Save(mainData.Legit)
 	end
 
-	writefile('newvape/profiles/'..game.GameId..'.gui.txt', httpService:JSONEncode(guiData))
-	writefile('newvape/profiles/'..self.Profile..self.Place..'.txt', httpService:JSONEncode(mainData))
+	writefile('newvape/profiles/'..game.GameId..'.gui.txt', http_service:JSONEncode(guiData))
+	writefile('newvape/profiles/'..self.Profile..self.Place..'.txt', http_service:JSONEncode(mainData))
 end
 
-function vape:SaveOptions(obj)
+function EZ:SaveOptions(obj)
 	local data = {}
 	for _, component in obj.Options do
 		if not component.Save then
@@ -645,7 +677,7 @@ function vape:SaveOptions(obj)
 	return data
 end
 
-function vape:SortCategories()
+function EZ:SortCategories()
 	local sorting = {}
 	for _, module in self.Modules do
 		sorting[module.Category] = sorting[module.Category] or {}
@@ -662,7 +694,7 @@ function vape:SortCategories()
 	end
 end
 
-function vape:Uninject()
+function EZ:Uninject()
 	self:Save()
 	self.Loaded = nil
 
@@ -690,9 +722,9 @@ function vape:Uninject()
 		end)
 	end
 
-	if self.ThreadFix then
+	if self.thread_fix then
 		setthreadidentity(8)
-		clickgui.Visible = false
+		click_gui.Visible = false
 		self:BlurCheck()
 	end
 
@@ -702,49 +734,49 @@ function vape:Uninject()
 	table.clear(self.Libraries)
 	loopClean(self)
 
-	shared.vape = nil
+	shared.EZ = nil
 	shared.vapereload = nil
 	shared.VapeIndependent = nil
 end
 
 local guiUpdate
-function vape:UpdateGUI()
+function EZ:UpdateGUI()
 	if guiUpdate then
 		return
 	end
 
-	guiUpdate = runService.RenderStepped:Once(function()
-		if vape.Loaded ~= nil then
-			vape:UpdateGUIQueue(vape.GUIColor.Hue, vape.GUIColor.Sat, vape.GUIColor.Value)
+	guiUpdate = run_service.RenderStepped:Once(function()
+		if EZ.Loaded ~= nil then
+			EZ:UpdateGUIQueue(EZ.gui_color.Hue, EZ.gui_color.Sat, EZ.gui_color.Value)
 		end
 
 		guiUpdate = nil
 	end)
 end
 
-function vape:UpdateGUIQueue(hue, sat, val)
-	if TextGUI.Button.Enabled then
-		TextGUI:UpdateColor(hue, sat, val, default)
+function EZ:UpdateGUIQueue(hue, sat, val)
+	if text_gui.Button.Enabled then
+		text_gui:UpdateColor(hue, sat, val, default)
 	end
 
-	if not clickgui.Visible and not vape.Legit.Window.Visible then return end
-	local isRainbow = vape.GUIColor.Rainbow and vape.RainbowMode.Value ~= 'Retro'
+	if not click_gui.Visible and not EZ.Legit.Window.Visible then return end
+	local isRainbow = EZ.gui_color.Rainbow and EZ.RainbowMode.Value ~= 'Retro'
 
-	for name, component in vape.Categories do
+	for name, component in EZ.Categories do
 		component:Color(hue, sat, val, isRainbow)
 	end
 
-	for _, component in vape.Modules do
+	for _, component in EZ.Modules do
 		component:Color(hue, sat, val, isRainbow)
 	end
 
-	for _, component in vape.Overlays.Options do
+	for _, component in EZ.Overlays.Options do
 		if component.Color then
 			component:Color(hue, sat, val, isRainbow)
 		end
 	end
 
-	for _, pane in vape.Settings do
+	for _, pane in EZ.Settings do
 		for _, component in pane.Options do
 			if component.Color then
 				component:Color(hue, sat, val, isRainbow)
@@ -752,8 +784,8 @@ function vape:UpdateGUIQueue(hue, sat, val)
 		end
 	end
 
-	if vape.Legit.Window.Visible then
-		for _, component in vape.Legit.Modules do
+	if EZ.Legit.Window.Visible then
+		for _, component in EZ.Legit.Modules do
 			component:Color(hue, sat, val, isRainbow)
 		end
 	end
@@ -761,16 +793,16 @@ end
 
 --Components
 
-vape.Components = setmetatable(components, {
+EZ.Components = setmetatable(components, {
 	__newindex = function(_, index, callback)
-		for _, module in vape.Modules do
+		for _, module in EZ.Modules do
 			rawset(module, 'Create'..index, function(_, props)
 				return callback(props, module.Children, module)
 			end)
 		end
 
-		if vape.Legit then
-			for _, module in vape.Legit.Modules do
+		if EZ.Legit then
+			for _, module in EZ.Legit.Modules do
 				rawset(module, 'Create'..index, function(_, props)
 					return callback(props, module.Children, module)
 				end)
@@ -781,9 +813,9 @@ vape.Components = setmetatable(components, {
 	end
 })
 
-vape:LoadGUI()
+EZ:LoadGUI()
 
-return vape
+return EZ
 
 -- components\Bind.lua
 local component = {
@@ -806,7 +838,7 @@ bind.Text = ''
 addCorner(bind, UDim.new(0, 4))
 addTooltip(bind, '', function()
 	local holdText = 'Bind functionality = '..(component.Hold and 'Enable while held' or 'Toggle')
-	if inputService:IsKeyDown(Enum.KeyCode.LeftShift) then
+	if input_service:IsKeyDown(Enum.KeyCode.LeftShift) then
 		holdText = "<font color='#FF5A5A'>"..holdText.."</font>"
 	end
 
@@ -814,19 +846,19 @@ addTooltip(bind, '', function()
 end)
 local icon = Instance.new('ImageLabel')
 icon.BackgroundTransparency = 1
-icon.Image = getvapeasset('newvape/assets/new/bind.png')
-icon.ImageColor3 = color.Dark(uipallet.Text, 0.43)
+icon.Image = get_ez_asset('Elite Zone/Assets/bind.png')
+icon.ImageColor3 = color.Dark(ui_pallet.Text, 0.43)
 icon.Name = 'Icon'
 icon.Position = UDim2.new(0.5, -5, 0, 5)
 icon.Size = UDim2.fromOffset(10, 10)
 icon.Parent = bind
 local label = Instance.new('TextLabel')
 label.BackgroundTransparency = 1
-label.FontFace = uipallet.Font
+label.FontFace = ui_pallet.Font
 label.Position = UDim2.fromOffset(-1, 0)
 label.Size = UDim2.fromScale(1, 1)
 label.Text = ''
-label.TextColor3 = color.Dark(uipallet.Text, 0.43)
+label.TextColor3 = color.Dark(ui_pallet.Text, 0.43)
 label.TextSize = 12
 label.Visible = false
 label.Parent = bind
@@ -837,7 +869,7 @@ if props.Module then
 	if props.Cover then
 		cover = Instance.new('ImageLabel')
 		cover.BackgroundTransparency = 1
-		cover.Image = getvapeasset('newvape/assets/new/bindbkg.png')
+		cover.Image = get_ez_asset('Elite Zone/Assets/bindbkg.png')
 		cover.Name = 'Cover'
 		cover.ScaleType = Enum.ScaleType.Slice
 		cover.SliceCenter = Rect.new(0, 0, 141, 40)
@@ -846,11 +878,11 @@ if props.Module then
 		cover.Parent = api.Object
 		coverlabel = Instance.new('TextLabel')
 		coverlabel.BackgroundTransparency = 1
-		coverlabel.FontFace = uipallet.Font
+		coverlabel.FontFace = ui_pallet.Font
 		coverlabel.Name = 'Text'
 		coverlabel.Size = UDim2.new(1, -10, 1, -3)
 		coverlabel.Text = 'PRESS A KEY TO BIND'
-		coverlabel.TextColor3 = uipallet.Text
+		coverlabel.TextColor3 = ui_pallet.Text
 		coverlabel.TextSize = 11
 		coverlabel.Parent = cover
 	end
@@ -863,10 +895,10 @@ else
 	holder.AutoButtonColor = false
 	holder.BackgroundColor3 = color.Dark(children.BackgroundColor3, props.Darker and 0.02 or 0)
 	holder.BorderSizePixel = 0
-	holder.FontFace = uipallet.Font
+	holder.FontFace = ui_pallet.Font
 	holder.Size = UDim2.new(1, 0, 0, 40)
 	holder.Text = '          '..props.Name
-	holder.TextColor3 = color.Dark(uipallet.Text, 0.16)
+	holder.TextColor3 = color.Dark(ui_pallet.Text, 0.16)
 	holder.TextSize = 14
 	holder.TextXAlignment = Enum.TextXAlignment.Left
 	holder.Visible = props.Visible == nil or props.Visible
@@ -901,9 +933,9 @@ function component:CreateMobileButton(position)
 	button.MouseButton1Down:Connect(function()
 		isHeld = true
 
-		local holdtime, holdPos = os.clock(), inputService:GetMouseLocation()
+		local holdtime, holdPos = os.clock(), input_service:GetMouseLocation()
 		repeat
-			isHeld = (inputService:GetMouseLocation() - holdPos).Magnitude < 6
+			isHeld = (input_service:GetMouseLocation() - holdPos).Magnitude < 6
 
 			task.wait()
 		until (os.clock() - holdtime) > 1 or not isHeld
@@ -939,9 +971,9 @@ function component:Destroy()
 		self.Mobile = nil
 	end
 
-	local index = table.find(vape.ActiveBinds, self)
+	local index = table.find(EZ.active_binds, self)
 	if index then
-		table.remove(vape.ActiveBinds, index)
+		table.remove(EZ.active_binds, index)
 	end
 end
 
@@ -981,11 +1013,11 @@ function component:SetBind(keys, mouse)
 	self.Keys = table.clone(keys)
 
 	if mouse then
-		icon.Image = getvapeasset('newvape/assets/new/edit.png')
+		icon.Image = get_ez_asset('Elite Zone/Assets/edit.png')
 
 		if cover then
 			coverlabel.Text = #keys <= 0 and 'BIND REMOVED' or 'BOUND TO'
-			cover.Size = UDim2.fromOffset(getfontbounds(coverlabel.Text, coverlabel.TextSize, coverlabel.FontFace).X + 20, 40)
+			cover.Size = UDim2.fromOffset(get_font_bounds(coverlabel.Text, coverlabel.TextSize, coverlabel.FontFace).X + 20, 40)
 
 			task.delay(1, function()
 				cover.Visible = false
@@ -998,19 +1030,19 @@ function component:SetBind(keys, mouse)
 		icon.Visible = true
 		bind.Size = UDim2.fromOffset(20, 20)
 
-		local index = table.find(vape.ActiveBinds, component)
+		local index = table.find(EZ.active_binds, component)
 		if index then
-			table.remove(vape.ActiveBinds, index)
+			table.remove(EZ.active_binds, index)
 		end
 	else
 		bind.Visible = true
 		label.Visible = true
 		icon.Visible = false
 		label.Text = table.concat(keys, ' + '):upper()
-		bind.Size = UDim2.fromOffset(math.max(getfontbounds(label.Text, label.TextSize, label.FontFace).X + 10, 20), 20)
+		bind.Size = UDim2.fromOffset(math.max(get_font_bounds(label.Text, label.TextSize, label.FontFace).X + 10, 20), 20)
 
-		if not table.find(vape.ActiveBinds, component) then
-			table.insert(vape.ActiveBinds, component)
+		if not table.find(EZ.active_binds, component) then
+			table.insert(EZ.active_binds, component)
 		end
 	end
 end
@@ -1035,37 +1067,37 @@ end
 bind.MouseEnter:Connect(function()
 	label.Visible = false
 	icon.Visible = not label.Visible
-	icon.Image = getvapeasset(component.Binding and 'newvape/assets/new/close.png' or 'newvape/assets/new/edit.png')
+	icon.Image = get_ez_asset(component.Binding and 'Elite Zone/Assets/close.png' or 'Elite Zone/Assets/edit.png')
 
 	if not props.Cover or not api.Enabled then
-		icon.ImageColor3 = color.Dark(uipallet.Text, 0.16)
+		icon.ImageColor3 = color.Dark(ui_pallet.Text, 0.16)
 	end
 end)
 
 bind.MouseLeave:Connect(function()
 	label.Visible = #component.Keys > 0
 	icon.Visible = not label.Visible
-	icon.Image = getvapeasset(component.Binding and 'newvape/assets/new/close.png' or 'newvape/assets/new/bind.png')
+	icon.Image = get_ez_asset(component.Binding and 'Elite Zone/Assets/close.png' or 'Elite Zone/Assets/bind.png')
 
 	if not props.Cover or not api.Enabled then
-		icon.ImageColor3 = color.Dark(uipallet.Text, 0.43)
+		icon.ImageColor3 = color.Dark(ui_pallet.Text, 0.43)
 	end
 end)
 
 bind.MouseButton1Click:Connect(function()
-	if vape.Binding then
-		if vape.Binding == component then
+	if EZ.Binding then
+		if EZ.Binding == component then
 			component:SetBind({}, true)
-			vape.Binding = nil
+			EZ.Binding = nil
 		end
 
 		return
 	end
 
-	if props.Module and inputService:IsKeyDown(Enum.KeyCode.LeftShift) then
+	if props.Module and input_service:IsKeyDown(Enum.KeyCode.LeftShift) then
 		component.Hold = not component.Hold
-		if vape.CurrentTooltip then
-			vape.CurrentTooltip()
+		if EZ.CurrentTooltip then
+			EZ.CurrentTooltip()
 		end
 
 		return
@@ -1073,13 +1105,13 @@ bind.MouseButton1Click:Connect(function()
 
 	if cover then
 		coverlabel.Text = 'PRESS A KEY TO BIND'
-		cover.Size = UDim2.fromOffset(getfontbounds(coverlabel.Text, coverlabel.TextSize, coverlabel.FontFace).X + 20, 40)
+		cover.Size = UDim2.fromOffset(get_font_bounds(coverlabel.Text, coverlabel.TextSize, coverlabel.FontFace).X + 20, 40)
 		cover.Visible = true
 	end
 
 	component.Binding = true
-	icon.Image = getvapeasset('newvape/assets/new/close.png')
-	vape.Binding = component
+	icon.Image = get_ez_asset('Elite Zone/Assets/close.png')
+	EZ.Binding = component
 end)
 
 if props.Module then
@@ -1104,32 +1136,32 @@ button.Text = ''
 button.Parent = children
 addTooltip(button, props.Tooltip)
 local holder = Instance.new('Frame')
-holder.BackgroundColor3 = color.Light(uipallet.Main, 0.05)
+holder.BackgroundColor3 = color.Light(ui_pallet.Main, 0.05)
 holder.Position = UDim2.fromOffset(10, 2)
 holder.Size = UDim2.fromOffset(200, 27)
 holder.Parent = button
 addCorner(holder)
 local title = Instance.new('TextLabel')
-title.BackgroundColor3 = uipallet.Main
-title.FontFace = uipallet.Font
+title.BackgroundColor3 = ui_pallet.Main
+title.FontFace = ui_pallet.Font
 title.Position = UDim2.fromOffset(2, 2)
 title.Size = UDim2.new(1, -4, 1, -4)
 title.Text = props.Name
-title.TextColor3 = color.Dark(uipallet.Text, 0.16)
+title.TextColor3 = color.Dark(ui_pallet.Text, 0.16)
 title.TextSize = 14
 title.Parent = holder
 addCorner(title, UDim.new(0, 4))
 props.Function = props.Function or function() end
 
 button.MouseEnter:Connect(function()
-	tween:Tween(holder, uipallet.Tween, {
-		BackgroundColor3 = color.Light(uipallet.Main, 0.0875)
+	tween:Tween(holder, ui_pallet.Tween, {
+		BackgroundColor3 = color.Light(ui_pallet.Main, 0.0875)
 	})
 end)
 
 button.MouseLeave:Connect(function()
-	tween:Tween(holder, uipallet.Tween, {
-		BackgroundColor3 = color.Light(uipallet.Main, 0.05)
+	tween:Tween(holder, ui_pallet.Tween, {
+		BackgroundColor3 = color.Light(ui_pallet.Main, 0.05)
 	})
 end)
 
@@ -1144,30 +1176,30 @@ local component = {
 
 local window = Instance.new('TextButton')
 window.AutoButtonColor = false
-window.BackgroundColor3 = uipallet.Main
+window.BackgroundColor3 = ui_pallet.Main
 window.Name = props.Name..'Category'
 window.Position = UDim2.fromOffset(236, 60)
 window.Size = UDim2.fromOffset(220, 41)
 window.Text = ''
 window.Visible = false
-window.Parent = clickgui
+window.Parent = click_gui
 addBlur(window)
 addCorner(window)
 addDragHandler(window)
 local icon = Instance.new('ImageLabel')
 icon.BackgroundTransparency = 1
 icon.Image = props.Icon
-icon.ImageColor3 = uipallet.Text
+icon.ImageColor3 = ui_pallet.Text
 icon.Position = UDim2.fromOffset(12, (icon.Size.X.Offset > 20 and 14 or 13))
 icon.Size = props.Size
 icon.Parent = window
 local title = Instance.new('TextLabel')
 title.BackgroundTransparency = 1
-title.FontFace = uipallet.Font
+title.FontFace = ui_pallet.Font
 title.Size = UDim2.new(1, -(props.Size.X.Offset > 18 and 40 or 33), 0, 41)
 title.Position = UDim2.fromOffset(math.abs(title.Size.X.Offset), 0)
 title.Text = props.Name
-title.TextColor3 = uipallet.Text
+title.TextColor3 = ui_pallet.Text
 title.TextSize = 13
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.Parent = window
@@ -1181,7 +1213,7 @@ pencilbutton.Parent = window
 addTooltip(pencilbutton, 'Edit hidden modules')
 local pencil = Instance.new('ImageLabel')
 pencil.BackgroundTransparency = 1
-pencil.Image = getvapeasset('newvape/assets/new/editlarge.png')
+pencil.Image = get_ez_asset('Elite Zone/Assets/editlarge.png')
 pencil.ImageColor3 = Color3.fromRGB(140, 140, 140)
 pencil.Size = UDim2.fromOffset(12, 12)
 pencil.Position = UDim2.fromOffset(4, 14)
@@ -1194,7 +1226,7 @@ arrowbutton.Text = ''
 arrowbutton.Parent = window
 local arrow = Instance.new('ImageLabel')
 arrow.BackgroundTransparency = 1
-arrow.Image = getvapeasset('newvape/assets/new/downexpand.png')
+arrow.Image = get_ez_asset('Elite Zone/Assets/downexpand.png')
 arrow.ImageColor3 = Color3.fromRGB(140, 140, 140)
 arrow.Size = UDim2.fromOffset(9, 4)
 arrow.Position = UDim2.fromOffset(9, 18)
@@ -1202,7 +1234,7 @@ arrow.Rotation = 180
 arrow.Parent = arrowbutton
 local done = Instance.new('TextButton')
 done.BackgroundTransparency = 1
-done.FontFace = uipallet.Font
+done.FontFace = ui_pallet.Font
 done.Position = UDim2.new(1, -73, 0, 0)
 done.Size = UDim2.fromOffset(42, 40)
 done.Text = 'DONE'
@@ -1298,16 +1330,16 @@ arrowbutton.MouseLeave:Connect(function()
 end)
 
 done.MouseButton1Click:Connect(function()
-	vape.EditGUI = false
+	EZ.EditGUI = false
 	pencilbutton.Visible = true
 
-	for _, category in vape.Categories do
+	for _, category in EZ.Categories do
 		if category.Type == 'Category' then
 			category.Done.Visible = false
 		end
 	end
 
-	for _, module in vape.Modules do
+	for _, module in EZ.Modules do
 		module.Object.Visible = module.Visible
 		module.Object.Text = string.rep(' ', 12)..module.Name
 		module.Edit.Visible = false
@@ -1323,16 +1355,16 @@ done.MouseLeave:Connect(function()
 end)
 
 pencilbutton.MouseButton1Click:Connect(function()
-	vape.EditGUI = true
+	EZ.EditGUI = true
 	pencilbutton.Visible = false
 
-	for _, category in vape.Categories do
+	for _, category in EZ.Categories do
 		if category.Type == 'Category' then
 			category.Done.Visible = true
 		end
 	end
 
-	for _, module in vape.Modules do
+	for _, module in EZ.Modules do
 		module.Object.Visible = true
 		module.Object.Text = string.rep(' ', 50)..module.Name
 		module.Edit.Visible = true
@@ -1352,7 +1384,7 @@ pencilbutton.MouseLeave:Connect(function()
 end)
 
 window.MouseEnter:Connect(function()
-	pencilbutton.Visible = not vape.EditGUI
+	pencilbutton.Visible = not EZ.EditGUI
 end)
 
 window.MouseLeave:Connect(function()
@@ -1366,7 +1398,7 @@ window.InputBegan:Connect(function(input)
 end)
 
 children:GetPropertyChangedSignal('CanvasPosition'):Connect(function()
-	if vape.ThreadFix then
+	if EZ.thread_fix then
 		setthreadidentity(8)
 	end
 
@@ -1374,7 +1406,7 @@ children:GetPropertyChangedSignal('CanvasPosition'):Connect(function()
 end)
 
 windowlist:GetPropertyChangedSignal('AbsoluteContentSize'):Connect(function()
-	if vape.ThreadFix then
+	if EZ.thread_fix then
 		setthreadidentity(8)
 	end
 
@@ -1384,7 +1416,7 @@ windowlist:GetPropertyChangedSignal('AbsoluteContentSize'):Connect(function()
 	end
 end)
 
-component.Button = vape.Categories.Main:CreateGUIButton({
+component.Button = EZ.Categories.Main:CreateGUIButton({
 	Name = props.Name,
 	Icon = props.Icon,
 	Size = props.Size,
@@ -1392,7 +1424,7 @@ component.Button = vape.Categories.Main:CreateGUIButton({
 })
 
 component.Object = window
-vape.Categories[props.Name] = component
+EZ.Categories[props.Name] = component
 
 return component
 
@@ -1409,32 +1441,32 @@ props.Color = props.Color or Color3.fromRGB(5, 134, 105)
 
 local window = Instance.new('TextButton')
 window.AutoButtonColor = false
-window.BackgroundColor3 = uipallet.Main
+window.BackgroundColor3 = ui_pallet.Main
 window.Name = props.Name..'CategoryList'
 window.Position = UDim2.fromOffset(240, 46)
 window.Size = UDim2.fromOffset(220, 45)
 window.Text = ''
 window.Visible = false
-window.Parent = clickgui
+window.Parent = click_gui
 addBlur(window)
 addCorner(window)
 addDragHandler(window)
 local icon = Instance.new('ImageLabel')
 icon.BackgroundTransparency = 1
 icon.Image = props.Icon
-icon.ImageColor3 = uipallet.Text
+icon.ImageColor3 = ui_pallet.Text
 icon.Name = 'Icon'
 icon.Size = props.Size
 icon.Position = props.Position or UDim2.fromOffset(12, (props.Size.X.Offset > 20 and 13 or 12))
 icon.Parent = window
 local title = Instance.new('TextLabel')
 title.BackgroundTransparency = 1
-title.FontFace = uipallet.Font
+title.FontFace = ui_pallet.Font
 title.Name = 'Title'
 title.Size = UDim2.new(1, -(props.Size.X.Offset > 20 and 44 or 36), 0, 20)
 title.Position = UDim2.fromOffset(math.abs(title.Size.X.Offset), 12)
 title.Text = props.Name
-title.TextColor3 = uipallet.Text
+title.TextColor3 = ui_pallet.Text
 title.TextSize = 13
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.Parent = window
@@ -1450,7 +1482,7 @@ arrow.Name = 'Arrow'
 arrow.Size = UDim2.fromOffset(9, 4)
 arrow.Position = UDim2.fromOffset(15, 20)
 arrow.BackgroundTransparency = 1
-arrow.Image = getvapeasset('newvape/assets/new/downexpand.png')
+arrow.Image = get_ez_asset('Elite Zone/Assets/downexpand.png')
 arrow.ImageColor3 = Color3.fromRGB(140, 140, 140)
 arrow.Rotation = 180
 arrow.Parent = arrowbutton
@@ -1467,14 +1499,14 @@ children.CanvasSize = UDim2.new()
 children.Parent = window
 local childrentwo = Instance.new('Frame')
 childrentwo.BackgroundTransparency = 1
-childrentwo.BackgroundColor3 = color.Dark(uipallet.Main, 0.02)
+childrentwo.BackgroundColor3 = color.Dark(ui_pallet.Main, 0.02)
 childrentwo.Visible = false
 childrentwo.Parent = children
 local settings = Instance.new('ImageButton')
 settings.AutoButtonColor = false
 settings.BackgroundTransparency = 1
-settings.Image = getvapeasset('newvape/assets/new/settings.png')
-settings.ImageColor3 = color.Dark(uipallet.Text, 0.43)
+settings.Image = get_ez_asset('Elite Zone/Assets/settings.png')
+settings.ImageColor3 = color.Dark(ui_pallet.Text, 0.43)
 settings.Name = 'Settings'
 settings.Position = UDim2.new(1, -56, 0, 15)
 settings.Size = UDim2.fromOffset(14, 14)
@@ -1503,20 +1535,20 @@ windowlisttwo.HorizontalAlignment = Enum.HorizontalAlignment.Center
 windowlisttwo.SortOrder = Enum.SortOrder.LayoutOrder
 windowlisttwo.Parent = childrentwo
 local addbkg = Instance.new('Frame')
-addbkg.BackgroundColor3 = color.Light(uipallet.Main, 0.02)
+addbkg.BackgroundColor3 = color.Light(ui_pallet.Main, 0.02)
 addbkg.Position = UDim2.fromOffset(10, 45)
 addbkg.Size = UDim2.fromOffset(200, 31)
 addbkg.Parent = children
 addCorner(addbkg)
 local addbox = addbkg:Clone()
-addbox.BackgroundColor3 = color.Dark(uipallet.Main, 0.02)
+addbox.BackgroundColor3 = color.Dark(ui_pallet.Main, 0.02)
 addbox.Position = UDim2.fromOffset(1, 1)
 addbox.Size = UDim2.new(1, -2, 1, -2)
 addbox.Parent = addbkg
 local addvalue = Instance.new('TextBox')
 addvalue.BackgroundTransparency = 1
 addvalue.ClearTextOnFocus = false
-addvalue.FontFace = uipallet.Font
+addvalue.FontFace = ui_pallet.Font
 addvalue.PlaceholderText = props.Placeholder or 'Add entry...'
 addvalue.PlaceholderColor3 = Color3.new(0.8, 0.8, 0.8)
 addvalue.Position = UDim2.fromOffset(10, 0)
@@ -1528,7 +1560,7 @@ addvalue.TextXAlignment = Enum.TextXAlignment.Left
 addvalue.Parent = addbkg
 local addbutton = Instance.new('ImageButton')
 addbutton.BackgroundTransparency = 1
-addbutton.Image = getvapeasset('newvape/assets/new/add.png')
+addbutton.Image = get_ez_asset('Elite Zone/Assets/add.png')
 addbutton.ImageColor3 = props.Color
 addbutton.ImageTransparency = 0.3
 addbutton.Position = UDim2.new(1, -26, 0, 8)
@@ -1551,9 +1583,9 @@ function component:CreateProfile(value, data)
 	}, nil, profile)
 	profile.Bind.Object.Position = UDim2.new(1, -30, 0, 7)
 	profile.Bind.Triggered:Connect(function(isPressed)
-		if isPressed and vape.Profile ~= value then
-			vape:Save(value)
-			vape:Load(true)
+		if isPressed and EZ.Profile ~= value then
+			EZ:Save(value)
+			EZ:Load(true)
 			self:ChangeValue()
 		end
 	end)
@@ -1574,8 +1606,8 @@ function component:ChangeValue(value, skipGUI)
 					profile.Bind:Destroy()
 					table.remove(self.List, index)
 
-					if isfile('newvape/profiles/'..value..vape.Place..'.txt') and delfile then
-						delfile('newvape/profiles/'..value..vape.Place..'.txt')
+					if isfile('newvape/profiles/'..value..EZ.Place..'.txt') and delfile then
+						delfile('newvape/profiles/'..value..EZ.Place..'.txt')
 					end
 				end
 			else
@@ -1604,7 +1636,7 @@ function component:ChangeValue(value, skipGUI)
 	table.clear(self.Objects)
 	self.Selected = nil
 
-	if vape.ThreadFix then
+	if EZ.thread_fix then
 		setthreadidentity(8)
 	end
 
@@ -1613,13 +1645,13 @@ function component:ChangeValue(value, skipGUI)
 			local obj = Instance.new('TextButton')
 			obj.Name = name.Name
 			obj.Size = UDim2.fromOffset(200, 32)
-			obj.BackgroundColor3 = color.Light(uipallet.Main, 0.02)
+			obj.BackgroundColor3 = color.Light(ui_pallet.Main, 0.02)
 			obj.AutoButtonColor = false
 			obj.Text = ''
 			obj.Parent = children
 			addCorner(obj)
 			local stroke = Instance.new('UIStroke')
-			stroke.Color = color.Light(uipallet.Main, 0.1)
+			stroke.Color = color.Light(ui_pallet.Main, 0.1)
 			stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 			stroke.Enabled = false
 			stroke.Parent = obj
@@ -1630,9 +1662,9 @@ function component:ChangeValue(value, skipGUI)
 			label.BackgroundTransparency = 1
 			label.Text = name.Name
 			label.TextXAlignment = Enum.TextXAlignment.Left
-			label.TextColor3 = color.Dark(uipallet.Text, 0.4)
+			label.TextColor3 = color.Dark(ui_pallet.Text, 0.4)
 			label.TextSize = 15
-			label.FontFace = uipallet.Font
+			label.FontFace = ui_pallet.Font
 			label.Parent = obj
 			local dotsbutton = Instance.new('TextButton')
 			dotsbutton.BackgroundTransparency = 1
@@ -1643,14 +1675,14 @@ function component:ChangeValue(value, skipGUI)
 			dotsbutton.Parent = obj
 			local dots = Instance.new('ImageLabel')
 			dots.BackgroundTransparency = 1
-			dots.Image = getvapeasset('newvape/assets/new/settingdots.png')
-			dots.ImageColor3 = color.Light(uipallet.Main, 0.37)
+			dots.Image = get_ez_asset('Elite Zone/Assets/settingdots.png')
+			dots.ImageColor3 = color.Light(ui_pallet.Main, 0.37)
 			dots.Name = 'Dots'
 			dots.Position = UDim2.fromOffset(11, 9)
 			dots.Size = UDim2.fromOffset(3, 16)
 			dots.Parent = dotsbutton
 			name.Bind:SetParent(obj)
-			name.Enabled = name.Name == vape.Profile
+			name.Enabled = name.Name == EZ.Profile
 
 			dotsbutton.MouseButton1Click:Connect(function()
 				if not name.Enabled then
@@ -1660,20 +1692,20 @@ function component:ChangeValue(value, skipGUI)
 
 			dotsbutton.MouseEnter:Connect(function()
 				if not name.Enabled then
-					dots.ImageColor3 = uipallet.Text
+					dots.ImageColor3 = ui_pallet.Text
 				end
 			end)
 
 			dotsbutton.MouseLeave:Connect(function()
 				if not name.Enabled then
-					dots.ImageColor3 = color.Light(uipallet.Main, 0.37)
+					dots.ImageColor3 = color.Light(ui_pallet.Main, 0.37)
 				end
 			end)
 
 
 			obj.MouseButton1Click:Connect(function()
-				vape:Save(name.Name)
-				vape:Load(true)
+				EZ:Save(name.Name)
+				EZ:Load(true)
 				self:ChangeValue()
 			end)
 
@@ -1688,7 +1720,7 @@ function component:ChangeValue(value, skipGUI)
 			if name.Enabled then
 				self.Selected = obj
 			else
-				name.Bind:SetColor(color.Dark(uipallet.Text, 0.43))
+				name.Bind:SetColor(color.Dark(ui_pallet.Text, 0.43))
 			end
 
 			table.insert(self.Objects, {
@@ -1702,36 +1734,36 @@ function component:ChangeValue(value, skipGUI)
 			local obj = Instance.new('TextButton')
 			obj.Name = name
 			obj.Size = UDim2.fromOffset(200, 31)
-			obj.BackgroundColor3 = color.Light(uipallet.Main, 0.02)
+			obj.BackgroundColor3 = color.Light(ui_pallet.Main, 0.02)
 			obj.AutoButtonColor = false
 			obj.Text = ''
 			obj.Parent = children
 			addCorner(obj)
 			local bkg = Instance.new('Frame')
-			bkg.BackgroundColor3 = uipallet.Main
+			bkg.BackgroundColor3 = ui_pallet.Main
 			bkg.Position = UDim2.fromOffset(1, 1)
 			bkg.Size = UDim2.new(1, -2, 1, -2)
 			bkg.Visible = false
 			bkg.Parent = obj
 			addCorner(bkg)
 			local dot = Instance.new('Frame')
-			dot.BackgroundColor3 = isEnabled and props.Color or color.Light(uipallet.Main, 0.37)
+			dot.BackgroundColor3 = isEnabled and props.Color or color.Light(ui_pallet.Main, 0.37)
 			dot.Position = UDim2.fromOffset(10, 12)
 			dot.Size = UDim2.fromOffset(10, 11)
 			dot.Parent = obj
 			addCorner(dot, UDim.new(1, 0))
 			local dotin = dot:Clone()
-			dotin.BackgroundColor3 = isEnabled and props.Color or color.Light(uipallet.Main, 0.02)
+			dotin.BackgroundColor3 = isEnabled and props.Color or color.Light(ui_pallet.Main, 0.02)
 			dotin.Position = UDim2.fromOffset(1, 1)
 			dotin.Size = UDim2.fromOffset(8, 9)
 			dotin.Parent = dot
 			local label = Instance.new('TextLabel')
 			label.BackgroundTransparency = 1
-			label.FontFace = uipallet.Font
+			label.FontFace = ui_pallet.Font
 			label.Position = UDim2.fromOffset(30, 0)
 			label.Size = UDim2.new(1, -30, 1, 0)
 			label.Text = name
-			label.TextColor3 = color.Dark(uipallet.Text, 0.16)
+			label.TextColor3 = color.Dark(ui_pallet.Text, 0.16)
 			label.TextSize = 15
 			label.TextXAlignment = Enum.TextXAlignment.Left
 			label.Parent = obj
@@ -1739,8 +1771,8 @@ function component:ChangeValue(value, skipGUI)
 			close.AutoButtonColor = false
 			close.BackgroundColor3 = Color3.new(1, 1, 1)
 			close.BackgroundTransparency = 1
-			close.Image = getvapeasset('newvape/assets/new/closetiny.png')
-			close.ImageColor3 = color.Light(uipallet.Text, 0.2)
+			close.Image = get_ez_asset('Elite Zone/Assets/closetiny.png')
+			close.ImageColor3 = color.Light(ui_pallet.Text, 0.2)
 			close.ImageTransparency = 0.5
 			close.Position = UDim2.new(1, -27, 0, 8)
 			close.Size = UDim2.fromOffset(18, 17)
@@ -1749,14 +1781,14 @@ function component:ChangeValue(value, skipGUI)
 
 			close.MouseEnter:Connect(function()
 				close.ImageTransparency = 0.3
-				tween:Tween(close, uipallet.Tween, {
+				tween:Tween(close, ui_pallet.Tween, {
 					BackgroundTransparency = 0.6
 				})
 			end)
 
 			close.MouseLeave:Connect(function()
 				close.ImageTransparency = 0.5
-				tween:Tween(close, uipallet.Tween, {
+				tween:Tween(close, ui_pallet.Tween, {
 					BackgroundTransparency = 1
 				})
 			end)
@@ -1777,8 +1809,8 @@ function component:ChangeValue(value, skipGUI)
 				local index = table.find(self.ListEnabled, name)
 				if index then
 					table.remove(self.ListEnabled, index)
-					dot.BackgroundColor3 = color.Light(uipallet.Main, 0.37)
-					dotin.BackgroundColor3 = color.Light(uipallet.Main, 0.02)
+					dot.BackgroundColor3 = color.Light(ui_pallet.Main, 0.37)
+					dotin.BackgroundColor3 = color.Light(ui_pallet.Main, 0.02)
 				else
 					table.insert(self.ListEnabled, name)
 					dot.BackgroundColor3 = props.Color
@@ -1793,7 +1825,7 @@ function component:ChangeValue(value, skipGUI)
 	end
 
 	if not skipGUI then
-		vape:UpdateGUI()
+		EZ:UpdateGUI()
 	end
 end
 
@@ -1804,11 +1836,11 @@ function component:Color(hue, sat, val, isRainbow)
 		end
 	end
 
-	addbutton.ImageColor3 = isRainbow and Color3.fromHSV(vape:Color(hue % 1)) or Color3.fromHSV(hue, sat, val)
+	addbutton.ImageColor3 = isRainbow and Color3.fromHSV(EZ:Color(hue % 1)) or Color3.fromHSV(hue, sat, val)
 
 	if self.Selected then
-		self.Selected.BackgroundColor3 = isRainbow and Color3.fromHSV(vape:Color(hue % 1)) or Color3.fromHSV(hue, sat, val)
-		self.Selected.Title.TextColor3 = vape.GUIColor.Rainbow and Color3.new(0.19, 0.19, 0.19) or vape:TextColor(hue, sat, val)
+		self.Selected.BackgroundColor3 = isRainbow and Color3.fromHSV(EZ:Color(hue % 1)) or Color3.fromHSV(hue, sat, val)
+		self.Selected.Title.TextColor3 = EZ.gui_color.Rainbow and Color3.new(0.19, 0.19, 0.19) or EZ:TextColor(hue, sat, val)
 		self.Selected.Dots.Dots.ImageColor3 = self.Selected.Title.TextColor3
 		self.Selected.Bind.Icon.ImageColor3 = self.Selected.Title.TextColor3
 		self.Selected.Bind.TextLabel.TextColor3 = self.Selected.Title.TextColor3
@@ -1832,7 +1864,7 @@ function component:GetValue(name)
 end
 
 function component:Load(data)
-	vape:LoadOptions(self, data.Options)
+	EZ:LoadOptions(self, data.Options)
 
 	if data.Enabled then
 		self.Button:Toggle()
@@ -1867,7 +1899,7 @@ function component:Save(data)
 		Expanded = self.Expanded,
 		List = self.List,
 		ListEnabled = self.ListEnabled,
-		Options = vape:SaveOptions(self),
+		Options = EZ:SaveOptions(self),
 		Position = {
 			X = window.Position.X.Offset,
 			Y = window.Position.Y.Offset
@@ -1935,14 +1967,14 @@ addvalue.FocusLost:Connect(function(enter)
 end)
 
 addvalue.MouseEnter:Connect(function()
-	tween:Tween(addbkg, uipallet.Tween, {
-		BackgroundColor3 = color.Light(uipallet.Main, 0.14)
+	tween:Tween(addbkg, ui_pallet.Tween, {
+		BackgroundColor3 = color.Light(ui_pallet.Main, 0.14)
 	})
 end)
 
 addvalue.MouseLeave:Connect(function()
-	tween:Tween(addbkg, uipallet.Tween, {
-		BackgroundColor3 = color.Light(uipallet.Main, 0.02)
+	tween:Tween(addbkg, ui_pallet.Tween, {
+		BackgroundColor3 = color.Light(ui_pallet.Main, 0.02)
 	})
 end)
 
@@ -1951,11 +1983,11 @@ children:GetPropertyChangedSignal('CanvasPosition'):Connect(function()
 end)
 
 settings.MouseEnter:Connect(function()
-	settings.ImageColor3 = uipallet.Text
+	settings.ImageColor3 = ui_pallet.Text
 end)
 
 settings.MouseLeave:Connect(function()
-	settings.ImageColor3 = color.Light(uipallet.Main, 0.37)
+	settings.ImageColor3 = color.Light(ui_pallet.Main, 0.37)
 end)
 
 settings.MouseButton1Click:Connect(function()
@@ -1969,7 +2001,7 @@ window.InputBegan:Connect(function(input)
 end)
 
 windowlist:GetPropertyChangedSignal('AbsoluteContentSize'):Connect(function()
-	if vape.ThreadFix then
+	if EZ.thread_fix then
 		setthreadidentity(8)
 	end
 
@@ -1980,14 +2012,14 @@ windowlist:GetPropertyChangedSignal('AbsoluteContentSize'):Connect(function()
 end)
 
 windowlisttwo:GetPropertyChangedSignal('AbsoluteContentSize'):Connect(function()
-	if vape.ThreadFix then
+	if EZ.thread_fix then
 		setthreadidentity(8)
 	end
 
 	childrentwo.Size = UDim2.fromOffset(220, windowlisttwo.AbsoluteContentSize.Y / scale.Scale)
 end)
 
-component.Button = vape.Categories.Main:CreateGUIButton({
+component.Button = EZ.Categories.Main:CreateGUIButton({
 	Name = props.Name,
 	Icon = props.CategoryIcon,
 	Size = props.CategorySize,
@@ -1995,7 +2027,7 @@ component.Button = vape.Categories.Main:CreateGUIButton({
 })
 
 component.Object = window
-vape.Categories[props.Name] = component
+EZ.Categories[props.Name] = component
 
 return component
 
@@ -2021,11 +2053,11 @@ local function createExtraSlider(name, gradientColor)
 	colorslidercustom.Parent = children
 	local title = Instance.new('TextLabel')
 	title.BackgroundTransparency = 1
-	title.FontFace = uipallet.Font
+	title.FontFace = ui_pallet.Font
 	title.Position = UDim2.fromOffset(10, 2)
 	title.Size = UDim2.fromOffset(60, 30)
 	title.Text = name
-	title.TextColor3 = color.Dark(uipallet.Text, 0.16)
+	title.TextColor3 = color.Dark(ui_pallet.Text, 0.16)
 	title.TextSize = 11
 	title.TextXAlignment = Enum.TextXAlignment.Left
 	title.Parent = colorslidercustom
@@ -2053,7 +2085,7 @@ local function createExtraSlider(name, gradientColor)
 	knobholder.Parent = fill
 	local knob = Instance.new('Frame')
 	knob.AnchorPoint = Vector2.new(0.5, 0.5)
-	knob.BackgroundColor3 = uipallet.Text
+	knob.BackgroundColor3 = ui_pallet.Text
 	knob.Position = UDim2.fromScale(0.5, 0.5)
 	knob.Size = UDim2.fromOffset(14, 14)
 	knob.Parent = knobholder
@@ -2065,7 +2097,7 @@ local function createExtraSlider(name, gradientColor)
 			and (input.Position.Y - colorslidercustom.AbsolutePosition.Y) > (20 * scale.Scale)
 		then
 			local releaseConnection
-			local moveConnection = inputService.InputChanged:Connect(function(newInput)
+			local moveConnection = input_service.InputChanged:Connect(function(newInput)
 				if newInput.UserInputType == (input.UserInputType == Enum.UserInputType.MouseButton1 and Enum.UserInputType.MouseMovement or Enum.UserInputType.Touch) then
 					local newValue = math.clamp((newInput.Position.X - holder.AbsolutePosition.X) / holder.AbsoluteSize.X, 0, 1)
 					component:SetValue(nil, name == 'Saturation' and newValue or nil, name == 'Vibrance' and newValue or nil, name == 'Opacity' and newValue or nil)
@@ -2082,13 +2114,13 @@ local function createExtraSlider(name, gradientColor)
 	end)
 
 	colorslidercustom.MouseEnter:Connect(function()
-		tween:Tween(knob, uipallet.Tween, {
+		tween:Tween(knob, ui_pallet.Tween, {
 			Size = UDim2.fromOffset(16, 16)
 		})
 	end)
 
 	colorslidercustom.MouseLeave:Connect(function()
-		tween:Tween(knob, uipallet.Tween, {
+		tween:Tween(knob, ui_pallet.Tween, {
 			Size = UDim2.fromOffset(14, 14)
 		})
 	end)
@@ -2108,21 +2140,21 @@ component.Object = colorslider
 addTooltip(colorslider, props.Tooltip)
 local title = Instance.new('TextLabel')
 title.BackgroundTransparency = 1
-title.FontFace = uipallet.Font
+title.FontFace = ui_pallet.Font
 title.Position = UDim2.fromOffset(10, 2)
 title.Size = UDim2.fromOffset(60, 30)
 title.Text = props.Name
-title.TextColor3 = color.Dark(uipallet.Text, 0.16)
+title.TextColor3 = color.Dark(ui_pallet.Text, 0.16)
 title.TextSize = 11
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.Parent = colorslider
 local custombox = Instance.new('TextBox')
 custombox.BackgroundTransparency = 1
-custombox.FontFace = uipallet.Font
+custombox.FontFace = ui_pallet.Font
 custombox.Position = UDim2.new(1, -69, 0, 9)
 custombox.Size = UDim2.fromOffset(60, 15)
 custombox.Text = ''
-custombox.TextColor3 = color.Dark(uipallet.Text, 0.16)
+custombox.TextColor3 = color.Dark(ui_pallet.Text, 0.16)
 custombox.TextSize = 11
 custombox.TextXAlignment = Enum.TextXAlignment.Right
 custombox.Visible = false
@@ -2153,14 +2185,14 @@ knobholder.Size = UDim2.fromOffset(24, 4)
 knobholder.Parent = fill
 local knob = Instance.new('Frame')
 knob.AnchorPoint = Vector2.new(0.5, 0.5)
-knob.BackgroundColor3 = uipallet.Text
+knob.BackgroundColor3 = ui_pallet.Text
 knob.Position = UDim2.fromScale(0.5, 0.5)
 knob.Size = UDim2.fromOffset(14, 14)
 knob.Parent = knobholder
 addCorner(knob, UDim.new(1, 0))
 local preview = Instance.new('ImageButton')
 preview.BackgroundTransparency = 1
-preview.Image = getvapeasset('newvape/assets/new/colorpreview.png')
+preview.Image = get_ez_asset('Elite Zone/Assets/colorpreview.png')
 preview.ImageColor3 = Color3.fromHSV(component.Hue, component.Sat, component.Value)
 preview.ImageTransparency = 1 - component.Opacity
 preview.Position = UDim2.new(1, -22, 0, 10)
@@ -2168,14 +2200,14 @@ preview.Size = UDim2.fromOffset(12, 12)
 preview.Parent = colorslider
 local expand = Instance.new('TextButton')
 expand.BackgroundTransparency = 1
-expand.Position = UDim2.fromOffset(getfontbounds(title.Text, title.TextSize, title.FontFace).X + 11, 7)
+expand.Position = UDim2.fromOffset(get_font_bounds(title.Text, title.TextSize, title.FontFace).X + 11, 7)
 expand.Size = UDim2.fromOffset(17, 13)
 expand.Text = ''
 expand.Parent = colorslider
 local icon = Instance.new('ImageLabel')
 icon.BackgroundTransparency = 1
-icon.Image = getvapeasset('newvape/assets/new/downexpandslider.png')
-icon.ImageColor3 = color.Dark(uipallet.Text, 0.43)
+icon.Image = get_ez_asset('Elite Zone/Assets/downexpandslider.png')
+icon.ImageColor3 = color.Dark(ui_pallet.Text, 0.43)
 icon.Position = UDim2.fromOffset(4, 4)
 icon.Size = UDim2.fromOffset(10, 5)
 icon.Parent = expand
@@ -2187,18 +2219,18 @@ rainbow.Text = ''
 rainbow.Parent = colorslider
 local ring1 = Instance.new('ImageLabel')
 ring1.BackgroundTransparency = 1
-ring1.Image = getvapeasset('newvape/assets/new/rainbow_1.png')
-ring1.ImageColor3 = color.Light(uipallet.Main, 0.37)
+ring1.Image = get_ez_asset('Elite Zone/Assets/rainbow_1.png')
+ring1.ImageColor3 = color.Light(ui_pallet.Main, 0.37)
 ring1.Size = UDim2.fromOffset(12, 12)
 ring1.Parent = rainbow
 local ring2 = Instance.fromExisting(ring1)
-ring2.Image = getvapeasset('newvape/assets/new/rainbow_2.png')
+ring2.Image = get_ez_asset('Elite Zone/Assets/rainbow_2.png')
 ring2.Parent = rainbow
 local ring3 = Instance.fromExisting(ring1)
-ring3.Image = getvapeasset('newvape/assets/new/rainbow_3.png')
+ring3.Image = get_ez_asset('Elite Zone/Assets/rainbow_3.png')
 ring3.Parent = rainbow
 local ring4 = Instance.fromExisting(ring1)
-ring4.Image = getvapeasset('newvape/assets/new/rainbow_4.png')
+ring4.Image = get_ez_asset('Elite Zone/Assets/rainbow_4.png')
 ring4.Parent = rainbow
 props.Function = props.Function or function() end
 
@@ -2213,7 +2245,7 @@ local vibSlider = createExtraSlider('Vibrance', ColorSequence.new({
 }))
 
 local opSlider = createExtraSlider('Opacity', ColorSequence.new({
-	ColorSequenceKeypoint.new(0, color.Dark(uipallet.Main, 0.02)),
+	ColorSequenceKeypoint.new(0, color.Dark(ui_pallet.Main, 0.02)),
 	ColorSequenceKeypoint.new(1, Color3.fromHSV(component.Hue, component.Sat, component.Value))
 }))
 
@@ -2256,32 +2288,32 @@ function component:SetValue(h, s, v, o)
 	})
 
 	opSlider.Holder.UIGradient.Color = ColorSequence.new({
-		ColorSequenceKeypoint.new(0, color.Dark(uipallet.Main, 0.02)),
+		ColorSequenceKeypoint.new(0, color.Dark(ui_pallet.Main, 0.02)),
 		ColorSequenceKeypoint.new(1, Color3.fromHSV(self.Hue, self.Sat, self.Value))
 	})
 
 	if self.Rainbow then
 		fill.Size = UDim2.fromScale(math.clamp(self.Hue, 0.04, 0.96), 1)
 	else
-		tween:Tween(fill, uipallet.Tween, {
+		tween:Tween(fill, ui_pallet.Tween, {
 			Size = UDim2.fromScale(math.clamp(self.Hue, 0.04, 0.96), 1)
 		})
 	end
 
 	if s then
-		tween:Tween(satSlider.Holder.Fill, uipallet.Tween, {
+		tween:Tween(satSlider.Holder.Fill, ui_pallet.Tween, {
 			Size = UDim2.fromScale(math.clamp(self.Sat, 0.04, 0.96), 1)
 		})
 	end
 
 	if v then
-		tween:Tween(vibSlider.Holder.Fill, uipallet.Tween, {
+		tween:Tween(vibSlider.Holder.Fill, ui_pallet.Tween, {
 			Size = UDim2.fromScale(math.clamp(self.Value, 0.04, 0.96), 1)
 		})
 	end
 
 	if o then
-		tween:Tween(opSlider.Holder.Fill, uipallet.Tween, {
+		tween:Tween(opSlider.Holder.Fill, ui_pallet.Tween, {
 			Size = UDim2.fromScale(math.clamp(self.Opacity, 0.04, 0.96), 1)
 		})
 	end
@@ -2293,7 +2325,7 @@ function component:Toggle()
 	self.Rainbow = not self.Rainbow
 
 	if self.Rainbow then
-		table.insert(vape.RainbowSliders, self)
+		table.insert(EZ.rainbow_sliders, self)
 
 		ring1.ImageColor3 = Color3.fromRGB(5, 127, 100)
 		task.delay(0.1, function()
@@ -2305,18 +2337,18 @@ function component:Toggle()
 			end)
 		end)
 	else
-		local index = table.find(vape.RainbowSliders, self)
+		local index = table.find(EZ.rainbow_sliders, self)
 		if index then
-			table.remove(vape.RainbowSliders, index)
+			table.remove(EZ.rainbow_sliders, index)
 		end
 
-		ring3.ImageColor3 = color.Light(uipallet.Main, 0.37)
+		ring3.ImageColor3 = color.Light(ui_pallet.Main, 0.37)
 		task.delay(0.1, function()
 			if self.Rainbow then return end
-			ring2.ImageColor3 = color.Light(uipallet.Main, 0.37)
+			ring2.ImageColor3 = color.Light(ui_pallet.Main, 0.37)
 			task.delay(0.1, function()
 				if self.Rainbow then return end
-				ring1.ImageColor3 = color.Light(uipallet.Main, 0.37)
+				ring1.ImageColor3 = color.Light(ui_pallet.Main, 0.37)
 			end)
 		end)
 	end
@@ -2338,7 +2370,7 @@ colorslider.InputBegan:Connect(function(input)
 		and (input.Position.Y - colorslider.AbsolutePosition.Y) > (20 * scale.Scale)
 	then
 		local releaseConnection
-		local moveConnection = inputService.InputChanged:Connect(function(newInput)
+		local moveConnection = input_service.InputChanged:Connect(function(newInput)
 			if newInput.UserInputType == (input.UserInputType == Enum.UserInputType.MouseButton1 and Enum.UserInputType.MouseMovement or Enum.UserInputType.Touch) then
 				component:SetValue(math.clamp((newInput.Position.X - holder.AbsolutePosition.X) / holder.AbsoluteSize.X, 0, 1))
 			end
@@ -2362,13 +2394,13 @@ colorslider.InputBegan:Connect(function(input)
 end)
 
 colorslider.MouseEnter:Connect(function()
-	tween:Tween(knob, uipallet.Tween, {
+	tween:Tween(knob, ui_pallet.Tween, {
 		Size = UDim2.fromOffset(16, 16)
 	})
 end)
 
 colorslider.MouseLeave:Connect(function()
-	tween:Tween(knob, uipallet.Tween, {
+	tween:Tween(knob, ui_pallet.Tween, {
 		Size = UDim2.fromOffset(14, 14)
 	})
 end)
@@ -2380,11 +2412,11 @@ colorslider:GetPropertyChangedSignal('Visible'):Connect(function()
 end)
 
 expand.MouseEnter:Connect(function()
-	icon.ImageColor3 = color.Dark(uipallet.Text, 0.16)
+	icon.ImageColor3 = color.Dark(ui_pallet.Text, 0.16)
 end)
 
 expand.MouseLeave:Connect(function()
-	icon.ImageColor3 = color.Dark(uipallet.Text, 0.43)
+	icon.ImageColor3 = color.Dark(ui_pallet.Text, 0.43)
 end)
 
 expand.MouseButton1Click:Connect(function()
@@ -2425,7 +2457,7 @@ return component
 -- components\Divider.lua
 local divider = Instance.new('Frame')
 divider.Size = UDim2.new(1, 0, 0, 1)
-divider.BackgroundColor3 = color.Light(uipallet.Main, 0.02)
+divider.BackgroundColor3 = color.Light(ui_pallet.Main, 0.02)
 divider.BorderSizePixel = 0
 divider.Parent = children
 
@@ -2435,9 +2467,9 @@ if props and props.Text then
 	label.BackgroundTransparency = 1
 	label.Text = '          '..props.Text:upper()
 	label.TextXAlignment = Enum.TextXAlignment.Left
-	label.TextColor3 = color.Dark(uipallet.Text, 0.43)
+	label.TextColor3 = color.Dark(ui_pallet.Text, 0.43)
 	label.TextSize = 9
-	label.FontFace = uipallet.Font
+	label.FontFace = ui_pallet.Font
 	label.Parent = children
 	divider.BackgroundTransparency = 1
 	--divider.Position = UDim2.fromOffset(0, 26)
@@ -2462,24 +2494,24 @@ dropdown.Parent = children
 component.Object = dropdown
 addTooltip(dropdown, props.Tooltip or props.Name)
 local holder = Instance.new('Frame')
-holder.BackgroundColor3 = color.Light(uipallet.Main, 0.034)
+holder.BackgroundColor3 = color.Light(ui_pallet.Main, 0.034)
 holder.Position = UDim2.fromOffset(10, 4)
 holder.Size = UDim2.new(1, -20, 1, -11)
 holder.Parent = dropdown
 addCorner(holder, UDim.new(0, 6))
 local button = Instance.new('TextButton')
 button.AutoButtonColor = false
-button.BackgroundColor3 = uipallet.Main
+button.BackgroundColor3 = ui_pallet.Main
 button.Position = UDim2.fromOffset(1, 1)
 button.Size = UDim2.new(1, -2, 1, -2)
 button.Text = ''
 button.Parent = holder
 local title = Instance.new('TextLabel')
 title.BackgroundTransparency = 1
-title.FontFace = uipallet.Font
+title.FontFace = ui_pallet.Font
 title.Size = UDim2.new(1, 0, 0, 29)
 title.Text = '         '..props.Name..' - '..component.Value
-title.TextColor3 = color.Dark(uipallet.Text, 0.16)
+title.TextColor3 = color.Dark(ui_pallet.Text, 0.16)
 title.TextSize = 13
 title.TextTruncate = Enum.TextTruncate.AtEnd
 title.TextXAlignment = Enum.TextXAlignment.Left
@@ -2487,7 +2519,7 @@ title.Parent = button
 addCorner(button, UDim.new(0, 6))
 local arrow = Instance.new('ImageLabel')
 arrow.BackgroundTransparency = 1
-arrow.Image = getvapeasset('newvape/assets/new/expandarrow.png')
+arrow.Image = get_ez_asset('Elite Zone/Assets/expandarrow.png')
 arrow.ImageColor3 = Color3.fromRGB(140, 140, 140)
 arrow.Position = UDim2.new(1, -17, 0, 11)
 arrow.Rotation = 90
@@ -2544,26 +2576,26 @@ button.MouseButton1Click:Connect(function()
 			if v == component.Value then continue end
 			local entry = Instance.new('TextButton')
 			entry.AutoButtonColor = false
-			entry.BackgroundColor3 = uipallet.Main
+			entry.BackgroundColor3 = ui_pallet.Main
 			entry.BorderSizePixel = 0
-			entry.FontFace = uipallet.Font
+			entry.FontFace = ui_pallet.Font
 			entry.Position = UDim2.fromOffset(0, index * 26)
 			entry.Size = UDim2.new(1, 0, 0, 26)
 			entry.Text = '         '..v
-			entry.TextColor3 = color.Dark(uipallet.Text, 0.16)
+			entry.TextColor3 = color.Dark(ui_pallet.Text, 0.16)
 			entry.TextSize = 13
 			entry.TextTruncate = Enum.TextTruncate.AtEnd
 			entry.TextXAlignment = Enum.TextXAlignment.Left
 			entry.Parent = dropdownchildren
 
 			entry.MouseEnter:Connect(function()
-				entry.BackgroundColor3 = color.Light(uipallet.Main, 0.02)
-				entry.TextColor3 = uipallet.Text
+				entry.BackgroundColor3 = color.Light(ui_pallet.Main, 0.02)
+				entry.TextColor3 = ui_pallet.Text
 			end)
 
 			entry.MouseLeave:Connect(function()
-				entry.BackgroundColor3 = uipallet.Main
-				entry.TextColor3 = color.Dark(uipallet.Text, 0.16)
+				entry.BackgroundColor3 = ui_pallet.Main
+				entry.TextColor3 = color.Dark(ui_pallet.Text, 0.16)
 			end)
 
 			entry.MouseButton1Click:Connect(function()
@@ -2578,14 +2610,14 @@ button.MouseButton1Click:Connect(function()
 end)
 
 dropdown.MouseEnter:Connect(function()
-	tween:Tween(holder, uipallet.Tween, {
-		BackgroundColor3 = color.Light(uipallet.Main, 0.0875)
+	tween:Tween(holder, ui_pallet.Tween, {
+		BackgroundColor3 = color.Light(ui_pallet.Main, 0.0875)
 	})
 end)
 
 dropdown.MouseLeave:Connect(function()
-	tween:Tween(holder, uipallet.Tween, {
-		BackgroundColor3 = color.Light(uipallet.Main, 0.034)
+	tween:Tween(holder, ui_pallet.Tween, {
+		BackgroundColor3 = color.Light(ui_pallet.Main, 0.034)
 	})
 end)
 
@@ -2663,26 +2695,26 @@ local component = {
 
 local window = Instance.new('TextButton')
 window.AutoButtonColor = false
-window.BackgroundColor3 = color.Dark(uipallet.Main, 0.02)
+window.BackgroundColor3 = color.Dark(ui_pallet.Main, 0.02)
 window.Name = 'GUICategory'
 window.Position = UDim2.fromOffset(6, 60)
 window.Text = ''
-window.Parent = clickgui
+window.Parent = click_gui
 component.Object = window
 addBlur(window)
 addCorner(window)
 addDragHandler(window)
 local logo = Instance.new('ImageLabel')
 logo.BackgroundTransparency = 1
-logo.Image = getvapeasset('newvape/assets/new/vapelogomini.png')
-logo.ImageColor3 = select(3, uipallet.Main:ToHSV()) > 0.5 and uipallet.Text or Color3.new(1, 1, 1)
+logo.Image = get_ez_asset('Elite Zone/Assets/vapelogomini.png')
+logo.ImageColor3 = select(3, ui_pallet.Main:ToHSV()) > 0.5 and ui_pallet.Text or Color3.new(1, 1, 1)
 logo.Name = 'VapeLogo'
 logo.Position = UDim2.fromOffset(12, 11)
 logo.Size = UDim2.fromOffset(55, 16)
 logo.Parent = window
 local v4logo = Instance.new('ImageLabel')
 v4logo.BackgroundTransparency = 1
-v4logo.Image = getvapeasset('newvape/assets/new/v4mini.png')
+v4logo.Image = get_ez_asset('Elite Zone/Assets/v4mini.png')
 v4logo.Name = 'V4Logo'
 v4logo.Position = UDim2.new(1, -1, 0, 0)
 v4logo.Size = UDim2.fromOffset(23, 16)
@@ -2705,14 +2737,14 @@ settingsbutton.Parent = window
 addTooltip(settingsbutton, 'Open settings')
 local settingsicon = Instance.new('ImageLabel')
 settingsicon.BackgroundTransparency = 1
-settingsicon.Image = getvapeasset('newvape/assets/new/settings.png')
-settingsicon.ImageColor3 = color.Light(uipallet.Main, 0.37)
+settingsicon.Image = get_ez_asset('Elite Zone/Assets/settings.png')
+settingsicon.ImageColor3 = color.Light(ui_pallet.Main, 0.37)
 settingsicon.Position = UDim2.fromOffset(15, 12)
 settingsicon.Size = UDim2.fromOffset(14, 14)
 settingsicon.Parent = settingsbutton
 local discord = Instance.new('ImageButton')
 discord.BackgroundTransparency = 1
-discord.Image = getvapeasset('newvape/assets/new/discord.png')
+discord.Image = get_ez_asset('Elite Zone/Assets/discord.png')
 discord.Position = UDim2.new(1, -56, 0, 11)
 discord.Size = UDim2.fromOffset(16, 16)
 discord.Parent = window
@@ -2733,7 +2765,7 @@ function component:Color(hue, sat, val, isRainbow)
 
 	for _, button in self.Buttons do
 		if button.Enabled then
-			button.Object.TextColor3 = isRainbow and Color3.fromHSV(vape:Color((hue - (button.Index * 0.025)) % 1)) or Color3.fromHSV(hue, sat, val)
+			button.Object.TextColor3 = isRainbow and Color3.fromHSV(EZ:Color((hue - (button.Index * 0.025)) % 1)) or Color3.fromHSV(hue, sat, val)
 
 			if button.Icon then
 				button.Icon.ImageColor3 = button.Object.TextColor3
@@ -2744,7 +2776,7 @@ end
 
 function component:Load(data)
 	for name, paneData in data.Settings do
-		local pane = vape.Settings[name]
+		local pane = EZ.Settings[name]
 		if pane then
 			pane:Load(paneData)
 		end
@@ -2764,7 +2796,7 @@ function component:Save(data)
 		Settings = {}
 	}
 
-	for name, pane in vape.Settings do
+	for name, pane in EZ.Settings do
 		pane:Save(data.Main.Settings)
 	end
 end
@@ -2777,8 +2809,8 @@ end
 
 discord.MouseButton1Click:Connect(function()
 	task.spawn(function()
-		local body = httpService:JSONEncode({
-			nonce = httpService:GenerateGUID(false),
+		local body = http_service:JSONEncode({
+			nonce = http_service:GenerateGUID(false),
 			args = {
 				invite = {code = 'VZEQJxMSnG'},
 				code = 'VZEQJxMSnG'
@@ -2810,11 +2842,11 @@ discord.MouseButton1Click:Connect(function()
 end)
 
 settingsbutton.MouseEnter:Connect(function()
-	settingsicon.ImageColor3 = uipallet.Text
+	settingsicon.ImageColor3 = ui_pallet.Text
 end)
 
 settingsbutton.MouseLeave:Connect(function()
-	settingsicon.ImageColor3 = color.Light(uipallet.Main, 0.37)
+	settingsicon.ImageColor3 = color.Light(ui_pallet.Main, 0.37)
 end)
 
 settingsbutton.MouseButton1Click:Connect(function()
@@ -2822,7 +2854,7 @@ settingsbutton.MouseButton1Click:Connect(function()
 end)
 
 windowlist:GetPropertyChangedSignal('AbsoluteContentSize'):Connect(function()
-	if vape.ThreadFix then
+	if EZ.thread_fix then
 		setthreadidentity(8)
 	end
 
@@ -2834,7 +2866,7 @@ windowlist:GetPropertyChangedSignal('AbsoluteContentSize'):Connect(function()
 	end
 end)
 
-vape.Categories.Main = component
+EZ.Categories.Main = component
 
 return component
 
@@ -2847,13 +2879,13 @@ local component = {
 
 local button = Instance.new('TextButton')
 button.AutoButtonColor = false
-button.BackgroundColor3 = uipallet.Main
+button.BackgroundColor3 = ui_pallet.Main
 button.BorderSizePixel = 0
-button.FontFace = uipallet.Font
+button.FontFace = ui_pallet.Font
 button.Name = props.Name
 button.Size = UDim2.fromOffset(220, 40)
 button.Text = (props.Icon and string.rep(' ', 39) or props.Window and string.rep(' ', 17) or string.rep(' ', 10))..props.Name
-button.TextColor3 = color.Dark(uipallet.Text, 0.16)
+button.TextColor3 = color.Dark(ui_pallet.Text, 0.16)
 button.TextSize = 14
 button.TextXAlignment = Enum.TextXAlignment.Left
 button.Parent = children
@@ -2864,7 +2896,7 @@ if props.Icon then
 	icon = Instance.new('ImageLabel')
 	icon.BackgroundTransparency = 1
 	icon.Image = props.Icon
-	icon.ImageColor3 = color.Dark(uipallet.Text, 0.16)
+	icon.ImageColor3 = color.Dark(ui_pallet.Text, 0.16)
 	icon.Position = UDim2.fromOffset(16, 13)
 	icon.Size = props.Size
 	icon.Parent = button
@@ -2874,22 +2906,22 @@ end
 if props.Name == 'Profiles' then
 	local label = Instance.new('TextLabel')
 	label.AnchorPoint = Vector2.new(1, 0)
-	label.BackgroundColor3 = color.Light(uipallet.Main, 0.04)
-	label.FontFace = uipallet.Font
+	label.BackgroundColor3 = color.Light(ui_pallet.Main, 0.04)
+	label.FontFace = ui_pallet.Font
 	label.Position = UDim2.new(1, -36, 0, 8)
 	label.Size = UDim2.fromOffset(53, 24)
 	label.Text = 'default'
-	label.TextColor3 = color.Dark(uipallet.Text, 0.29)
+	label.TextColor3 = color.Dark(ui_pallet.Text, 0.29)
 	label.TextSize = 12
 	label.Parent = button
 	addCorner(label)
-	vape.ProfileLabel = label
+	EZ.ProfileLabel = label
 end
 
 local arrow = Instance.new('ImageLabel')
 arrow.BackgroundTransparency = 1
-arrow.Image = getvapeasset('newvape/assets/new/expandarrow.png')
-arrow.ImageColor3 = color.Light(uipallet.Main, 0.37)
+arrow.Image = get_ez_asset('Elite Zone/Assets/expandarrow.png')
+arrow.ImageColor3 = color.Light(ui_pallet.Main, 0.37)
 arrow.Name = 'Arrow'
 arrow.Position = UDim2.new(1, -20, 0, 16)
 arrow.Size = UDim2.fromOffset(4, 8)
@@ -2903,16 +2935,16 @@ end
 function component:Toggle()
 	if props.Window then
 		self.Enabled = not self.Enabled
-		tween:Tween(arrow, uipallet.Tween, {
+		tween:Tween(arrow, ui_pallet.Tween, {
 			Position = UDim2.new(1, self.Enabled and -14 or -20, 0, 16)
 		})
 
-		button.TextColor3 = self.Enabled and Color3.fromHSV(vape.GUIColor.Hue, vape.GUIColor.Sat, vape.GUIColor.Value) or uipallet.Text
+		button.TextColor3 = self.Enabled and Color3.fromHSV(EZ.gui_color.Hue, EZ.gui_color.Sat, EZ.gui_color.Value) or ui_pallet.Text
 		if icon then
 			icon.ImageColor3 = button.TextColor3
 		end
 
-		button.BackgroundColor3 = color.Light(uipallet.Main, 0.02)
+		button.BackgroundColor3 = color.Light(ui_pallet.Main, 0.02)
 		props.Window.Visible = self.Enabled
 	else
 		props.Function()
@@ -2921,23 +2953,23 @@ end
 
 button.MouseEnter:Connect(function()
 	if not component.Enabled then
-		button.TextColor3 = uipallet.Text
+		button.TextColor3 = ui_pallet.Text
 		if buttonicon then
-			buttonicon.ImageColor3 = uipallet.Text
+			buttonicon.ImageColor3 = ui_pallet.Text
 		end
 
-		button.BackgroundColor3 = color.Light(uipallet.Main, 0.02)
+		button.BackgroundColor3 = color.Light(ui_pallet.Main, 0.02)
 	end
 end)
 
 button.MouseLeave:Connect(function()
 	if not component.Enabled then
-		button.TextColor3 = color.Dark(uipallet.Text, 0.16)
+		button.TextColor3 = color.Dark(ui_pallet.Text, 0.16)
 		if buttonicon then
-			buttonicon.ImageColor3 = color.Dark(uipallet.Text, 0.16)
+			buttonicon.ImageColor3 = color.Dark(ui_pallet.Text, 0.16)
 		end
 
-		button.BackgroundColor3 = uipallet.Main
+		button.BackgroundColor3 = ui_pallet.Main
 	end
 end)
 
@@ -2982,7 +3014,7 @@ local function createSlider(name, gradientColor)
 	local slider = Instance.new('TextButton')
 	slider.Name = props.Name..'Slider'..name
 	slider.Size = UDim2.fromOffset(220, 50)
-	slider.BackgroundColor3 = color.Dark(uipallet.Main, 0.02)
+	slider.BackgroundColor3 = color.Dark(ui_pallet.Main, 0.02)
 	slider.BorderSizePixel = 0
 	slider.AutoButtonColor = false
 	slider.Visible = false
@@ -2990,11 +3022,11 @@ local function createSlider(name, gradientColor)
 	slider.Parent = children
 	local title = Instance.new('TextLabel')
 	title.BackgroundTransparency = 1
-	title.FontFace = uipallet.Font
+	title.FontFace = ui_pallet.Font
 	title.Position = UDim2.fromOffset(10, 2)
 	title.Size = UDim2.fromOffset(60, 30)
 	title.Text = name
-	title.TextColor3 = color.Dark(uipallet.Text, 0.16)
+	title.TextColor3 = color.Dark(ui_pallet.Text, 0.16)
 	title.TextSize = 11
 	title.TextXAlignment = Enum.TextXAlignment.Left
 	title.Parent = slider
@@ -3022,7 +3054,7 @@ local function createSlider(name, gradientColor)
 	knobholder.Parent = fill
 	local knob = Instance.new('Frame')
 	knob.AnchorPoint = Vector2.new(0.5, 0.5)
-	knob.BackgroundColor3 = uipallet.Text
+	knob.BackgroundColor3 = ui_pallet.Text
 	knob.Position = UDim2.fromScale(0.5, 0.5)
 	knob.Size = UDim2.fromOffset(14, 14)
 	knob.Parent = knobholder
@@ -3031,11 +3063,11 @@ local function createSlider(name, gradientColor)
 	if name == 'Custom color' then
 		local reset = Instance.new('TextButton')
 		reset.BackgroundTransparency = 1
-		reset.FontFace = uipallet.Font
+		reset.FontFace = ui_pallet.Font
 		reset.Position = UDim2.new(1, -52, 0, 5)
 		reset.Size = UDim2.fromOffset(45, 20)
 		reset.Text = 'RESET'
-		reset.TextColor3 = color.Dark(uipallet.Text, 0.16)
+		reset.TextColor3 = color.Dark(ui_pallet.Text, 0.16)
 		reset.TextSize = 11
 		reset.Parent = slider
 
@@ -3050,7 +3082,7 @@ local function createSlider(name, gradientColor)
 			and (input.Position.Y - slider.AbsolutePosition.Y) > (20 * scale.Scale)
 		then
 			local releaseConnection
-			local moveConnection = inputService.InputChanged:Connect(function(newInput)
+			local moveConnection = input_service.InputChanged:Connect(function(newInput)
 				if newInput.UserInputType == (input.UserInputType == Enum.UserInputType.MouseButton1 and Enum.UserInputType.MouseMovement or Enum.UserInputType.Touch) then
 					local value = math.clamp((newInput.Position.X - holder.AbsolutePosition.X) / holder.AbsoluteSize.X, 0, 1)
 					component:SetValue(
@@ -3072,13 +3104,13 @@ local function createSlider(name, gradientColor)
 	end)
 
 	slider.MouseEnter:Connect(function()
-		tween:Tween(knob, uipallet.Tween, {
+		tween:Tween(knob, ui_pallet.Tween, {
 			Size = UDim2.fromOffset(16, 16)
 		})
 	end)
 
 	slider.MouseLeave:Connect(function()
-		tween:Tween(knob, uipallet.Tween, {
+		tween:Tween(knob, ui_pallet.Tween, {
 			Size = UDim2.fromOffset(14, 14)
 		})
 	end)
@@ -3096,12 +3128,12 @@ slider.Parent = children
 component.Object = slider
 local title = Instance.new('TextLabel')
 title.BackgroundTransparency = 1
-title.FontFace = uipallet.Font
+title.FontFace = ui_pallet.Font
 title.Name = 'Title'
 title.Position = UDim2.fromOffset(10, 2)
 title.Size = UDim2.fromOffset(60, 30)
 title.Text = props.Name
-title.TextColor3 = color.Dark(uipallet.Text, 0.16)
+title.TextColor3 = color.Dark(ui_pallet.Text, 0.16)
 title.TextSize = 11
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.Parent = slider
@@ -3124,32 +3156,32 @@ for index, colorValue in colors do
 end
 local preview = Instance.new('ImageButton')
 preview.BackgroundTransparency = 1
-preview.Image = getvapeasset('newvape/assets/new/colorpreview.png')
+preview.Image = get_ez_asset('Elite Zone/Assets/colorpreview.png')
 preview.ImageColor3 = Color3.fromHSV(component.Hue, component.Sat, component.Value)
 preview.Position = UDim2.new(1, -22, 0, 10)
 preview.Size = UDim2.fromOffset(12, 12)
 preview.Parent = slider
 local custombox = Instance.new('TextBox')
 custombox.BackgroundTransparency = 1
-custombox.FontFace = uipallet.Font
+custombox.FontFace = ui_pallet.Font
 custombox.Position = UDim2.new(1, -69, 0, 9)
 custombox.Size = UDim2.fromOffset(60, 15)
 custombox.Text = ''
-custombox.TextColor3 = color.Dark(uipallet.Text, 0.16)
+custombox.TextColor3 = color.Dark(ui_pallet.Text, 0.16)
 custombox.TextSize = 11
 custombox.TextXAlignment = Enum.TextXAlignment.Right
 custombox.Visible = false
 custombox.Parent = slider
 local expand = Instance.new('TextButton')
 expand.BackgroundTransparency = 1
-expand.Position = UDim2.new(0, getfontbounds(title.Text, title.TextSize, title.Font).X + 11, 0, 7)
+expand.Position = UDim2.new(0, get_font_bounds(title.Text, title.TextSize, title.Font).X + 11, 0, 7)
 expand.Size = UDim2.fromOffset(17, 13)
 expand.Text = ''
 expand.Parent = slider
 local icon = Instance.new('ImageLabel')
 icon.BackgroundTransparency = 1
-icon.Image = getvapeasset('newvape/assets/new/downexpandslider.png')
-icon.ImageColor3 = color.Dark(uipallet.Text, 0.43)
+icon.Image = get_ez_asset('Elite Zone/Assets/downexpandslider.png')
+icon.ImageColor3 = color.Dark(ui_pallet.Text, 0.43)
 icon.Position = UDim2.fromOffset(4, 4)
 icon.Size = UDim2.fromOffset(10, 5)
 icon.Parent = expand
@@ -3161,22 +3193,22 @@ rainbow.Text = ''
 rainbow.Parent = slider
 local ring1 = Instance.new('ImageLabel')
 ring1.BackgroundTransparency = 1
-ring1.Image = getvapeasset('newvape/assets/new/rainbow_1.png')
-ring1.ImageColor3 = color.Light(uipallet.Main, 0.37)
+ring1.Image = get_ez_asset('Elite Zone/Assets/rainbow_1.png')
+ring1.ImageColor3 = color.Light(ui_pallet.Main, 0.37)
 ring1.Size = UDim2.fromOffset(12, 12)
 ring1.Parent = rainbow
 local ring2 = Instance.fromExisting(ring1)
-ring2.Image = getvapeasset('newvape/assets/new/rainbow_2.png')
+ring2.Image = get_ez_asset('Elite Zone/Assets/rainbow_2.png')
 ring2.Parent = rainbow
 local ring3 = Instance.fromExisting(ring1)
-ring3.Image = getvapeasset('newvape/assets/new/rainbow_3.png')
+ring3.Image = get_ez_asset('Elite Zone/Assets/rainbow_3.png')
 ring3.Parent = rainbow
 local ring4 = Instance.fromExisting(ring1)
-ring4.Image = getvapeasset('newvape/assets/new/rainbow_4.png')
+ring4.Image = get_ez_asset('Elite Zone/Assets/rainbow_4.png')
 ring4.Parent = rainbow
 local knob = Instance.new('ImageLabel')
 knob.BackgroundTransparency = 1
-knob.Image = getvapeasset('newvape/assets/new/theme.png')
+knob.Image = get_ez_asset('Elite Zone/Assets/theme.png')
 knob.ImageColor3 = colors[4]
 knob.Name = 'Knob'
 knob.Position = UDim2.fromOffset(colorPositions[4] - 3, -5)
@@ -3199,8 +3231,8 @@ local vibSlider = createSlider('Vibrance', ColorSequence.new({
 	ColorSequenceKeypoint.new(1, Color3.fromHSV(component.Hue, component.Sat, 1))
 }))
 
-local normalknob = getvapeasset('newvape/assets/new/theme.png')
-local rainbowknob = getvapeasset('newvape/assets/new/customtheme.png')
+local normalknob = get_ez_asset('Elite Zone/Assets/theme.png')
+local rainbowknob = get_ez_asset('Elite Zone/Assets/customtheme.png')
 local rainbowthread
 local currentNotch
 
@@ -3261,7 +3293,7 @@ function component:SetValue(h, s, v, n)
 		knob.ImageColor3 = Color3.new(1, 1, 1)
 
 		if newNotch ~= currentNotch then
-			tween:Tween(knob, uipallet.Tween, {
+			tween:Tween(knob, ui_pallet.Tween, {
 				Position = UDim2.fromOffset(colorPositions[4] - 3, -5)
 			})
 		end
@@ -3270,7 +3302,7 @@ function component:SetValue(h, s, v, n)
 		knob.ImageColor3 = Color3.fromHSV(self.Hue, self.Sat, self.Value)
 
 		if newNotch ~= currentNotch then
-			tween:Tween(knob, uipallet.Tween, {
+			tween:Tween(knob, ui_pallet.Tween, {
 				Position = UDim2.fromOffset(colorPositions[n or 4] - 3, -5)
 			})
 		end
@@ -3291,19 +3323,19 @@ function component:SetValue(h, s, v, n)
 		end
 	else
 		if h then
-			tween:Tween(colorSlider.Holder.Fill, uipallet.Tween, {
+			tween:Tween(colorSlider.Holder.Fill, ui_pallet.Tween, {
 				Size = UDim2.fromScale(math.clamp(self.Hue, 0.04, 0.96), 1)
 			})
 		end
 
 		if s then
-			tween:Tween(satSlider.Holder.Fill, uipallet.Tween, {
+			tween:Tween(satSlider.Holder.Fill, ui_pallet.Tween, {
 				Size = UDim2.fromScale(math.clamp(self.Sat, 0.04, 0.96), 1)
 			})
 		end
 
 		if v then
-			tween:Tween(vibSlider.Holder.Fill, uipallet.Tween, {
+			tween:Tween(vibSlider.Holder.Fill, ui_pallet.Tween, {
 				Size = UDim2.fromScale(math.clamp(self.Value, 0.04, 0.96), 1)
 			})
 		end
@@ -3320,7 +3352,7 @@ function component:Toggle()
 
 	if self.Rainbow then
 		knob.Image = rainbowknob
-		table.insert(vape.RainbowSliders, self)
+		table.insert(EZ.rainbow_sliders, self)
 
 		ring1.ImageColor3 = Color3.fromRGB(5, 127, 100)
 		rainbowthread = task.delay(0.1, function()
@@ -3333,16 +3365,16 @@ function component:Toggle()
 	else
 		self:SetValue(nil, nil, nil, 4)
 		knob.Image = normalknob
-		local index = table.find(vape.RainbowSliders, self)
+		local index = table.find(EZ.rainbow_sliders, self)
 		if index then
-			table.remove(vape.RainbowSliders, index)
+			table.remove(EZ.rainbow_sliders, index)
 		end
 
-		ring3.ImageColor3 = color.Light(uipallet.Main, 0.37)
+		ring3.ImageColor3 = color.Light(ui_pallet.Main, 0.37)
 		rainbowthread = task.delay(0.1, function()
-			ring2.ImageColor3 = color.Light(uipallet.Main, 0.37)
+			ring2.ImageColor3 = color.Light(ui_pallet.Main, 0.37)
 			rainbowthread = task.delay(0.1, function()
-				ring1.ImageColor3 = color.Light(uipallet.Main, 0.37)
+				ring1.ImageColor3 = color.Light(ui_pallet.Main, 0.37)
 				rainbowthread = nil
 			end)
 		end)
@@ -3350,11 +3382,11 @@ function component:Toggle()
 end
 
 expand.MouseEnter:Connect(function()
-	icon.ImageColor3 = color.Dark(uipallet.Text, 0.16)
+	icon.ImageColor3 = color.Dark(ui_pallet.Text, 0.16)
 end)
 
 expand.MouseLeave:Connect(function()
-	icon.ImageColor3 = color.Dark(uipallet.Text, 0.43)
+	icon.ImageColor3 = color.Dark(ui_pallet.Text, 0.43)
 end)
 
 expand.MouseButton1Click:Connect(function()
@@ -3378,7 +3410,7 @@ slider.InputBegan:Connect(function(input)
 		and (input.Position.Y - slider.AbsolutePosition.Y) > (20 * scale.Scale)
 	then
 		local releaseConnection
-		local moveConnection = inputService.InputChanged:Connect(function(newInput)
+		local moveConnection = input_service.InputChanged:Connect(function(newInput)
 			if newInput.UserInputType == (input.UserInputType == Enum.UserInputType.MouseButton1 and Enum.UserInputType.MouseMovement or Enum.UserInputType.Touch) then
 				component:SetValue(nil, nil, nil, math.clamp(math.round((newInput.Position.X - holder.AbsolutePosition.X) / scale.Scale / 27), 1, 7))
 			end
@@ -3435,10 +3467,10 @@ local toggle = Instance.new('TextButton')
 toggle.AutoButtonColor = false
 toggle.BackgroundColor3 = color.Dark(children.BackgroundColor3, props.Darker and 0.02 or 0)
 toggle.BorderSizePixel = 0
-toggle.FontFace = uipallet.Font
+toggle.FontFace = ui_pallet.Font
 toggle.Size = UDim2.new(1, 0, 0, 40)
 toggle.Text = string.rep(' ', 33 * scale.Scale)..props.Name
-toggle.TextColor3 = color.Dark(uipallet.Text, 0.16)
+toggle.TextColor3 = color.Dark(ui_pallet.Text, 0.16)
 toggle.TextSize = 14
 toggle.TextXAlignment = Enum.TextXAlignment.Left
 toggle.Visible = props.Visible == nil or props.Visible
@@ -3447,20 +3479,20 @@ component.Object = toggle
 local icon = Instance.new('ImageLabel')
 icon.BackgroundTransparency = 1
 icon.Image = props.Icon
-icon.ImageColor3 = uipallet.Text
+icon.ImageColor3 = ui_pallet.Text
 icon.Name = 'Icon'
 icon.Position = props.Position
 icon.Size = props.Size
 icon.Parent = toggle
 local holder = Instance.new('Frame')
-holder.BackgroundColor3 = color.Light(uipallet.Main, 0.14)
+holder.BackgroundColor3 = color.Light(ui_pallet.Main, 0.14)
 holder.Name = 'Knob'
 holder.Position = UDim2.new(1, -30, 0, 14)
 holder.Size = UDim2.fromOffset(22, 12)
 holder.Parent = toggle
 addCorner(holder, UDim.new(1, 0))
 local knob = Instance.new('Frame')
-knob.BackgroundColor3 = uipallet.Main
+knob.BackgroundColor3 = ui_pallet.Main
 knob.Position = UDim2.fromOffset(2, 2)
 knob.Size = UDim2.fromOffset(8, 8)
 knob.Parent = holder
@@ -3470,19 +3502,19 @@ props.Function = props.Function or function() end
 function component:Color(hue, sat, val, isRainbow)
 	if self.Enabled then
 		tween:Cancel(holder)
-		holder.BackgroundColor3 = isRainbow and Color3.fromHSV(vape:Color((hue - (self.Index * 0.075)) % 1)) or Color3.fromHSV(hue, sat, val)
+		holder.BackgroundColor3 = isRainbow and Color3.fromHSV(EZ:Color((hue - (self.Index * 0.075)) % 1)) or Color3.fromHSV(hue, sat, val)
 	end
 end
 
 function component:Toggle()
-	local isRainbow = vape.GUIColor.Rainbow and vape.RainbowMode.Value ~= 'Retro'
+	local isRainbow = EZ.gui_color.Rainbow and EZ.RainbowMode.Value ~= 'Retro'
 	self.Enabled = not self.Enabled
 
-	tween:Tween(holder, uipallet.Tween, {
-		BackgroundColor3 = self.Enabled and (isRainbow and Color3.fromHSV(vape:Color((vape.GUIColor.Hue - (self.Index * 0.075)) % 1)) or Color3.fromHSV(vape.GUIColor.Hue, vape.GUIColor.Sat, vape.GUIColor.Value)) or (isHover and color.Light(uipallet.Main, 0.37) or color.Light(uipallet.Main, 0.14))
+	tween:Tween(holder, ui_pallet.Tween, {
+		BackgroundColor3 = self.Enabled and (isRainbow and Color3.fromHSV(EZ:Color((EZ.gui_color.Hue - (self.Index * 0.075)) % 1)) or Color3.fromHSV(EZ.gui_color.Hue, EZ.gui_color.Sat, EZ.gui_color.Value)) or (isHover and color.Light(ui_pallet.Main, 0.37) or color.Light(ui_pallet.Main, 0.14))
 	})
 
-	tween:Tween(knob, uipallet.Tween, {
+	tween:Tween(knob, ui_pallet.Tween, {
 		Position = UDim2.fromOffset(self.Enabled and 12 or 2, 2)
 	})
 
@@ -3497,8 +3529,8 @@ toggle.MouseEnter:Connect(function()
 	isHover = true
 
 	if not component.Enabled then
-		tween:Tween(holder, uipallet.Tween, {
-			BackgroundColor3 = color.Light(uipallet.Main, 0.37)
+		tween:Tween(holder, ui_pallet.Tween, {
+			BackgroundColor3 = color.Light(ui_pallet.Main, 0.37)
 		})
 	end
 end)
@@ -3507,8 +3539,8 @@ toggle.MouseLeave:Connect(function()
 	isHover = false
 
 	if not component.Enabled then
-		tween:Tween(holder, uipallet.Tween, {
-			BackgroundColor3 = color.Light(uipallet.Main, 0.14)
+		tween:Tween(holder, ui_pallet.Tween, {
+			BackgroundColor3 = color.Light(ui_pallet.Main, 0.14)
 		})
 	end
 end)
@@ -3526,7 +3558,7 @@ api.Options[props.Name] = component
 return component
 
 -- components\LegitModule.lua
-vape:Remove(props.Name)
+EZ:Remove(props.Name)
 local component = {
 	Enabled = false,
 	Legit = true,
@@ -3537,33 +3569,33 @@ local component = {
 
 local button = Instance.new('TextButton')
 button.AutoButtonColor = false
-button.BackgroundColor3 = color.Light(uipallet.Main, 0.02)
+button.BackgroundColor3 = color.Light(ui_pallet.Main, 0.02)
 button.Name = props.Name
 button.Text = ''
 button.Parent = children
 component.Object = button
 addTooltip(button, props.Tooltip, nil, function()
-	return vape.LegitVisible
+	return EZ.legit_visible
 end)
 addCorner(button)
 local title = Instance.new('TextLabel')
 title.BackgroundTransparency = 1
-title.FontFace = uipallet.Font
+title.FontFace = ui_pallet.Font
 title.Position = UDim2.fromOffset(16, 81)
 title.Size = UDim2.new(1, -16, 0, 20)
 title.Text = props.Name
-title.TextColor3 = color.Dark(uipallet.Text, 0.31)
+title.TextColor3 = color.Dark(ui_pallet.Text, 0.31)
 title.TextSize = 13
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.Parent = button
 local holder = Instance.new('Frame')
-holder.BackgroundColor3 = color.Light(uipallet.Main, 0.14)
+holder.BackgroundColor3 = color.Light(ui_pallet.Main, 0.14)
 holder.Position = UDim2.new(1, -57, 0, 15)
 holder.Size = UDim2.fromOffset(22, 12)
 holder.Parent = button
 addCorner(holder, UDim.new(1, 0))
 local knob = Instance.new('Frame')
-knob.BackgroundColor3 = uipallet.Main
+knob.BackgroundColor3 = ui_pallet.Main
 knob.Position = UDim2.fromOffset(2, 2)
 knob.Size = UDim2.fromOffset(8, 8)
 knob.Parent = holder
@@ -3577,8 +3609,8 @@ dotsbutton.Text = ''
 dotsbutton.Parent = button
 local dots = Instance.new('ImageLabel')
 dots.BackgroundTransparency = 1
-dots.Image = getvapeasset('newvape/assets/new/overlaydots.png')
-dots.ImageColor3 = color.Light(uipallet.Main, 0.37)
+dots.Image = get_ez_asset('Elite Zone/Assets/overlaydots.png')
+dots.ImageColor3 = color.Light(ui_pallet.Main, 0.37)
 dots.Name = 'Dots'
 dots.Position = UDim2.fromOffset(6, 6)
 dots.Size = UDim2.fromOffset(2, 12)
@@ -3597,7 +3629,7 @@ addCorner(shadow)
 local settingspane = Instance.new('TextButton')
 settingspane.Size = UDim2.new(0, 220, 1, 0)
 settingspane.Position = UDim2.fromScale(1, 0)
-settingspane.BackgroundColor3 = uipallet.Main
+settingspane.BackgroundColor3 = ui_pallet.Main
 settingspane.AutoButtonColor = false
 settingspane.Text = ''
 settingspane.Parent = shadow
@@ -3608,21 +3640,21 @@ settingstitle.Position = UDim2.fromOffset(36, 12)
 settingstitle.BackgroundTransparency = 1
 settingstitle.Text = props.Name
 settingstitle.TextXAlignment = Enum.TextXAlignment.Left
-settingstitle.TextColor3 = color.Dark(uipallet.Text, 0.16)
+settingstitle.TextColor3 = color.Dark(ui_pallet.Text, 0.16)
 settingstitle.TextSize = 13
-settingstitle.FontFace = uipallet.Font
+settingstitle.FontFace = ui_pallet.Font
 settingstitle.Parent = settingspane
 local back = Instance.new('ImageButton')
 back.Name = 'Back'
 back.Size = UDim2.fromOffset(16, 16)
 back.Position = UDim2.fromOffset(11, 13)
 back.BackgroundTransparency = 1
-back.Image = getvapeasset('newvape/assets/new/back.png')
-back.ImageColor3 = color.Light(uipallet.Main, 0.37)
+back.Image = get_ez_asset('Elite Zone/Assets/back.png')
+back.ImageColor3 = color.Light(ui_pallet.Main, 0.37)
 back.Parent = settingspane
 addCorner(settingspane)
 local settingschildren = Instance.new('ScrollingFrame')
-settingschildren.BackgroundColor3 = uipallet.Main
+settingschildren.BackgroundColor3 = ui_pallet.Main
 settingschildren.BorderSizePixel = 0
 settingschildren.CanvasSize = UDim2.new()
 settingschildren.Name = 'Children'
@@ -3640,7 +3672,7 @@ if props.Size then
 	modulechildren.Size = props.Size
 	modulechildren.BackgroundTransparency = 1
 	modulechildren.Visible = false
-	modulechildren.Parent = scaledgui
+	modulechildren.Parent = scaled_gui
 	addDragHandler(modulechildren, api.Window)
 	local objectstroke = Instance.new('UIStroke')
 	objectstroke.Color = Color3.fromRGB(5, 134, 105)
@@ -3666,7 +3698,7 @@ function component:Color(hue, sat, val, isRainbow)
 end
 
 function component:Load(data)
-	vape:LoadOptions(self, data.Options)
+	EZ:LoadOptions(self, data.Options)
 
 	if self.Enabled ~= data.Enabled then
 		self:Toggle()
@@ -3680,7 +3712,7 @@ end
 function component:Save(data)
 	data[props.Name] = {
 		Enabled = self.Enabled,
-		Options = vape:SaveOptions(self),
+		Options = EZ:SaveOptions(self),
 		Position = self.Children and {
 			X = self.Children.Position.X.Offset,
 			Y = self.Children.Position.Y.Offset
@@ -3694,14 +3726,14 @@ function component:Toggle()
 		self.Children.Visible = self.Enabled
 	end
 
-	title.TextColor3 = self.Enabled and color.Light(uipallet.Text, 0.2) or color.Dark(uipallet.Text, 0.31)
-	button.BackgroundColor3 = self.Enabled and color.Light(uipallet.Main, 0.05) or button.BackgroundColor3
+	title.TextColor3 = self.Enabled and color.Light(ui_pallet.Text, 0.2) or color.Dark(ui_pallet.Text, 0.31)
+	button.BackgroundColor3 = self.Enabled and color.Light(ui_pallet.Main, 0.05) or button.BackgroundColor3
 
-	tween:Tween(holder, uipallet.Tween, {
-		BackgroundColor3 = self.Enabled and Color3.fromHSV(vape.GUIColor.Hue, vape.GUIColor.Sat, vape.GUIColor.Value) or color.Light(uipallet.Main, 0.14)
+	tween:Tween(holder, ui_pallet.Tween, {
+		BackgroundColor3 = self.Enabled and Color3.fromHSV(EZ.gui_color.Hue, EZ.gui_color.Sat, EZ.gui_color.Value) or color.Light(ui_pallet.Main, 0.14)
 	})
 
-	tween:Tween(knob, uipallet.Tween, {
+	tween:Tween(knob, ui_pallet.Tween, {
 		Position = UDim2.fromOffset(self.Enabled and 12 or 2, 2)
 	})
 
@@ -3722,19 +3754,19 @@ for index, comp in components do
 end
 
 back.MouseEnter:Connect(function()
-	back.ImageColor3 = uipallet.Text
+	back.ImageColor3 = ui_pallet.Text
 end)
 
 back.MouseLeave:Connect(function()
-	back.ImageColor3 = color.Light(uipallet.Main, 0.37)
+	back.ImageColor3 = color.Light(ui_pallet.Main, 0.37)
 end)
 
 back.MouseButton1Click:Connect(function()
-	tween:Tween(shadow, uipallet.Tween, {
+	tween:Tween(shadow, ui_pallet.Tween, {
 		BackgroundTransparency = 1
 	})
 
-	tween:Tween(settingspane, uipallet.Tween, {
+	tween:Tween(settingspane, ui_pallet.Tween, {
 		Position = UDim2.fromScale(1, 0)
 	})
 
@@ -3745,13 +3777,13 @@ end)
 
 button.MouseEnter:Connect(function()
 	if not component.Enabled then
-		button.BackgroundColor3 = color.Light(uipallet.Main, 0.05)
+		button.BackgroundColor3 = color.Light(ui_pallet.Main, 0.05)
 	end
 end)
 
 button.MouseLeave:Connect(function()
 	if not component.Enabled then
-		button.BackgroundColor3 = color.Light(uipallet.Main, 0.02)
+		button.BackgroundColor3 = color.Light(ui_pallet.Main, 0.02)
 	end
 end)
 
@@ -3762,11 +3794,11 @@ end)
 button.MouseButton2Click:Connect(function()
 	shadow.Visible = true
 
-	tween:Tween(shadow, uipallet.Tween, {
+	tween:Tween(shadow, ui_pallet.Tween, {
 		BackgroundTransparency = 0.5
 	})
 
-	tween:Tween(settingspane, uipallet.Tween, {
+	tween:Tween(settingspane, ui_pallet.Tween, {
 		Position = UDim2.new(1, -220, 0, 0)
 	})
 end)
@@ -3774,29 +3806,29 @@ end)
 dotsbutton.MouseButton1Click:Connect(function()
 	shadow.Visible = true
 
-	tween:Tween(shadow, uipallet.Tween, {
+	tween:Tween(shadow, ui_pallet.Tween, {
 		BackgroundTransparency = 0.5
 	})
 
-	tween:Tween(settingspane, uipallet.Tween, {
+	tween:Tween(settingspane, ui_pallet.Tween, {
 		Position = UDim2.new(1, -220, 0, 0)
 	})
 end)
 
 dotsbutton.MouseEnter:Connect(function()
-	dots.ImageColor3 = uipallet.Text
+	dots.ImageColor3 = ui_pallet.Text
 end)
 
 dotsbutton.MouseLeave:Connect(function()
-	dots.ImageColor3 = color.Light(uipallet.Main, 0.37)
+	dots.ImageColor3 = color.Light(ui_pallet.Main, 0.37)
 end)
 
 shadow.MouseButton1Click:Connect(function()
-	tween:Tween(shadow, uipallet.Tween, {
+	tween:Tween(shadow, ui_pallet.Tween, {
 		BackgroundTransparency = 1
 	})
 
-	tween:Tween(settingspane, uipallet.Tween, {
+	tween:Tween(settingspane, ui_pallet.Tween, {
 		Position = UDim2.fromScale(1, 0)
 	})
 
@@ -3807,11 +3839,11 @@ end)
 
 shadow:GetPropertyChangedSignal('Visible'):Connect(function()
 	tooltip.Visible = false
-	vape.LegitVisible = shadow.Visible
+	EZ.legit_visible = shadow.Visible
 end)
 
 windowlist:GetPropertyChangedSignal('AbsoluteContentSize'):Connect(function()
-	if vape.ThreadFix then
+	if EZ.thread_fix then
 		setthreadidentity(8)
 	end
 
@@ -3838,13 +3870,13 @@ local component = {
 }
 
 local window = Instance.new('Frame')
-window.BackgroundColor3 = uipallet.Main
+window.BackgroundColor3 = ui_pallet.Main
 window.Position = UDim2.new(0.5, -350, 0.5, -190)
 window.Size = UDim2.fromOffset(700, 380)
 window.Name = 'LegitGUI'
 window.Visible = false
-window.Parent = scaledgui
-table.insert(vape.Windows, window)
+window.Parent = scaled_gui
+table.insert(EZ.Windows, window)
 component.Window = window
 addBlur(window)
 addCorner(window)
@@ -3856,44 +3888,44 @@ modal.Text = ''
 modal.Parent = window
 local icon = Instance.new('ImageLabel')
 icon.BackgroundTransparency = 1
-icon.Image = getvapeasset('newvape/assets/new/legit_mode_icon.png')
-icon.ImageColor3 = uipallet.Text
+icon.Image = get_ez_asset('Elite Zone/Assets/legit_mode_icon.png')
+icon.ImageColor3 = ui_pallet.Text
 icon.Position = UDim2.fromOffset(18, 11)
 icon.Size = UDim2.fromOffset(16, 16)
 icon.Parent = window
 local close = Instance.new('ImageButton')
 close.BackgroundTransparency = 1
-close.Image = getvapeasset('newvape/assets/new/min.png')
-close.ImageColor3 = color.Light(uipallet.Main, 0.24)
+close.Image = get_ez_asset('Elite Zone/Assets/min.png')
+close.ImageColor3 = color.Light(ui_pallet.Main, 0.24)
 close.Position = UDim2.new(1, -31, 0, 11)
 close.Size = UDim2.fromOffset(16, 16)
 close.Parent = window
 local holder = Instance.new('Frame')
-holder.BackgroundColor3 = color.Dark(uipallet.Main, 0.02)
+holder.BackgroundColor3 = color.Dark(ui_pallet.Main, 0.02)
 holder.Position = UDim2.new(1, -253, 0, 42)
 holder.Size = UDim2.fromOffset(242, 29)
 holder.Parent = window
 addCorner(holder, UDim.new(0, 4))
 local stroke = Instance.new('UIStroke')
-stroke.Color = color.Light(uipallet.Main, 0.02)
+stroke.Color = color.Light(ui_pallet.Main, 0.02)
 stroke.Parent = holder
 local searchicon = Instance.new('ImageLabel')
 searchicon.BackgroundTransparency = 1
-searchicon.Image = getvapeasset('newvape/assets/new/search.png')
-searchicon.ImageColor3 = color.Light(uipallet.Main, 0.42)
+searchicon.Image = get_ez_asset('Elite Zone/Assets/search.png')
+searchicon.ImageColor3 = color.Light(ui_pallet.Main, 0.42)
 searchicon.Position = UDim2.new(1, -25, 0, 9)
 searchicon.Size = UDim2.fromOffset(12, 12)
 searchicon.Parent = holder
 local box = Instance.new('TextBox')
 box.BackgroundTransparency = 1
 box.ClearTextOnFocus = false
-box.FontFace = uipallet.Font
-box.PlaceholderColor3 = color.Dark(uipallet.Text, 0.16)
+box.FontFace = ui_pallet.Font
+box.PlaceholderColor3 = color.Dark(ui_pallet.Text, 0.16)
 box.PlaceholderText = 'Search mods'
 box.Position = UDim2.fromOffset(8, 0)
 box.Size = UDim2.new(1, -8, 1, 0)
 box.Text = ''
-box.TextColor3 = color.Dark(uipallet.Text, 0.16)
+box.TextColor3 = color.Dark(ui_pallet.Text, 0.16)
 box.TextSize = 14
 box.TextXAlignment = Enum.TextXAlignment.Left
 box.Parent = holder
@@ -3926,7 +3958,7 @@ end
 local function visibleCheck()
 	for _, module in component.Modules do
 		if module.Children then
-			local visible = clickgui.Visible
+			local visible = click_gui.Visible
 			--[[for _, v2 in self.Windows do
 				visible = visible or v2.Visible
 			end]]
@@ -3944,55 +3976,55 @@ end)
 
 close.MouseButton1Click:Connect(function()
 	window.Visible = false
-	clickgui.Visible = true
+	click_gui.Visible = true
 end)
 
 close.MouseEnter:Connect(function()
-	close.ImageColor3 = color.Light(uipallet.Main, 0.37)
+	close.ImageColor3 = color.Light(ui_pallet.Main, 0.37)
 end)
 
 close.MouseLeave:Connect(function()
-	close.ImageColor3 = color.Light(uipallet.Main, 0.24)
+	close.ImageColor3 = color.Light(ui_pallet.Main, 0.24)
 end)
 
-vape:Clean(clickgui:GetPropertyChangedSignal('Visible'):Connect(visibleCheck))
+EZ:Clean(click_gui:GetPropertyChangedSignal('Visible'):Connect(visibleCheck))
 
 holder.MouseEnter:Connect(function()
-	tween:Tween(stroke, uipallet.Tween, {
-		Color = color.Light(uipallet.Main, 0.0875)
+	tween:Tween(stroke, ui_pallet.Tween, {
+		Color = color.Light(ui_pallet.Main, 0.0875)
 	})
 end)
 
 holder.MouseLeave:Connect(function()
-	tween:Tween(stroke, uipallet.Tween, {
-		Color = color.Light(uipallet.Main, 0.02)
+	tween:Tween(stroke, ui_pallet.Tween, {
+		Color = color.Light(ui_pallet.Main, 0.02)
 	})
 end)
 
 window:GetPropertyChangedSignal('Visible'):Connect(function()
-	vape:UpdateGUI()
+	EZ:UpdateGUI()
 	visibleCheck()
 end)
 
 windowlist:GetPropertyChangedSignal('AbsoluteContentSize'):Connect(function()
-	if vape.ThreadFix then
+	if EZ.thread_fix then
 		setthreadidentity(8)
 	end
 
 	children.CanvasSize = UDim2.fromOffset(0, windowlist.AbsoluteContentSize.Y / scale.Scale)
 end)
 
-vape.Legit = component
+EZ.Legit = component
 
 return component
 
 -- components\Module.lua
-vape:Remove(props.Name)
+EZ:Remove(props.Name)
 local component = {
 	Category = api.Name,
 	Enabled = false,
 	ExtraText = props.ExtraText,
-	Index = getTableSize(vape.Modules),
+	Index = getTableSize(EZ.Modules),
 	Name = props.Name,
 	Options = {},
 	Visible = true
@@ -4001,13 +4033,13 @@ local component = {
 local isHover = false
 local button = Instance.new('TextButton')
 button.AutoButtonColor = false
-button.BackgroundColor3 = uipallet.Main
+button.BackgroundColor3 = ui_pallet.Main
 button.BorderSizePixel = 0
-button.FontFace = uipallet.Font
+button.FontFace = ui_pallet.Font
 button.Name = props.Name
 button.Size = UDim2.fromOffset(220, 40)
 button.Text = string.rep(' ', 12)..props.Name
-button.TextColor3 = color.Dark(uipallet.Text, 0.16)
+button.TextColor3 = color.Dark(ui_pallet.Text, 0.16)
 button.TextSize = 14
 button.TextXAlignment = Enum.TextXAlignment.Left
 button.Parent = children
@@ -4018,7 +4050,7 @@ gradient.Enabled = false
 gradient.Rotation = 90
 gradient.Parent = button
 local modulechildren = Instance.new('Frame')
-modulechildren.BackgroundColor3 = color.Dark(uipallet.Main, 0.02)
+modulechildren.BackgroundColor3 = color.Dark(ui_pallet.Main, 0.02)
 modulechildren.BorderSizePixel = 0
 modulechildren.Name = props.Name..'Children'
 modulechildren.Size = UDim2.new(1, 0, 0, 0)
@@ -4037,8 +4069,8 @@ dotsbutton.Text = ''
 dotsbutton.Parent = button
 local dots = Instance.new('ImageLabel')
 dots.BackgroundTransparency = 1
-dots.Image = getvapeasset('newvape/assets/new/settingdots.png')
-dots.ImageColor3 = color.Light(uipallet.Main, 0.37)
+dots.Image = get_ez_asset('Elite Zone/Assets/settingdots.png')
+dots.ImageColor3 = color.Light(ui_pallet.Main, 0.37)
 dots.Name = 'Dots'
 dots.Position = UDim2.fromOffset(4, 12)
 dots.Size = UDim2.fromOffset(3, 16)
@@ -4054,7 +4086,7 @@ divider.Visible = false
 divider.Parent = button
 local edit = Instance.new('TextButton')
 edit.AutoButtonColor = false
-edit.BackgroundColor3 = color.Dark(uipallet.Main, 0.02)
+edit.BackgroundColor3 = color.Dark(ui_pallet.Main, 0.02)
 edit.BorderSizePixel = 0
 edit.Size = UDim2.fromOffset(40, 40)
 edit.Text = ''
@@ -4076,15 +4108,15 @@ addMaid(component)
 
 function component:Color(hue, sat, val, isRainbow)
 	if self.Enabled then
-		button.BackgroundColor3 = isRainbow and Color3.fromHSV(vape:Color((hue - (self.Index * 0.025)) % 1)) or Color3.fromHSV(hue, sat, val)
-		button.TextColor3 = vape.GUIColor.Rainbow and Color3.new(0.19, 0.19, 0.19) or vape:TextColor(hue, sat, val)
-		button.UIGradient.Enabled = isRainbow and vape.RainbowMode.Value == 'Gradient'
+		button.BackgroundColor3 = isRainbow and Color3.fromHSV(EZ:Color((hue - (self.Index * 0.025)) % 1)) or Color3.fromHSV(hue, sat, val)
+		button.TextColor3 = EZ.gui_color.Rainbow and Color3.new(0.19, 0.19, 0.19) or EZ:TextColor(hue, sat, val)
+		button.UIGradient.Enabled = isRainbow and EZ.RainbowMode.Value == 'Gradient'
 
 		if button.UIGradient.Enabled then
 			button.BackgroundColor3 = Color3.new(1, 1, 1)
 			button.UIGradient.Color = ColorSequence.new({
-				ColorSequenceKeypoint.new(0, Color3.fromHSV(vape:Color((hue - (self.Index * 0.025)) % 1))),
-				ColorSequenceKeypoint.new(1, Color3.fromHSV(vape:Color((hue - ((self.Index + 1) * 0.025)) % 1)))
+				ColorSequenceKeypoint.new(0, Color3.fromHSV(EZ:Color((hue - (self.Index * 0.025)) % 1))),
+				ColorSequenceKeypoint.new(1, Color3.fromHSV(EZ:Color((hue - ((self.Index + 1) * 0.025)) % 1)))
 			})
 		end
 
@@ -4093,7 +4125,7 @@ function component:Color(hue, sat, val, isRainbow)
 	end
 
 	if self.Visible then
-		editbox.BackgroundColor3 = isRainbow and Color3.fromHSV(vape:Color((hue - (self.Index * 0.025)) % 1)) or Color3.fromHSV(hue, sat, val)
+		editbox.BackgroundColor3 = isRainbow and Color3.fromHSV(EZ:Color((hue - (self.Index * 0.025)) % 1)) or Color3.fromHSV(hue, sat, val)
 		editborder.Color = editbox.BackgroundColor3
 	end
 
@@ -4115,7 +4147,7 @@ function component:Destroy()
 end
 
 function component:Load(data)
-	vape:LoadOptions(self, data.Options)
+	EZ:LoadOptions(self, data.Options)
 	self.Bind:Load(data.Bind)
 
 	if self.Enabled ~= (data.Enabled and not self.Bind.Hold) then
@@ -4130,7 +4162,7 @@ end
 function component:Save(data)
 	data[props.Name] = {
 		Enabled = self.Enabled,
-		Options = vape:SaveOptions(self),
+		Options = EZ:SaveOptions(self),
 		Visible = self.Visible
 	}
 
@@ -4140,25 +4172,25 @@ end
 function component:SetVisible(isVisible, isLoad)
 	self.Visible = isVisible
 	editbox.BackgroundTransparency = isVisible and 0 or 1
-	editborder.Color = isVisible and editbox.BackgroundColor3 or color.Light(uipallet.Main, 0.37)
+	editborder.Color = isVisible and editbox.BackgroundColor3 or color.Light(ui_pallet.Main, 0.37)
 
-	if isLoad and not vape.EditGUI then
+	if isLoad and not EZ.EditGUI then
 		button.Visible = isVisible
 	end
 end
 
 function component:Toggle(multiple)
-	if vape.ThreadFix then
+	if EZ.thread_fix then
 		setthreadidentity(8)
 	end
 
 	self.Enabled = not self.Enabled
 	divider.Visible = self.Enabled
 	gradient.Enabled = self.Enabled
-	button.TextColor3 = (isHover or modulechildren.Visible) and uipallet.Text or color.Dark(uipallet.Text, 0.16)
-	button.BackgroundColor3 = (isHover or modulechildren.Visible) and color.Light(uipallet.Main, 0.02) or uipallet.Main
-	dots.ImageColor3 = self.Enabled and Color3.fromRGB(50, 50, 50) or color.Light(uipallet.Main, 0.37)
-	component.Bind:SetColor(color.Dark(uipallet.Text, 0.43))
+	button.TextColor3 = (isHover or modulechildren.Visible) and ui_pallet.Text or color.Dark(ui_pallet.Text, 0.16)
+	button.BackgroundColor3 = (isHover or modulechildren.Visible) and color.Light(ui_pallet.Main, 0.02) or ui_pallet.Main
+	dots.ImageColor3 = self.Enabled and Color3.fromRGB(50, 50, 50) or color.Light(ui_pallet.Main, 0.37)
+	component.Bind:SetColor(color.Dark(ui_pallet.Text, 0.43))
 
 	if not self.Enabled then
 		for _, v in self.Connections do
@@ -4168,17 +4200,17 @@ function component:Toggle(multiple)
 	end
 
 	if multiple then
-		if not vape.TextGUIThread then
-			vape.TextGUIThread = task.defer(function()
-				if vape.Loaded ~= nil then
-					vape:UpdateTextGUI()
+		if not EZ.text_guiThread then
+			EZ.text_guiThread = task.defer(function()
+				if EZ.Loaded ~= nil then
+					EZ:Updatetext_gui()
 				end
 
-				vape.TextGUIThread = nil
+				EZ.text_guiThread = nil
 			end)
 		end
 	else
-		vape:UpdateTextGUI()
+		EZ:Updatetext_gui()
 	end
 
 	task.spawn(props.Function, self.Enabled)
@@ -4193,8 +4225,8 @@ end
 button.MouseEnter:Connect(function()
 	isHover = true
 	if not component.Enabled and not modulechildren.Visible then
-		button.TextColor3 = uipallet.Text
-		button.BackgroundColor3 = color.Light(uipallet.Main, 0.02)
+		button.TextColor3 = ui_pallet.Text
+		button.BackgroundColor3 = color.Light(ui_pallet.Main, 0.02)
 	end
 
 	component.Bind:SetVisible(isHover or modulechildren.Visible)
@@ -4203,15 +4235,15 @@ end)
 button.MouseLeave:Connect(function()
 	isHover = false
 	if not component.Enabled and not modulechildren.Visible then
-		button.TextColor3 = color.Dark(uipallet.Text, 0.16)
-		button.BackgroundColor3 = uipallet.Main
+		button.TextColor3 = color.Dark(ui_pallet.Text, 0.16)
+		button.BackgroundColor3 = ui_pallet.Main
 	end
 
 	component.Bind:SetVisible(isHover or modulechildren.Visible)
 end)
 
 button.MouseButton1Click:Connect(function()
-	if vape.EditGUI then
+	if EZ.EditGUI then
 		return
 	end
 
@@ -4232,13 +4264,13 @@ end)
 
 dotsbutton.MouseEnter:Connect(function()
 	if not component.Enabled then
-		dots.ImageColor3 = uipallet.Text
+		dots.ImageColor3 = ui_pallet.Text
 	end
 end)
 
 dotsbutton.MouseLeave:Connect(function()
 	if not component.Enabled then
-		dots.ImageColor3 = color.Light(uipallet.Main, 0.37)
+		dots.ImageColor3 = color.Light(ui_pallet.Main, 0.37)
 	end
 end)
 
@@ -4247,7 +4279,7 @@ edit.MouseButton1Click:Connect(function()
 end)
 
 windowlist:GetPropertyChangedSignal('AbsoluteContentSize'):Connect(function()
-	if vape.ThreadFix then
+	if EZ.thread_fix then
 		setthreadidentity(8)
 	end
 
@@ -4262,58 +4294,58 @@ local bind = component:CreateBind({
 bind.Triggered:Connect(function(isDown)
 	if bind.Hold then
 		if component.Enabled ~= isDown then
-			if vape.ToggleNotifications.Enabled then
-				vape:CreateNotification(props.Name, (not component.Enabled and "<font color='#00AA00'>Enabled</font>" or "<font color='#FF5A5A'>Disabled</font>"), 1.5)
+			if EZ.toggle_notifications.Enabled then
+				EZ:CreateNotification(props.Name, (not component.Enabled and "<font color='#00AA00'>Enabled</font>" or "<font color='#FF5A5A'>Disabled</font>"), 1.5)
 			end
 
 			component:Toggle(true)
 		end
 	else
-		if vape.ToggleNotifications.Enabled then
-			vape:CreateNotification(props.Name, (not component.Enabled and "<font color='#00AA00'>Enabled</font>" or "<font color='#FF5A5A'>Disabled</font>"), 1.5)
+		if EZ.toggle_notifications.Enabled then
+			EZ:CreateNotification(props.Name, (not component.Enabled and "<font color='#00AA00'>Enabled</font>" or "<font color='#FF5A5A'>Disabled</font>"), 1.5)
 		end
 
 		component:Toggle(true)
 	end
 end)
 
-if inputService.TouchEnabled then
+if input_service.TouchEnabled then
 	local isHeld = false
 
 	button.MouseButton1Down:Connect(function()
 		isHeld = true
-		local holdtime, holdPos = os.clock(), inputService:GetMouseLocation()
+		local holdtime, holdPos = os.clock(), input_service:GetMouseLocation()
 		repeat
-			isHeld = (inputService:GetMouseLocation() - holdPos).Magnitude < 3
+			isHeld = (input_service:GetMouseLocation() - holdPos).Magnitude < 3
 			task.wait()
-		until (os.clock() - holdtime) > 1 or not isHeld or not clickgui.Visible
+		until (os.clock() - holdtime) > 1 or not isHeld or not click_gui.Visible
 
-		if isHeld and clickgui.Visible then
-			if vape.ThreadFix then
+		if isHeld and click_gui.Visible then
+			if EZ.thread_fix then
 				setthreadidentity(8)
 			end
 
-			clickgui.Visible = false
+			click_gui.Visible = false
 			tooltip.Visible = false
-			vape:BlurCheck()
-			for _, module in vape.Modules do
+			EZ:BlurCheck()
+			for _, module in EZ.Modules do
 				if module.Bind.Mobile then
 					module.Bind.Mobile.Visible = true
 				end
 			end
 
 			local connection
-			connection = inputService.InputBegan:Connect(function(input)
+			connection = input_service.InputBegan:Connect(function(input)
 				if input.UserInputType == Enum.UserInputType.Touch then
-					if vape.ThreadFix then
+					if EZ.thread_fix then
 						setthreadidentity(8)
 					end
 
-					bind:CreateMobileButton(input.Position + Vector3.new(0, guiService:GetGuiInset().Y, 0))
-					clickgui.Visible = true
-					vape:BlurCheck()
+					bind:CreateMobileButton(input.Position + Vector3.new(0, gui_service:GetGuiInset().Y, 0))
+					click_gui.Visible = true
+					EZ:BlurCheck()
 
-					for _, module in vape.Modules do
+					for _, module in EZ.Modules do
 						if module.Bind.Mobile then
 							module.Bind.Mobile.Visible = false
 						end
@@ -4330,8 +4362,8 @@ if inputService.TouchEnabled then
 	end)
 end
 
-vape.Modules[props.Name] = component
-vape:SortCategories()
+EZ.Modules[props.Name] = component
+EZ:SortCategories()
 
 return component
 
@@ -4339,10 +4371,10 @@ return component
 local window
 local component
 component = {
-	Button = vape.Overlays:CreateImageToggle({
+	Button = EZ.Overlays:CreateImageToggle({
 		Name = props.Name,
 		Function = function(callback)
-			window.Visible = callback and (clickgui.Visible or component.Pinned)
+			window.Visible = callback and (click_gui.Visible or component.Pinned)
 
 			if not callback then
 				for _, v in component.Connections do
@@ -4367,13 +4399,13 @@ component = {
 
 window = Instance.new('TextButton')
 window.AutoButtonColor = false
-window.BackgroundColor3 = uipallet.Main
+window.BackgroundColor3 = ui_pallet.Main
 window.Name = props.Name..'Overlay'
 window.Position = UDim2.fromOffset(240, 46)
 window.Size = UDim2.fromOffset(props.CategorySize or 220, 41)
 window.Text = ''
 window.Visible = false
-window.Parent = scaledgui
+window.Parent = scaled_gui
 component.Object = window
 local blur = addBlur(window)
 addCorner(window)
@@ -4381,17 +4413,17 @@ addDragHandler(window)
 local icon = Instance.new('ImageLabel')
 icon.BackgroundTransparency = 1
 icon.Image = props.Icon
-icon.ImageColor3 = uipallet.Text
+icon.ImageColor3 = ui_pallet.Text
 icon.Position = UDim2.fromOffset(12, (icon.Size.X.Offset > 14 and 14 or 13))
 icon.Size = props.Size
 icon.Parent = window
 local title = Instance.new('TextLabel')
 title.BackgroundTransparency = 1
-title.FontFace = uipallet.Font
+title.FontFace = ui_pallet.Font
 title.Size = UDim2.new(1, -32, 0, 41)
 title.Position = UDim2.fromOffset(math.abs(title.Size.X.Offset), 0)
 title.Text = props.Name
-title.TextColor3 = uipallet.Text
+title.TextColor3 = ui_pallet.Text
 title.TextSize = 13
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.Parent = window
@@ -4401,8 +4433,8 @@ pin.Size = UDim2.fromOffset(14, 14)
 pin.Position = UDim2.new(1, -37, 0, 14)
 pin.BackgroundTransparency = 1
 pin.AutoButtonColor = false
-pin.Image = getvapeasset('newvape/assets/new/pin.png')
-pin.ImageColor3 = color.Dark(uipallet.Text, 0.43)
+pin.Image = get_ez_asset('Elite Zone/Assets/pin.png')
+pin.ImageColor3 = color.Dark(ui_pallet.Text, 0.43)
 pin.Parent = window
 local dotsbutton = Instance.new('TextButton')
 dotsbutton.Name = 'Dots'
@@ -4413,8 +4445,8 @@ dotsbutton.Text = ''
 dotsbutton.Parent = window
 local dots = Instance.new('ImageLabel')
 dots.BackgroundTransparency = 1
-dots.Image = getvapeasset('newvape/assets/new/overlaydots.png')
-dots.ImageColor3 = color.Light(uipallet.Main, 0.37)
+dots.Image = get_ez_asset('Elite Zone/Assets/overlaydots.png')
+dots.ImageColor3 = color.Light(ui_pallet.Main, 0.37)
 dots.Position = UDim2.fromOffset(5, 15)
 dots.Size = UDim2.fromOffset(2, 12)
 dots.Parent = dotsbutton
@@ -4424,7 +4456,7 @@ customchildren.Position = UDim2.fromScale(0, 1)
 customchildren.Size = UDim2.new(1, 0, 0, 200)
 customchildren.Parent = window
 local children = Instance.new('ScrollingFrame')
-children.BackgroundColor3 = color.Dark(uipallet.Main, 0.02)
+children.BackgroundColor3 = color.Dark(ui_pallet.Main, 0.02)
 children.BorderSizePixel = 0
 children.CanvasSize = UDim2.new()
 children.Position = UDim2.fromOffset(0, 37)
@@ -4457,7 +4489,7 @@ function component:Expand(visCheck)
 
 	self.Expanded = not self.Expanded
 	children.Visible = self.Expanded
-	dots.ImageColor3 = self.Expanded and uipallet.Text or color.Light(uipallet.Main, 0.37)
+	dots.ImageColor3 = self.Expanded and ui_pallet.Text or color.Light(ui_pallet.Main, 0.37)
 
 	if self.Expanded then
 		window.Size = UDim2.fromOffset(window.Size.X.Offset, math.min(41 + windowlist.AbsoluteContentSize.Y / scale.Scale, 601))
@@ -4467,7 +4499,7 @@ function component:Expand(visCheck)
 end
 
 function component:Load(data)
-	vape:LoadOptions(self, data.Options)
+	EZ:LoadOptions(self, data.Options)
 
 	if self.Button.Enabled ~= data.Enabled then
 		self.Button:Toggle()
@@ -4485,13 +4517,13 @@ end
 
 function component:Pin()
 	self.Pinned = not self.Pinned
-	pin.ImageColor3 = self.Pinned and uipallet.Text or color.Dark(uipallet.Text, 0.43)
+	pin.ImageColor3 = self.Pinned and ui_pallet.Text or color.Dark(ui_pallet.Text, 0.43)
 end
 
 function component:Save(data)
 	data[props.Name] = {
 		Enabled = self.Button.Enabled,
-		Options = vape:SaveOptions(self),
+		Options = EZ:SaveOptions(self),
 		Pinned = self.Pinned,
 		Position = {
 			X = window.Position.X.Offset,
@@ -4501,12 +4533,12 @@ function component:Save(data)
 end
 
 function component:Update()
-	window.Visible = self.Button.Enabled and (clickgui.Visible or self.Pinned)
+	window.Visible = self.Button.Enabled and (click_gui.Visible or self.Pinned)
 	if self.Expanded then
 		self:Expand()
 	end
 
-	if clickgui.Visible then
+	if click_gui.Visible then
 		window.Size = UDim2.fromOffset(window.Size.X.Offset, 41)
 		window.BackgroundTransparency = 0
 		blur.Enabled = true
@@ -4533,19 +4565,19 @@ for index, comp in components do
 	end
 end
 
-vape:Clean(clickgui:GetPropertyChangedSignal('Visible'):Connect(function()
+EZ:Clean(click_gui:GetPropertyChangedSignal('Visible'):Connect(function()
 	component:Update()
 end))
 
 dotsbutton.MouseEnter:Connect(function()
 	if not children.Visible then
-		dots.ImageColor3 = uipallet.Text
+		dots.ImageColor3 = ui_pallet.Text
 	end
 end)
 
 dotsbutton.MouseLeave:Connect(function()
 	if not children.Visible then
-		dots.ImageColor3 = color.Light(uipallet.Main, 0.37)
+		dots.ImageColor3 = color.Light(ui_pallet.Main, 0.37)
 	end
 end)
 
@@ -4566,7 +4598,7 @@ window.MouseButton2Click:Connect(function()
 end)
 
 windowlist:GetPropertyChangedSignal('AbsoluteContentSize'):Connect(function()
-	if vape.ThreadFix then
+	if EZ.thread_fix then
 		setthreadidentity(8)
 	end
 
@@ -4577,7 +4609,7 @@ windowlist:GetPropertyChangedSignal('AbsoluteContentSize'):Connect(function()
 end)
 
 component.Children = customchildren
-vape.Categories[props.Name] = component
+EZ.Categories[props.Name] = component
 
 return component
 
@@ -4590,15 +4622,15 @@ local component = {
 local bar = Instance.new('Frame')
 bar.Name = 'Overlays'
 bar.Size = UDim2.fromOffset(220, 36)
-bar.BackgroundColor3 = uipallet.Main
+bar.BackgroundColor3 = ui_pallet.Main
 bar.BorderSizePixel = 0
 bar.Parent = children
 components.Divider(nil, bar)
 local button = Instance.new('ImageButton')
 button.AutoButtonColor = false
 button.BackgroundTransparency = 1
-button.Image = getvapeasset('newvape/assets/new/overlays.png')
-button.ImageColor3 = color.Light(uipallet.Main, 0.37)
+button.Image = get_ez_asset('Elite Zone/Assets/overlays.png')
+button.ImageColor3 = color.Light(ui_pallet.Main, 0.37)
 button.Position = UDim2.new(1, -34, 0, 7)
 button.Size = UDim2.fromOffset(24, 24)
 button.Parent = bar
@@ -4616,37 +4648,37 @@ shadow.Visible = false
 shadow.Parent = api.Object
 addCorner(shadow)
 local window = Instance.new('Frame')
-window.BackgroundColor3 = uipallet.Main
+window.BackgroundColor3 = ui_pallet.Main
 window.Position = UDim2.fromScale(0, 1)
 window.Size = UDim2.fromOffset(220, 42)
 window.Parent = shadow
 addCorner(window)
 local icon = Instance.new('ImageLabel')
 icon.BackgroundTransparency = 1
-icon.Image = getvapeasset('newvape/assets/new/overlayslarge.png')
-icon.ImageColor3 = uipallet.Text
+icon.Image = get_ez_asset('Elite Zone/Assets/overlayslarge.png')
+icon.ImageColor3 = ui_pallet.Text
 icon.Position = UDim2.fromOffset(10, 13)
 icon.Size = UDim2.fromOffset(14, 12)
 icon.Parent = window
 local title = Instance.new('TextLabel')
 title.BackgroundTransparency = 1
-title.FontFace = uipallet.Font
+title.FontFace = ui_pallet.Font
 title.Position = UDim2.fromOffset(36, 0)
 title.Size = UDim2.new(1, -36, 0, 38)
 title.Text = 'Overlays'
-title.TextColor3 = uipallet.Text
+title.TextColor3 = ui_pallet.Text
 title.TextSize = 15
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.Parent = window
 local close = addCloseButton(window, false, UDim2.new(1, -35, 0, 7))
 local divider = Instance.new('Frame')
-divider.BackgroundColor3 = color.Light(uipallet.Main, 0.02)
+divider.BackgroundColor3 = color.Light(ui_pallet.Main, 0.02)
 divider.BorderSizePixel = 0
 divider.Position = UDim2.fromOffset(0, 37)
 divider.Size = UDim2.new(1, 0, 0, 1)
 divider.Parent = window
 local childrentoggle = Instance.new('Frame')
-childrentoggle.BackgroundColor3 = uipallet.Main
+childrentoggle.BackgroundColor3 = ui_pallet.Main
 childrentoggle.BackgroundTransparency = 1
 childrentoggle.Position = UDim2.fromOffset(0, 38)
 childrentoggle.Parent = window
@@ -4662,36 +4694,36 @@ for index, comp in components do
 end
 
 button.MouseEnter:Connect(function()
-	button.ImageColor3 = uipallet.Text
-	tween:Tween(button, uipallet.Tween, {
+	button.ImageColor3 = ui_pallet.Text
+	tween:Tween(button, ui_pallet.Tween, {
 		BackgroundTransparency = 0.9
 	})
 end)
 
 button.MouseLeave:Connect(function()
-	button.ImageColor3 = color.Light(uipallet.Main, 0.37)
-	tween:Tween(button, uipallet.Tween, {
+	button.ImageColor3 = color.Light(ui_pallet.Main, 0.37)
+	tween:Tween(button, ui_pallet.Tween, {
 		BackgroundTransparency = 1
 	})
 end)
 
 button.MouseButton1Click:Connect(function()
 	shadow.Visible = true
-	tween:Tween(shadow, uipallet.Tween, {
+	tween:Tween(shadow, ui_pallet.Tween, {
 		BackgroundTransparency = 0.5
 	})
 
-	tween:Tween(window, uipallet.Tween, {
+	tween:Tween(window, ui_pallet.Tween, {
 		Position = UDim2.new(0, 0, 1, -(window.Size.Y.Offset))
 	})
 end)
 
 close.MouseButton1Click:Connect(function()
-	tween:Tween(shadow, uipallet.Tween, {
+	tween:Tween(shadow, ui_pallet.Tween, {
 		BackgroundTransparency = 1
 	})
 
-	tween:Tween(window, uipallet.Tween, {
+	tween:Tween(window, ui_pallet.Tween, {
 		Position = UDim2.fromScale(0, 1)
 	})
 
@@ -4701,11 +4733,11 @@ close.MouseButton1Click:Connect(function()
 end)
 
 shadow.MouseButton1Click:Connect(function()
-	tween:Tween(shadow, uipallet.Tween, {
+	tween:Tween(shadow, ui_pallet.Tween, {
 		BackgroundTransparency = 1
 	})
 
-	tween:Tween(window, uipallet.Tween, {
+	tween:Tween(window, ui_pallet.Tween, {
 		Position = UDim2.fromScale(0, 1)
 	})
 
@@ -4715,7 +4747,7 @@ shadow.MouseButton1Click:Connect(function()
 end)
 
 windowlist:GetPropertyChangedSignal('AbsoluteContentSize'):Connect(function()
-	if vape.ThreadFix then
+	if EZ.thread_fix then
 		setthreadidentity(8)
 	end
 
@@ -4723,7 +4755,7 @@ windowlist:GetPropertyChangedSignal('AbsoluteContentSize'):Connect(function()
 	childrentoggle.Size = UDim2.fromOffset(220, window.Size.Y.Offset - 5)
 end)
 
-vape.Overlays = component
+EZ.Overlays = component
 
 return component
 
@@ -4745,31 +4777,31 @@ end
 
 local search = Instance.new('Frame')
 search.AnchorPoint = Vector2.new(0.5, 0)
-search.BackgroundColor3 = color.Dark(uipallet.Main, 0.02)
+search.BackgroundColor3 = color.Dark(ui_pallet.Main, 0.02)
 search.Name = 'Search'
 search.Position = UDim2.new(0.5, 0, 0, 13)
 search.Size = UDim2.fromOffset(220, 37)
-search.Parent = clickgui
+search.Parent = click_gui
 component.Object = search
 addBlur(search)
 addCorner(search)
 local icon = Instance.new('ImageLabel')
 icon.BackgroundTransparency = 1
-icon.Image = getvapeasset('newvape/assets/new/search.png')
-icon.ImageColor3 = color.Light(uipallet.Main, 0.37)
+icon.Image = get_ez_asset('Elite Zone/Assets/search.png')
+icon.ImageColor3 = color.Light(ui_pallet.Main, 0.37)
 icon.Position = UDim2.new(1, -25, 0, 11)
 icon.Size = UDim2.fromOffset(14, 14)
 icon.Parent = search
 local legiticon = Instance.new('ImageButton')
 legiticon.BackgroundTransparency = 1
-legiticon.Image = getvapeasset('newvape/assets/new/legit_switch.png')
+legiticon.Image = get_ez_asset('Elite Zone/Assets/legit_switch.png')
 legiticon.Name = 'Legit'
 legiticon.Position = UDim2.fromOffset(8, 11)
 legiticon.Size = UDim2.fromOffset(29, 16)
 legiticon.Parent = search
-listenProperty(vape.Categories.Main.Object.VapeLogo.V4Logo, legiticon, 'ImageColor3', legiticon)
+listenProperty(EZ.Categories.Main.Object.VapeLogo.V4Logo, legiticon, 'ImageColor3', legiticon)
 local legitdivider = Instance.new('Frame')
-legitdivider.BackgroundColor3 = color.Light(uipallet.Main, 0.14)
+legitdivider.BackgroundColor3 = color.Light(ui_pallet.Main, 0.14)
 legitdivider.BorderSizePixel = 0
 legitdivider.Name = 'LegitDivider'
 legitdivider.Position = UDim2.fromOffset(43, 13)
@@ -4778,12 +4810,12 @@ legitdivider.Parent = search
 local box = Instance.new('TextBox')
 box.BackgroundTransparency = 1
 box.ClearTextOnFocus = false
-box.FontFace = uipallet.Font
+box.FontFace = ui_pallet.Font
 box.PlaceholderText = ''
 box.Position = UDim2.fromOffset(50, 0)
 box.Size = UDim2.new(1, -50, 0, 37)
 box.Text = ''
-box.TextColor3 = uipallet.Text
+box.TextColor3 = ui_pallet.Text
 box.TextSize = 12
 box.TextXAlignment = Enum.TextXAlignment.Left
 box.Parent = search
@@ -4823,7 +4855,7 @@ box:GetPropertyChangedSignal('Text'):Connect(function()
 
 	if box.Text == '' then return end
 
-	for name, module in vape.Modules do
+	for name, module in EZ.Modules do
 		if name:lower():find(box.Text:lower()) then
 			local button = module.Object:Clone()
 			button.Bind:Destroy()
@@ -4867,13 +4899,13 @@ children:GetPropertyChangedSignal('CanvasPosition'):Connect(function()
 end)
 
 legiticon.MouseButton1Click:Connect(function()
-	clickgui.Visible = false
-	vape.Legit.Window.Visible = true
-	vape.Legit.Window.Position = UDim2.new(0.5, -350, 0.5, -194)
+	click_gui.Visible = false
+	EZ.Legit.Window.Visible = true
+	EZ.Legit.Window.Position = UDim2.new(0.5, -350, 0.5, -194)
 end)
 
 windowlist:GetPropertyChangedSignal('AbsoluteContentSize'):Connect(function()
-	if vape.ThreadFix then
+	if EZ.thread_fix then
 		setthreadidentity(8)
 	end
 
@@ -4893,33 +4925,33 @@ local component = {
 
 local pane = Instance.new('TextButton')
 pane.AutoButtonColor = false
-pane.BackgroundColor3 = props.Main and color.Dark(uipallet.Main, 0.02) or uipallet.Main
+pane.BackgroundColor3 = props.Main and color.Dark(ui_pallet.Main, 0.02) or ui_pallet.Main
 pane.Size = UDim2.fromScale(1, 1)
 pane.Text = ''
 pane.Visible = false
 pane.Parent = component.Parent
 local title = Instance.new('TextLabel')
 title.BackgroundTransparency = 1
-title.FontFace = uipallet.Font
+title.FontFace = ui_pallet.Font
 title.Name = 'Title'
 title.Size = UDim2.new(1, -36, 0, 20)
 title.Position = UDim2.fromOffset(math.abs(title.Size.X.Offset), 11)
 title.Text = props.Name
-title.TextColor3 = uipallet.Text
+title.TextColor3 = ui_pallet.Text
 title.TextSize = 13
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.Parent = pane
 local close = addCloseButton(pane, true)
 local back = Instance.new('ImageButton')
 back.BackgroundTransparency = 1
-back.Image = getvapeasset('newvape/assets/new/backmini.png')
-back.ImageColor3 = color.Light(uipallet.Main, 0.37)
+back.Image = get_ez_asset('Elite Zone/Assets/backmini.png')
+back.ImageColor3 = color.Light(ui_pallet.Main, 0.37)
 back.Position = UDim2.fromOffset(12, 14)
 back.Size = UDim2.fromOffset(14, 14)
 back.Parent = pane
 addCorner(pane)
 local settingschildren = Instance.new('Frame')
-settingschildren.BackgroundColor3 = uipallet.Main
+settingschildren.BackgroundColor3 = ui_pallet.Main
 settingschildren.BorderSizePixel = 0
 settingschildren.Name = 'Children'
 settingschildren.Position = UDim2.fromOffset(0, 41)
@@ -4939,14 +4971,14 @@ listlayout.Parent = settingschildren
 if props.Main then
 	local versionlabel = Instance.new('TextLabel')
 	versionlabel.BackgroundTransparency = 1
-	versionlabel.FontFace = uipallet.Font
+	versionlabel.FontFace = ui_pallet.Font
 	versionlabel.Name = 'Version'
 	versionlabel.Position = UDim2.new(0, 0, 1, -16)
 	versionlabel.Size = UDim2.new(1, 0, 0, 16)
-	versionlabel.Text = 'Vape '..vape.Version..' '..(
+	versionlabel.Text = 'EZ '..EZ.Version..' '..(
 		isfile('newvape/profiles/commit.txt') and readfile('newvape/profiles/commit.txt'):sub(1, 6) or ''
 	)..' '
-	versionlabel.TextColor3 = color.Dark(uipallet.Text, 0.43)
+	versionlabel.TextColor3 = color.Dark(ui_pallet.Text, 0.43)
 	versionlabel.TextSize = 10
 	versionlabel.TextXAlignment = Enum.TextXAlignment.Right
 	versionlabel.Parent = pane
@@ -4960,11 +4992,11 @@ else
 end
 
 function component:Load(data)
-	vape:LoadOptions(self, data)
+	EZ:LoadOptions(self, data)
 end
 
 function component:Save(data)
-	data[props.Name] = vape:SaveOptions(self)
+	data[props.Name] = EZ:SaveOptions(self)
 end
 
 for index, comp in components do
@@ -4974,11 +5006,11 @@ for index, comp in components do
 end
 
 back.MouseEnter:Connect(function()
-	back.ImageColor3 = uipallet.Text
+	back.ImageColor3 = ui_pallet.Text
 end)
 
 back.MouseLeave:Connect(function()
-	back.ImageColor3 = color.Light(uipallet.Main, 0.37)
+	back.ImageColor3 = color.Light(ui_pallet.Main, 0.37)
 end)
 
 back.MouseButton1Click:Connect(function()
@@ -4990,7 +5022,7 @@ close.MouseButton1Click:Connect(function()
 end)
 
 listlayout:GetPropertyChangedSignal('AbsoluteContentSize'):Connect(function()
-	if vape.ThreadFix then
+	if EZ.thread_fix then
 		setthreadidentity(8)
 	end
 
@@ -4998,7 +5030,7 @@ listlayout:GetPropertyChangedSignal('AbsoluteContentSize'):Connect(function()
 end)
 
 component.Object = pane
-vape.Settings[props.Name] = component
+EZ.Settings[props.Name] = component
 
 return component
 
@@ -5022,44 +5054,44 @@ component.Object = slider
 addTooltip(slider, props.Tooltip)
 local title = Instance.new('TextLabel')
 title.BackgroundTransparency = 1
-title.FontFace = uipallet.Font
+title.FontFace = ui_pallet.Font
 title.Position = UDim2.fromOffset(10, 2)
 title.Size = UDim2.fromOffset(60, 30)
 title.Text = props.Name
-title.TextColor3 = color.Dark(uipallet.Text, 0.16)
+title.TextColor3 = color.Dark(ui_pallet.Text, 0.16)
 title.TextSize = 11
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.Parent = slider
 local valuelabel = Instance.new('TextButton')
 valuelabel.BackgroundTransparency = 1
-valuelabel.FontFace = uipallet.Font
+valuelabel.FontFace = ui_pallet.Font
 valuelabel.Position = UDim2.new(1, -69, 0, 9)
 valuelabel.Size = UDim2.fromOffset(60, 15)
 valuelabel.Text = component.Value..(props.Suffix and ' '..(type(props.Suffix) == 'function' and props.Suffix(component.Value) or props.Suffix) or '')
-valuelabel.TextColor3 = color.Dark(uipallet.Text, 0.16)
+valuelabel.TextColor3 = color.Dark(ui_pallet.Text, 0.16)
 valuelabel.TextSize = 11
 valuelabel.TextXAlignment = Enum.TextXAlignment.Right
 valuelabel.Parent = slider
 local custombox = Instance.new('TextBox')
 custombox.BackgroundTransparency = 1
 custombox.ClearTextOnFocus = false
-custombox.FontFace = uipallet.Font
+custombox.FontFace = ui_pallet.Font
 custombox.Position = valuelabel.Position
 custombox.Size = valuelabel.Size
 custombox.Text = component.Value
-custombox.TextColor3 = color.Dark(uipallet.Text, 0.16)
+custombox.TextColor3 = color.Dark(ui_pallet.Text, 0.16)
 custombox.TextSize = 11
 custombox.TextXAlignment = Enum.TextXAlignment.Right
 custombox.Visible = false
 custombox.Parent = slider
 local holder = Instance.new('Frame')
-holder.BackgroundColor3 = color.Light(uipallet.Main, 0.034)
+holder.BackgroundColor3 = color.Light(ui_pallet.Main, 0.034)
 holder.BorderSizePixel = 0
 holder.Position = UDim2.fromOffset(10, 37)
 holder.Size = UDim2.new(1, -20, 0, 2)
 holder.Parent = slider
 local fill = Instance.new('Frame')
-fill.BackgroundColor3 = Color3.fromHSV(vape.GUIColor.Hue, vape.GUIColor.Sat, vape.GUIColor.Value)
+fill.BackgroundColor3 = Color3.fromHSV(EZ.gui_color.Hue, EZ.gui_color.Sat, EZ.gui_color.Value)
 fill.BorderSizePixel = 0
 fill.Size = UDim2.fromScale(math.clamp((component.Value - props.Min) / props.Max, 0.04, 0.96), 1)
 fill.Parent = holder
@@ -5072,7 +5104,7 @@ knobholder.Size = UDim2.fromOffset(24, 4)
 knobholder.Parent = fill
 local knob = Instance.new('Frame')
 knob.AnchorPoint = Vector2.new(0.5, 0.5)
-knob.BackgroundColor3 = Color3.fromHSV(vape.GUIColor.Hue, vape.GUIColor.Sat, vape.GUIColor.Value)
+knob.BackgroundColor3 = Color3.fromHSV(EZ.gui_color.Hue, EZ.gui_color.Sat, EZ.gui_color.Value)
 knob.Position = UDim2.fromScale(0.5, 0.5)
 knob.Size = UDim2.fromOffset(14, 14)
 knob.Parent = knobholder
@@ -5081,7 +5113,7 @@ props.Function = props.Function or function() end
 props.Decimal = props.Decimal or 1
 
 function component:Color(hue, sat, val, isRainbow)
-	fill.BackgroundColor3 = isRainbow and Color3.fromHSV(vape:Color((hue - (self.Index * 0.075)) % 1)) or Color3.fromHSV(hue, sat, val)
+	fill.BackgroundColor3 = isRainbow and Color3.fromHSV(EZ:Color((hue - (self.Index * 0.075)) % 1)) or Color3.fromHSV(hue, sat, val)
 	knob.BackgroundColor3 = fill.BackgroundColor3
 end
 
@@ -5104,7 +5136,7 @@ function component:SetValue(value, position, wasReleased)
 		return
 	end
 
-	tween:Tween(fill, uipallet.Tween, {
+	tween:Tween(fill, ui_pallet.Tween, {
 		Size = UDim2.fromScale(math.clamp(position or math.clamp(value / props.Max, 0, 1), 0.04, 0.96), 1)
 	})
 
@@ -5124,7 +5156,7 @@ slider.InputBegan:Connect(function(input)
 		local lastPosition = newPosition
 
 		local releaseConnection
-		local moveConnection = inputService.InputChanged:Connect(function(newInput)
+		local moveConnection = input_service.InputChanged:Connect(function(newInput)
 			if newInput.UserInputType == (input.UserInputType == Enum.UserInputType.MouseButton1 and Enum.UserInputType.MouseMovement or Enum.UserInputType.Touch) then
 				local newPosition = math.clamp((newInput.Position.X - holder.AbsolutePosition.X) / holder.AbsoluteSize.X, 0, 1)
 				component:SetValue(math.floor((props.Min + (props.Max - props.Min) * newPosition) * props.Decimal) / props.Decimal, newPosition)
@@ -5145,13 +5177,13 @@ slider.InputBegan:Connect(function(input)
 end)
 
 slider.MouseEnter:Connect(function()
-	tween:Tween(knob, uipallet.Tween, {
+	tween:Tween(knob, ui_pallet.Tween, {
 		Size = UDim2.fromOffset(16, 16)
 	})
 end)
 
 slider.MouseLeave:Connect(function()
-	tween:Tween(knob, uipallet.Tween, {
+	tween:Tween(knob, ui_pallet.Tween, {
 		Size = UDim2.fromOffset(14, 14)
 	})
 end)
@@ -5193,36 +5225,36 @@ targets.Parent = children
 component.Object = targets
 addTooltip(targets, props.Tooltip)
 local holder = Instance.new('Frame')
-holder.BackgroundColor3 = color.Light(uipallet.Main, 0.034)
+holder.BackgroundColor3 = color.Light(ui_pallet.Main, 0.034)
 holder.Position = UDim2.fromOffset(10, 4)
 holder.Size = UDim2.new(1, -20, 1, -9)
 holder.Parent = targets
 addCorner(holder, UDim.new(0, 4))
 local button = Instance.new('TextButton')
 button.AutoButtonColor = false
-button.BackgroundColor3 = uipallet.Main
+button.BackgroundColor3 = ui_pallet.Main
 button.Position = UDim2.fromOffset(1, 1)
 button.Size = UDim2.new(1, -2, 1, -2)
 button.Text = ''
 button.Parent = holder
 local title = Instance.new('TextLabel')
 title.BackgroundTransparency = 1
-title.FontFace = uipallet.Font
+title.FontFace = ui_pallet.Font
 title.Position = UDim2.fromOffset(5, 6)
 title.Size = UDim2.new(1, -5, 0, 15)
 title.Text = 'Target:'
-title.TextColor3 = color.Dark(uipallet.Text, 0.16)
+title.TextColor3 = color.Dark(ui_pallet.Text, 0.16)
 title.TextSize = 15
 title.TextTruncate = Enum.TextTruncate.AtEnd
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.Parent = button
 local items = Instance.new('TextLabel')
 items.BackgroundTransparency = 1
-items.FontFace = uipallet.Font
+items.FontFace = ui_pallet.Font
 items.Position = UDim2.fromOffset(5, 21)
 items.Size = UDim2.new(1, -5, 0, 15)
 items.Text = 'Ignore none'
-items.TextColor3 = color.Dark(uipallet.Text, 0.16)
+items.TextColor3 = color.Dark(ui_pallet.Text, 0.16)
 items.TextSize = 11
 items.TextTruncate = Enum.TextTruncate.AtEnd
 items.TextXAlignment = Enum.TextXAlignment.Left
@@ -5239,29 +5271,29 @@ layout.Padding = UDim.new(0, 6)
 layout.Parent = iconholder
 local targetswindow = Instance.new('TextButton')
 targetswindow.AutoButtonColor = false
-targetswindow.BackgroundColor3 = uipallet.Main
+targetswindow.BackgroundColor3 = ui_pallet.Main
 targetswindow.BorderSizePixel = 0
 targetswindow.Position = UDim2.fromOffset(456, 139)
 targetswindow.Size = UDim2.fromOffset(220, 145)
 targetswindow.Text = ''
 targetswindow.Visible = false
-targetswindow.Parent = clickgui
+targetswindow.Parent = click_gui
 component.Window = targetswindow
 addBlur(targetswindow)
 addCorner(targetswindow)
 local icon = Instance.new('ImageLabel')
 icon.BackgroundTransparency = 1
-icon.Image = getvapeasset('newvape/assets/new/aim.png')
+icon.Image = get_ez_asset('Elite Zone/Assets/aim.png')
 icon.Position = UDim2.fromOffset(10, 15)
 icon.Size = UDim2.fromOffset(18, 12)
 icon.Parent = targetswindow
 local windowtitle = Instance.new('TextLabel')
 windowtitle.BackgroundTransparency = 1
-windowtitle.FontFace = uipallet.Font
+windowtitle.FontFace = ui_pallet.Font
 windowtitle.Size = UDim2.new(1, -36, 0, 20)
 windowtitle.Position = UDim2.fromOffset(math.abs(windowtitle.Size.X.Offset), 11)
 windowtitle.Text = 'Target settings'
-windowtitle.TextColor3 = uipallet.Text
+windowtitle.TextColor3 = ui_pallet.Text
 windowtitle.TextSize = 13
 windowtitle.TextXAlignment = Enum.TextXAlignment.Left
 windowtitle.Parent = targetswindow
@@ -5270,7 +5302,7 @@ props.Function = props.Function or function() end
 
 function component:Color(hue, sat, val, isRainbow)
 	if targetswindow.Visible then
-		holder.BackgroundColor3 = isRainbow and Color3.fromHSV(vape:Color((hue - (self.Index * 0.075)) % 1)) or Color3.fromHSV(hue, sat, val)
+		holder.BackgroundColor3 = isRainbow and Color3.fromHSV(EZ:Color((hue - (self.Index * 0.075)) % 1)) or Color3.fromHSV(hue, sat, val)
 	end
 
 	if self.Players.Enabled then
@@ -5333,12 +5365,12 @@ function component:UpdateText()
 	end
 
 	title.Text = 'Target: '..(#newText > 0 and table.concat(newText, ', ') or 'Nothing')
-	title.TextColor3 = #newText > 0 and uipallet.Text or Color3.fromRGB(255, 90, 90)
+	title.TextColor3 = #newText > 0 and ui_pallet.Text or Color3.fromRGB(255, 90, 90)
 end
 
 component.Players = components.TargetsButton({
 	Position = UDim2.fromOffset(11, 45),
-	Icon = getvapeasset('newvape/assets/new/players.png'),
+	Icon = get_ez_asset('Elite Zone/Assets/players.png'),
 	IconSize = UDim2.fromOffset(16, 16),
 	IconParent = iconholder,
 	Targets = component,
@@ -5348,7 +5380,7 @@ component.Players = components.TargetsButton({
 
 component.NPCs = components.TargetsButton({
 	Position = UDim2.fromOffset(112, 45),
-	Icon = getvapeasset('newvape/assets/new/npcs.png'),
+	Icon = get_ez_asset('Elite Zone/Assets/npcs.png'),
 	IconSize = UDim2.fromOffset(12, 16),
 	IconParent = iconholder,
 	Targets = component,
@@ -5418,27 +5450,27 @@ button.MouseButton1Click:Connect(function()
 	targetswindow.Visible = not targetswindow.Visible
 	tween:Cancel(holder)
 
-	holder.BackgroundColor3 = targetswindow.Visible and Color3.fromHSV(vape.GUIColor.Hue, vape.GUIColor.Sat, vape.GUIColor.Value) or color.Light(uipallet.Main, 0.37)
+	holder.BackgroundColor3 = targetswindow.Visible and Color3.fromHSV(EZ.gui_color.Hue, EZ.gui_color.Sat, EZ.gui_color.Value) or color.Light(ui_pallet.Main, 0.37)
 end)
 
 targets.MouseEnter:Connect(function()
 	if not targetswindow.Visible then
-		tween:Tween(holder, uipallet.Tween, {
-			BackgroundColor3 = color.Light(uipallet.Main, 0.37)
+		tween:Tween(holder, ui_pallet.Tween, {
+			BackgroundColor3 = color.Light(ui_pallet.Main, 0.37)
 		})
 	end
 end)
 
 targets.MouseLeave:Connect(function()
 	if not targetswindow.Visible then
-		tween:Tween(holder, uipallet.Tween, {
-			BackgroundColor3 = color.Light(uipallet.Main, 0.034)
+		tween:Tween(holder, ui_pallet.Tween, {
+			BackgroundColor3 = color.Light(ui_pallet.Main, 0.034)
 		})
 	end
 end)
 
 targets:GetPropertyChangedSignal('AbsolutePosition'):Connect(function()
-	if vape.ThreadFix then
+	if EZ.thread_fix then
 		setthreadidentity(8)
 	end
 
@@ -5458,7 +5490,7 @@ local component = {
 
 local targetsbutton = Instance.new('TextButton')
 targetsbutton.AutoButtonColor = false
-targetsbutton.BackgroundColor3 = color.Light(uipallet.Main, 0.05)
+targetsbutton.BackgroundColor3 = color.Light(ui_pallet.Main, 0.05)
 targetsbutton.Position = props.Position
 targetsbutton.Size = UDim2.fromOffset(98, 31)
 targetsbutton.Text = ''
@@ -5468,7 +5500,7 @@ component.Object = targetsbutton
 addCorner(targetsbutton)
 addTooltip(targetsbutton, props.Tooltip)
 local holder = Instance.new('Frame')
-holder.BackgroundColor3 = uipallet.Main
+holder.BackgroundColor3 = ui_pallet.Main
 holder.Position = UDim2.fromOffset(1, 1)
 holder.Size = UDim2.new(1, -2, 1, -2)
 holder.Parent = targetsbutton
@@ -5477,7 +5509,7 @@ local icon = Instance.new('ImageLabel')
 icon.AnchorPoint = Vector2.new(0.5, 0.5)
 icon.BackgroundTransparency = 1
 icon.Image = props.Icon
-icon.ImageColor3 = color.Light(uipallet.Main, 0.37)
+icon.ImageColor3 = color.Light(ui_pallet.Main, 0.37)
 icon.Position = UDim2.fromScale(0.5, 0.5)
 icon.Size = props.IconSize
 icon.Parent = holder
@@ -5486,12 +5518,12 @@ props.Function = props.Function or function() end
 function component:Toggle()
 	self.Enabled = not self.Enabled
 
-	tween:Tween(holder, uipallet.Tween, {
-		BackgroundColor3 = self.Enabled and Color3.fromHSV(vape.GUIColor.Hue, vape.GUIColor.Sat, vape.GUIColor.Value) or uipallet.Main
+	tween:Tween(holder, ui_pallet.Tween, {
+		BackgroundColor3 = self.Enabled and Color3.fromHSV(EZ.gui_color.Hue, EZ.gui_color.Sat, EZ.gui_color.Value) or ui_pallet.Main
 	})
 
-	tween:Tween(icon, uipallet.Tween, {
-		ImageColor3 = self.Enabled and Color3.new(1, 1, 1) or color.Light(uipallet.Main, 0.37)
+	tween:Tween(icon, ui_pallet.Tween, {
+		ImageColor3 = self.Enabled and Color3.new(1, 1, 1) or color.Light(ui_pallet.Main, 0.37)
 	})
 
 	props.Targets:UpdateText()
@@ -5500,11 +5532,11 @@ end
 
 targetsbutton.MouseEnter:Connect(function()
 	if not component.Enabled then
-		tween:Tween(holder, uipallet.Tween, {
-			BackgroundColor3 = Color3.fromHSV(vape.GUIColor.Hue, vape.GUIColor.Sat, vape.GUIColor.Value - 0.25)
+		tween:Tween(holder, ui_pallet.Tween, {
+			BackgroundColor3 = Color3.fromHSV(EZ.gui_color.Hue, EZ.gui_color.Sat, EZ.gui_color.Value - 0.25)
 		})
 
-		tween:Tween(icon, uipallet.Tween, {
+		tween:Tween(icon, ui_pallet.Tween, {
 			ImageColor3 = Color3.new(1, 1, 1)
 		})
 	end
@@ -5512,12 +5544,12 @@ end)
 
 targetsbutton.MouseLeave:Connect(function()
 	if not component.Enabled then
-		tween:Tween(holder, uipallet.Tween, {
-			BackgroundColor3 = uipallet.Main
+		tween:Tween(holder, ui_pallet.Tween, {
+			BackgroundColor3 = ui_pallet.Main
 		})
 
-		tween:Tween(icon, uipallet.Tween, {
-			ImageColor3 = color.Light(uipallet.Main, 0.37)
+		tween:Tween(icon, ui_pallet.Tween, {
+			ImageColor3 = color.Light(ui_pallet.Main, 0.37)
 		})
 	end
 end)
@@ -5547,16 +5579,16 @@ component.Object = textbox
 addTooltip(textbox, props.Tooltip)
 local title = Instance.new('TextLabel')
 title.BackgroundTransparency = 1
-title.FontFace = uipallet.Font
+title.FontFace = ui_pallet.Font
 title.Position = UDim2.fromOffset(10, 3)
 title.Size = UDim2.new(1, -10, 0, 20)
 title.Text = props.Name
-title.TextColor3 = uipallet.Text
+title.TextColor3 = ui_pallet.Text
 title.TextSize = 12
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.Parent = textbox
 local holder = Instance.new('Frame')
-holder.BackgroundColor3 = color.Light(uipallet.Main, 0.02)
+holder.BackgroundColor3 = color.Light(ui_pallet.Main, 0.02)
 holder.Position = UDim2.fromOffset(10, 23)
 holder.Size = UDim2.new(1, -20, 0, 29)
 holder.Parent = textbox
@@ -5564,13 +5596,13 @@ addCorner(holder, UDim.new(0, 4))
 local inputbox = Instance.new('TextBox')
 inputbox.BackgroundTransparency = 1
 inputbox.ClearTextOnFocus = false
-inputbox.FontFace = uipallet.Font
-inputbox.PlaceholderColor3 = color.Dark(uipallet.Text, 0.31)
+inputbox.FontFace = ui_pallet.Font
+inputbox.PlaceholderColor3 = color.Dark(ui_pallet.Text, 0.31)
 inputbox.PlaceholderText = props.Placeholder or 'Click to set'
 inputbox.Position = UDim2.fromOffset(8, 0)
 inputbox.Size = UDim2.new(1, -8, 1, 0)
 inputbox.Text = props.Default or ''
-inputbox.TextColor3 = color.Dark(uipallet.Text, 0.16)
+inputbox.TextColor3 = color.Dark(ui_pallet.Text, 0.16)
 inputbox.TextSize = 12
 inputbox.TextXAlignment = Enum.TextXAlignment.Left
 inputbox.Parent = holder
@@ -5632,31 +5664,31 @@ textlist.Parent = children
 component.Object = textlist
 addTooltip(textlist, props.Tooltip)
 local holder = Instance.new('Frame')
-holder.BackgroundColor3 = color.Light(uipallet.Main, 0.034)
+holder.BackgroundColor3 = color.Light(ui_pallet.Main, 0.034)
 holder.Position = UDim2.fromOffset(10, 4)
 holder.Size = UDim2.new(1, -20, 1, -9)
 holder.Parent = textlist
 addCorner(holder, UDim.new(0, 4))
 local button = Instance.new('TextButton')
 button.AutoButtonColor = false
-button.BackgroundColor3 = uipallet.Main
+button.BackgroundColor3 = ui_pallet.Main
 button.Position = UDim2.fromOffset(1, 1)
 button.Size = UDim2.new(1, -2, 1, -2)
 button.Text = ''
 button.Parent = holder
 local icon = Instance.new('ImageLabel')
 icon.BackgroundTransparency = 1
-icon.Image = getvapeasset('newvape/assets/new/allowediconmini.png')
+icon.Image = get_ez_asset('Elite Zone/Assets/allowediconmini.png')
 icon.Position = UDim2.fromOffset(10, 14)
 icon.Size = UDim2.fromOffset(14, 12)
 icon.Parent = button
 local title = Instance.new('TextLabel')
 title.BackgroundTransparency = 1
-title.FontFace = uipallet.Font
+title.FontFace = ui_pallet.Font
 title.Position = UDim2.fromOffset(35, 6)
 title.Size = UDim2.new(1, -35, 0, 15)
 title.Text = props.Name
-title.TextColor3 = color.Dark(uipallet.Text, 0.16)
+title.TextColor3 = color.Dark(ui_pallet.Text, 0.16)
 title.TextSize = 15
 title.TextTruncate = Enum.TextTruncate.AtEnd
 title.TextXAlignment = Enum.TextXAlignment.Left
@@ -5670,47 +5702,47 @@ amount.Parent = button
 local items = Instance.fromExisting(title)
 items.Position = UDim2.fromOffset(35, 21)
 items.Text = 'None'
-items.TextColor3 = color.Dark(uipallet.Text, 0.43)
+items.TextColor3 = color.Dark(ui_pallet.Text, 0.43)
 items.TextSize = 11
 items.Parent = button
 addCorner(button, UDim.new(0, 4))
 local textlistwindow = Instance.new('TextButton')
 textlistwindow.AutoButtonColor = false
-textlistwindow.BackgroundColor3 = uipallet.Main
+textlistwindow.BackgroundColor3 = ui_pallet.Main
 textlistwindow.BorderSizePixel = 0
 textlistwindow.Position = UDim2.fromOffset(456, 227)
 textlistwindow.Size = UDim2.fromOffset(220, 85)
 textlistwindow.Text = ''
 textlistwindow.Visible = false
-textlistwindow.Parent = api.Legit and vape.Legit.Window or clickgui
+textlistwindow.Parent = api.Legit and EZ.Legit.Window or click_gui
 component.Window = textlistwindow
 addBlur(textlistwindow)
 addCorner(textlistwindow)
 local icon = Instance.new('ImageLabel')
 icon.BackgroundTransparency = 1
-icon.Image = getvapeasset('newvape/assets/new/allowedicon.png')
+icon.Image = get_ez_asset('Elite Zone/Assets/allowedicon.png')
 icon.Position = UDim2.fromOffset(10, 13)
 icon.Size = UDim2.fromOffset(19, 16)
 icon.Parent = textlistwindow
 local title = Instance.new('TextLabel')
 title.BackgroundTransparency = 1
-title.FontFace = uipallet.Font
+title.FontFace = ui_pallet.Font
 title.Position = UDim2.fromOffset(36, 11)
 title.Size = UDim2.new(1, -36, 0, 20)
 title.Text = props.Name
-title.TextColor3 = uipallet.Text
+title.TextColor3 = ui_pallet.Text
 title.TextSize = 13
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.Parent = textlistwindow
 local close = addCloseButton(textlistwindow)
 local boxholder = Instance.new('Frame')
-boxholder.BackgroundColor3 = color.Light(uipallet.Main, 0.02)
+boxholder.BackgroundColor3 = color.Light(ui_pallet.Main, 0.02)
 boxholder.Position = UDim2.fromOffset(10, 45)
 boxholder.Size = UDim2.fromOffset(200, 31)
 boxholder.Parent = textlistwindow
 addCorner(boxholder)
 local boxinner = Instance.new('Frame')
-boxinner.BackgroundColor3 = color.Dark(uipallet.Main, 0.02)
+boxinner.BackgroundColor3 = color.Dark(ui_pallet.Main, 0.02)
 boxinner.Position = UDim2.fromOffset(1, 1)
 boxinner.Size = UDim2.new(1, -2, 1, -2)
 boxinner.Parent = boxholder
@@ -5718,7 +5750,7 @@ addCorner(boxinner)
 local textbox = Instance.new('TextBox')
 textbox.BackgroundTransparency = 1
 textbox.ClearTextOnFocus = false
-textbox.FontFace = uipallet.Font
+textbox.FontFace = ui_pallet.Font
 textbox.PlaceholderText = props.Placeholder or 'Add entry...'
 textbox.PlaceholderColor3 = Color3.new(0.8, 0.8, 0.8)
 textbox.Position = UDim2.fromOffset(10, 0)
@@ -5730,7 +5762,7 @@ textbox.TextXAlignment = Enum.TextXAlignment.Left
 textbox.Parent = boxholder
 local add = Instance.new('ImageButton')
 add.BackgroundTransparency = 1
-add.Image = getvapeasset('newvape/assets/new/add.png')
+add.Image = get_ez_asset('Elite Zone/Assets/add.png')
 add.ImageColor3 = props.Color
 add.ImageTransparency = 0.3
 add.Position = UDim2.new(1, -26, 0, 8)
@@ -5740,7 +5772,7 @@ props.Function = props.Function or function() end
 
 function component:Color(hue, sat, val, isRainbow)
 	if textlistwindow.Visible then
-		holder.BackgroundColor3 = isRainbow and Color3.fromHSV(vape:Color((hue - (self.Index * 0.075)) % 1)) or Color3.fromHSV(hue, sat, val)
+		holder.BackgroundColor3 = isRainbow and Color3.fromHSV(EZ:Color((hue - (self.Index * 0.075)) % 1)) or Color3.fromHSV(hue, sat, val)
 	end
 end
 
@@ -5773,37 +5805,37 @@ function component:ChangeValue(value)
 		local isEnabled = table.find(self.ListEnabled, value)
 		local obj = Instance.new('TextButton')
 		obj.AutoButtonColor = false
-		obj.BackgroundColor3 = color.Light(uipallet.Main, 0.02)
+		obj.BackgroundColor3 = color.Light(ui_pallet.Main, 0.02)
 		obj.Position = UDim2.fromOffset(10, 47 + (index * 35))
 		obj.Size = UDim2.fromOffset(200, 31)
 		obj.Text = ''
 		obj.Parent = textlistwindow
 		addCorner(obj)
 		local bkg = Instance.new('Frame')
-		bkg.BackgroundColor3 = uipallet.Main
+		bkg.BackgroundColor3 = ui_pallet.Main
 		bkg.Position = UDim2.fromOffset(1, 1)
 		bkg.Size = UDim2.new(1, -2, 1, -2)
 		bkg.Visible = false
 		bkg.Parent = obj
 		addCorner(bkg)
 		local dot = Instance.new('Frame')
-		dot.BackgroundColor3 = isEnabled and props.Color or color.Light(uipallet.Main, 0.37)
+		dot.BackgroundColor3 = isEnabled and props.Color or color.Light(ui_pallet.Main, 0.37)
 		dot.Position = UDim2.fromOffset(10, 12)
 		dot.Size = UDim2.fromOffset(10, 11)
 		dot.Parent = obj
 		addCorner(dot, UDim.new(1, 0))
 		local dotin = dot:Clone()
-		dotin.BackgroundColor3 = isEnabled and props.Color or color.Light(uipallet.Main, 0.02)
+		dotin.BackgroundColor3 = isEnabled and props.Color or color.Light(ui_pallet.Main, 0.02)
 		dotin.Position = UDim2.fromOffset(1, 1)
 		dotin.Size = UDim2.fromOffset(8, 9)
 		dotin.Parent = dot
 		local label = Instance.new('TextLabel')
 		label.BackgroundTransparency = 1
-		label.FontFace = uipallet.Font
+		label.FontFace = ui_pallet.Font
 		label.Position = UDim2.fromOffset(30, 0)
 		label.Size = UDim2.new(1, -30, 1, 0)
 		label.Text = value
-		label.TextColor3 = color.Dark(uipallet.Text, 0.16)
+		label.TextColor3 = color.Dark(ui_pallet.Text, 0.16)
 		label.TextSize = 15
 		label.TextXAlignment = Enum.TextXAlignment.Left
 		label.Parent = obj
@@ -5811,8 +5843,8 @@ function component:ChangeValue(value)
 		close.AutoButtonColor = false
 		close.BackgroundColor3 = Color3.new(1, 1, 1)
 		close.BackgroundTransparency = 1
-		close.Image = getvapeasset('newvape/assets/new/closetiny.png')
-		close.ImageColor3 = color.Light(uipallet.Text, 0.2)
+		close.Image = get_ez_asset('Elite Zone/Assets/closetiny.png')
+		close.ImageColor3 = color.Light(ui_pallet.Text, 0.2)
 		close.ImageTransparency = 0.5
 		close.Position = UDim2.new(1, -27, 0, 8)
 		close.Size = UDim2.fromOffset(18, 17)
@@ -5821,14 +5853,14 @@ function component:ChangeValue(value)
 
 		close.MouseEnter:Connect(function()
 			close.ImageTransparency = 0.3
-			tween:Tween(close, uipallet.Tween, {
+			tween:Tween(close, ui_pallet.Tween, {
 				BackgroundTransparency = 0.6
 			})
 		end)
 
 		close.MouseLeave:Connect(function()
 			close.ImageTransparency = 0.5
-			tween:Tween(close, uipallet.Tween, {
+			tween:Tween(close, ui_pallet.Tween, {
 				BackgroundTransparency = 1
 			})
 		end)
@@ -5849,8 +5881,8 @@ function component:ChangeValue(value)
 			local index = table.find(self.ListEnabled, value)
 			if index then
 				table.remove(self.ListEnabled, index)
-				dot.BackgroundColor3 = color.Light(uipallet.Main, 0.37)
-				dotin.BackgroundColor3 = color.Light(uipallet.Main, 0.02)
+				dot.BackgroundColor3 = color.Light(ui_pallet.Main, 0.37)
+				dotin.BackgroundColor3 = color.Light(ui_pallet.Main, 0.02)
 			else
 				table.insert(self.ListEnabled, value)
 				dot.BackgroundColor3 = props.Color
@@ -5901,14 +5933,14 @@ textbox.FocusLost:Connect(function(enter)
 end)
 
 textbox.MouseEnter:Connect(function()
-	tween:Tween(boxholder, uipallet.Tween, {
-		BackgroundColor3 = color.Light(uipallet.Main, 0.14)
+	tween:Tween(boxholder, ui_pallet.Tween, {
+		BackgroundColor3 = color.Light(ui_pallet.Main, 0.14)
 	})
 end)
 
 textbox.MouseLeave:Connect(function()
-	tween:Tween(boxholder, uipallet.Tween, {
-		BackgroundColor3 = color.Light(uipallet.Main, 0.02)
+	tween:Tween(boxholder, ui_pallet.Tween, {
+		BackgroundColor3 = color.Light(ui_pallet.Main, 0.02)
 	})
 end)
 
@@ -5920,31 +5952,31 @@ button.MouseButton1Click:Connect(function()
 	textlistwindow.Visible = not textlistwindow.Visible
 
 	tween:Cancel(holder)
-	holder.BackgroundColor3 = textlistwindow.Visible and Color3.fromHSV(vape.GUIColor.Hue, vape.GUIColor.Sat, vape.GUIColor.Value) or color.Light(uipallet.Main, 0.37)
+	holder.BackgroundColor3 = textlistwindow.Visible and Color3.fromHSV(EZ.gui_color.Hue, EZ.gui_color.Sat, EZ.gui_color.Value) or color.Light(ui_pallet.Main, 0.37)
 end)
 
 textlist.MouseEnter:Connect(function()
 	if not textlistwindow.Visible then
-		tween:Tween(holder, uipallet.Tween, {
-			BackgroundColor3 = color.Light(uipallet.Main, 0.37)
+		tween:Tween(holder, ui_pallet.Tween, {
+			BackgroundColor3 = color.Light(ui_pallet.Main, 0.37)
 		})
 	end
 end)
 
 textlist.MouseLeave:Connect(function()
 	if not textlistwindow.Visible then
-		tween:Tween(holder, uipallet.Tween, {
-			BackgroundColor3 = color.Light(uipallet.Main, 0.034)
+		tween:Tween(holder, ui_pallet.Tween, {
+			BackgroundColor3 = color.Light(ui_pallet.Main, 0.034)
 		})
 	end
 end)
 
 textlist:GetPropertyChangedSignal('AbsolutePosition'):Connect(function()
-	if vape.ThreadFix then
+	if EZ.thread_fix then
 		setthreadidentity(8)
 	end
 
-	local actualPosition = (textlist.AbsolutePosition - (api.Legit and vape.Legit.Window.AbsolutePosition or -guiService:GetGuiInset())) / scale.Scale
+	local actualPosition = (textlist.AbsolutePosition - (api.Legit and EZ.Legit.Window.AbsolutePosition or -gui_service:GetGuiInset())) / scale.Scale
 	textlistwindow.Position = UDim2.fromOffset(actualPosition.X + 223, actualPosition.Y)
 end)
 
@@ -5969,10 +6001,10 @@ local toggle = Instance.new('TextButton')
 toggle.AutoButtonColor = false
 toggle.BackgroundColor3 = color.Dark(children.BackgroundColor3, props.Darker and 0.02 or 0)
 toggle.BorderSizePixel = 0
-toggle.FontFace = uipallet.Font
+toggle.FontFace = ui_pallet.Font
 toggle.Size = UDim2.new(1, 0, 0, 30)
 toggle.Text = '          '..props.Name
-toggle.TextColor3 = color.Dark(uipallet.Text, 0.16)
+toggle.TextColor3 = color.Dark(ui_pallet.Text, 0.16)
 toggle.TextSize = 14
 toggle.TextXAlignment = Enum.TextXAlignment.Left
 toggle.Visible = props.Visible == nil or props.Visible
@@ -5980,14 +6012,14 @@ toggle.Parent = children
 component.Object = toggle
 addTooltip(toggle, props.Tooltip)
 local holder = Instance.new('Frame')
-holder.BackgroundColor3 = color.Light(uipallet.Main, 0.14)
+holder.BackgroundColor3 = color.Light(ui_pallet.Main, 0.14)
 holder.Name = 'Holder'
 holder.Position = UDim2.new(1, -30, 0, 9)
 holder.Size = UDim2.fromOffset(22, 12)
 holder.Parent = toggle
 addCorner(holder, UDim.new(1, 0))
 local knob = Instance.new('Frame')
-knob.BackgroundColor3 = uipallet.Main
+knob.BackgroundColor3 = ui_pallet.Main
 knob.Position = UDim2.fromOffset(2, 2)
 knob.Size = UDim2.fromOffset(8, 8)
 knob.Parent = holder
@@ -5997,7 +6029,7 @@ props.Function = props.Function or function() end
 function component:Color(hue, sat, val, isRainbow)
 	if self.Enabled then
 		tween:Cancel(holder)
-		holder.BackgroundColor3 = isRainbow and Color3.fromHSV(vape:Color((hue - (self.Index * 0.075)) % 1)) or Color3.fromHSV(hue, sat, val)
+		holder.BackgroundColor3 = isRainbow and Color3.fromHSV(EZ:Color((hue - (self.Index * 0.075)) % 1)) or Color3.fromHSV(hue, sat, val)
 	end
 end
 
@@ -6022,14 +6054,14 @@ function component:Save(data)
 end
 
 function component:Toggle()
-	local isRainbow = vape.GUIColor.Rainbow and vape.RainbowMode.Value ~= 'Retro'
+	local isRainbow = EZ.gui_color.Rainbow and EZ.RainbowMode.Value ~= 'Retro'
 	self.Enabled = not self.Enabled
 
-	tween:Tween(holder, uipallet.Tween, {
-		BackgroundColor3 = self.Enabled and (isRainbow and Color3.fromHSV(vape:Color((vape.GUIColor.Hue - (self.Index * 0.075)) % 1)) or Color3.fromHSV(vape.GUIColor.Hue, vape.GUIColor.Sat, vape.GUIColor.Value)) or (isHover and color.Light(uipallet.Main, 0.37) or color.Light(uipallet.Main, 0.14))
+	tween:Tween(holder, ui_pallet.Tween, {
+		BackgroundColor3 = self.Enabled and (isRainbow and Color3.fromHSV(EZ:Color((EZ.gui_color.Hue - (self.Index * 0.075)) % 1)) or Color3.fromHSV(EZ.gui_color.Hue, EZ.gui_color.Sat, EZ.gui_color.Value)) or (isHover and color.Light(ui_pallet.Main, 0.37) or color.Light(ui_pallet.Main, 0.14))
 	})
 
-	tween:Tween(knob, uipallet.Tween, {
+	tween:Tween(knob, ui_pallet.Tween, {
 		Position = UDim2.fromOffset(self.Enabled and 12 or 2, 2)
 	})
 
@@ -6040,8 +6072,8 @@ toggle.MouseEnter:Connect(function()
 	isHover = true
 
 	if not component.Enabled then
-		tween:Tween(holder, uipallet.Tween, {
-			BackgroundColor3 = color.Light(uipallet.Main, 0.37)
+		tween:Tween(holder, ui_pallet.Tween, {
+			BackgroundColor3 = color.Light(ui_pallet.Main, 0.37)
 		})
 	end
 end)
@@ -6050,8 +6082,8 @@ toggle.MouseLeave:Connect(function()
 	isHover = false
 
 	if not component.Enabled then
-		tween:Tween(holder, uipallet.Tween, {
-			BackgroundColor3 = color.Light(uipallet.Main, 0.14)
+		tween:Tween(holder, ui_pallet.Tween, {
+			BackgroundColor3 = color.Light(ui_pallet.Main, 0.14)
 		})
 	end
 end)
@@ -6089,21 +6121,21 @@ component.Object = twoslider
 addTooltip(twoslider, props.Tooltip)
 local title = Instance.new('TextLabel')
 title.BackgroundTransparency = 1
-title.FontFace = uipallet.Font
+title.FontFace = ui_pallet.Font
 title.Position = UDim2.fromOffset(10, 2)
 title.Size = UDim2.fromOffset(60, 30)
 title.Text = props.Name
-title.TextColor3 = color.Dark(uipallet.Text, 0.16)
+title.TextColor3 = color.Dark(ui_pallet.Text, 0.16)
 title.TextSize = 11
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.Parent = twoslider
 local maxvalue = Instance.new('TextButton')
 maxvalue.BackgroundTransparency = 1
-maxvalue.FontFace = uipallet.Font
+maxvalue.FontFace = ui_pallet.Font
 maxvalue.Position = UDim2.new(1, -69, 0, 9)
 maxvalue.Size = UDim2.fromOffset(60, 15)
 maxvalue.Text = component.ValueMax
-maxvalue.TextColor3 = color.Dark(uipallet.Text, 0.16)
+maxvalue.TextColor3 = color.Dark(ui_pallet.Text, 0.16)
 maxvalue.TextSize = 11
 maxvalue.TextXAlignment = Enum.TextXAlignment.Right
 maxvalue.Parent = twoslider
@@ -6114,11 +6146,11 @@ minvalue.Parent = twoslider
 local custommax = Instance.new('TextBox')
 custommax.BackgroundTransparency = 1
 custommax.ClearTextOnFocus = false
-custommax.FontFace = uipallet.Font
+custommax.FontFace = ui_pallet.Font
 custommax.Position = maxvalue.Position
 custommax.Size = UDim2.fromOffset(60, 15)
 custommax.Text = component.ValueMax
-custommax.TextColor3 = color.Dark(uipallet.Text, 0.16)
+custommax.TextColor3 = color.Dark(ui_pallet.Text, 0.16)
 custommax.TextSize = 11
 custommax.TextXAlignment = Enum.TextXAlignment.Right
 custommax.Visible = false
@@ -6127,13 +6159,13 @@ local custommin = custommax:Clone()
 custommin.Position = minvalue.Position
 custommin.Parent = twoslider
 local holder = Instance.new('Frame')
-holder.BackgroundColor3 = color.Light(uipallet.Main, 0.034)
+holder.BackgroundColor3 = color.Light(ui_pallet.Main, 0.034)
 holder.BorderSizePixel = 0
 holder.Position = UDim2.fromOffset(10, 37)
 holder.Size = UDim2.new(1, -20, 0, 2)
 holder.Parent = twoslider
 local fill = Instance.new('Frame')
-fill.BackgroundColor3 = Color3.fromHSV(vape.GUIColor.Hue, vape.GUIColor.Sat, vape.GUIColor.Value)
+fill.BackgroundColor3 = Color3.fromHSV(EZ.gui_color.Hue, EZ.gui_color.Sat, EZ.gui_color.Value)
 fill.BorderSizePixel = 0
 fill.Position = UDim2.fromScale(math.clamp(component.ValueMin / props.Max, 0.04, 0.96), 0)
 fill.Size = UDim2.fromScale(math.clamp(math.clamp(component.ValueMax / props.Max, 0, 1), 0.04, 0.96) - fill.Position.X.Scale, 1)
@@ -6148,8 +6180,8 @@ knob.Parent = fill
 local knobknob = Instance.new('ImageLabel')
 knobknob.AnchorPoint = Vector2.new(0.5, 0.5)
 knobknob.BackgroundTransparency = 1
-knobknob.Image = getvapeasset('newvape/assets/new/range.png')
-knobknob.ImageColor3 = Color3.fromHSV(vape.GUIColor.Hue, vape.GUIColor.Sat, vape.GUIColor.Value)
+knobknob.Image = get_ez_asset('Elite Zone/Assets/range.png')
+knobknob.ImageColor3 = Color3.fromHSV(EZ.gui_color.Hue, EZ.gui_color.Sat, EZ.gui_color.Value)
 knobknob.Position = UDim2.fromScale(0.5, 0.5)
 knobknob.Size = UDim2.fromOffset(9, 16)
 knobknob.Parent = knob
@@ -6160,8 +6192,8 @@ local knobmaxknob = knobmax.ImageLabel
 knobmaxknob.Rotation = 180
 local arrow = Instance.new('ImageLabel')
 arrow.BackgroundTransparency = 1
-arrow.Image = getvapeasset('newvape/assets/new/rangeindicator.png')
-arrow.ImageColor3 = color.Light(uipallet.Main, 0.14)
+arrow.Image = get_ez_asset('Elite Zone/Assets/rangeindicator.png')
+arrow.ImageColor3 = color.Light(ui_pallet.Main, 0.14)
 arrow.Position = UDim2.new(1, -56, 0, 10)
 arrow.Size = UDim2.fromOffset(12, 6)
 arrow.Parent = twoslider
@@ -6170,7 +6202,7 @@ props.Decimal = props.Decimal or 1
 local random = Random.new()
 
 function component:Color(hue, sat, val, isRainbow)
-	fill.BackgroundColor3 = isRainbow and Color3.fromHSV(vape:Color((hue - (self.Index * 0.075)) % 1)) or Color3.fromHSV(hue, sat, val)
+	fill.BackgroundColor3 = isRainbow and Color3.fromHSV(EZ:Color((hue - (self.Index * 0.075)) % 1)) or Color3.fromHSV(hue, sat, val)
 	knobknob.ImageColor3 = fill.BackgroundColor3
 	knobmaxknob.ImageColor3 = fill.BackgroundColor3
 end
@@ -6213,25 +6245,25 @@ function component:SetValue(isMax, value)
 end
 
 knob.MouseEnter:Connect(function()
-	tween:Tween(knobknob, uipallet.Tween, {
+	tween:Tween(knobknob, ui_pallet.Tween, {
 		Size = UDim2.fromOffset(11, 18)
 	})
 end)
 
 knob.MouseLeave:Connect(function()
-	tween:Tween(knobknob, uipallet.Tween, {
+	tween:Tween(knobknob, ui_pallet.Tween, {
 		Size = UDim2.fromOffset(9, 16)
 	})
 end)
 
 knobmax.MouseEnter:Connect(function()
-	tween:Tween(knobmaxknob, uipallet.Tween, {
+	tween:Tween(knobmaxknob, ui_pallet.Tween, {
 		Size = UDim2.fromOffset(11, 18)
 	})
 end)
 
 knobmax.MouseLeave:Connect(function()
-	tween:Tween(knobmaxknob, uipallet.Tween, {
+	tween:Tween(knobmaxknob, ui_pallet.Tween, {
 		Size = UDim2.fromOffset(9, 16)
 	})
 end)
@@ -6245,7 +6277,7 @@ twoslider.InputBegan:Connect(function(input)
 		local newPosition = math.clamp((input.Position.X - holder.AbsolutePosition.X) / holder.AbsoluteSize.X, 0, 1)
 
 		local releaseConnection
-		local moveConnection = inputService.InputChanged:Connect(function(newInput)
+		local moveConnection = input_service.InputChanged:Connect(function(newInput)
 			if newInput.UserInputType == (input.UserInputType == Enum.UserInputType.MouseButton1 and Enum.UserInputType.MouseMovement or Enum.UserInputType.Touch) then
 				local newPosition = math.clamp((newInput.Position.X - holder.AbsolutePosition.X) / holder.AbsoluteSize.X, 0, 1)
 				component:SetValue(maxCheck, math.floor((props.Min + (props.Max - props.Min) * newPosition) * props.Decimal) / props.Decimal, newPosition)
@@ -6300,52 +6332,52 @@ api.Options[props.Name] = component
 return component
 
 -- init.lua
-addMaid(vape)
+addMaid(EZ)
 gui = Instance.new('ScreenGui')
 gui.Name = randomString()
 gui.DisplayOrder = 9999999
 gui.ZIndexBehavior = Enum.ZIndexBehavior.Global
 gui.IgnoreGuiInset = true
 
-if vape.ThreadFix then
+if EZ.thread_fix then
 	local holder = Instance.new('Folder')
 	holder.Parent = cloneref(game:GetService('CoreGui'))
 	gui.OnTopOfCoreBlur = true
 	gui.Parent = (gethui and gethui()) or cloneref(game:GetService('CoreGui'))
-	vape.holder = holder
+	EZ.holder = holder
 else
 	gui.Parent = cloneref(game:GetService('Players')).LocalPlayer.PlayerGui
 	gui.ResetOnSpawn = false
-	vape.holder = gui
+	EZ.holder = gui
 end
-vape.gui = gui
+EZ.gui = gui
 
-scaledgui = Instance.new('Frame')
-scaledgui.BackgroundTransparency = 1
-scaledgui.Name = 'ScaledGui'
-scaledgui.Size = UDim2.fromScale(1, 1)
-scaledgui.Parent = gui
-clickgui = Instance.new('Frame')
-clickgui.BackgroundTransparency = 1
-clickgui.Name = 'ClickGui'
-clickgui.Size = UDim2.fromScale(1, 1)
-clickgui.Visible = false
-clickgui.Parent = scaledgui
+scaled_gui = Instance.new('Frame')
+scaled_gui.BackgroundTransparency = 1
+scaled_gui.Name = 'ScaledGui'
+scaled_gui.Size = UDim2.fromScale(1, 1)
+scaled_gui.Parent = gui
+click_gui = Instance.new('Frame')
+click_gui.BackgroundTransparency = 1
+click_gui.Name = 'ClickGui'
+click_gui.Size = UDim2.fromScale(1, 1)
+click_gui.Visible = false
+click_gui.Parent = scaled_gui
 local scarcitybanner = Instance.new('TextLabel')
 scarcitybanner.BackgroundTransparency = 1
-scarcitybanner.FontFace = uipallet.Font
+scarcitybanner.FontFace = ui_pallet.Font
 scarcitybanner.Position = UDim2.fromScale(0, 0.97)
 scarcitybanner.Size = UDim2.fromScale(1, 0.02)
 scarcitybanner.Text = 'The discord link has been fixed, click the discord icon to join.'
 scarcitybanner.TextColor3 = Color3.new(1, 1, 1)
 scarcitybanner.TextScaled = true
 scarcitybanner.TextStrokeTransparency = 0.5
-scarcitybanner.Parent = clickgui
+scarcitybanner.Parent = click_gui
 local modal = Instance.new('TextButton')
 modal.BackgroundTransparency = 1
 modal.Modal = true
 modal.Text = ''
-modal.Parent = clickgui
+modal.Parent = click_gui
 local cursor = Instance.new('ImageLabel')
 cursor.BackgroundTransparency = 1
 cursor.Image = 'rbxasset://textures/Cursors/KeyboardMouse/ArrowFarCursor.png'
@@ -6354,57 +6386,57 @@ cursor.Visible = false
 cursor.Parent = gui
 notifications = Instance.new('Folder')
 notifications.Name = 'Notifications'
-notifications.Parent = scaledgui
+notifications.Parent = scaled_gui
 tooltip = Instance.new('TextLabel')
-tooltip.BackgroundColor3 = color.Dark(uipallet.Main, 0.02)
-tooltip.FontFace = uipallet.Font
+tooltip.BackgroundColor3 = color.Dark(ui_pallet.Main, 0.02)
+tooltip.FontFace = ui_pallet.Font
 tooltip.Position = UDim2.fromScale(-1, -1)
 tooltip.RichText = true
 tooltip.Text = ''
-tooltip.TextColor3 = color.Dark(uipallet.Text, 0.16)
+tooltip.TextColor3 = color.Dark(ui_pallet.Text, 0.16)
 tooltip.TextSize = 12
 tooltip.Visible = false
 tooltip.ZIndex = 5
-tooltip.Parent = scaledgui
-toolblur = addBlur(tooltip)
+tooltip.Parent = scaled_gui
+tool_blur = addBlur(tooltip)
 addCorner(tooltip)
 scale = Instance.new('UIScale')
 scale.Scale = math.max(gui.AbsoluteSize.X / 1920, 0.6)
-scale.Parent = scaledgui
-scaledgui.Size = UDim2.fromScale(1 / scale.Scale, 1 / scale.Scale)
+scale.Parent = scaled_gui
+scaled_gui.Size = UDim2.fromScale(1 / scale.Scale, 1 / scale.Scale)
 components.GUI({})
 
-vape:CreateCategory({
+EZ:CreateCategory({
 	Name = 'Combat',
-	Icon = getvapeasset('newvape/assets/new/combat.png'),
+	Icon = get_ez_asset('Elite Zone/Assets/combat.png'),
 	Size = UDim2.fromOffset(13, 14)
 })
-vape:CreateCategory({
+EZ:CreateCategory({
 	Name = 'Blatant',
-	Icon = getvapeasset('newvape/assets/new/blatant.png'),
+	Icon = get_ez_asset('Elite Zone/Assets/blatant.png'),
 	Size = UDim2.fromOffset(14, 14)
 })
-vape:CreateCategory({
+EZ:CreateCategory({
 	Name = 'Render',
-	Icon = getvapeasset('newvape/assets/new/render.png'),
+	Icon = get_ez_asset('Elite Zone/Assets/render.png'),
 	Size = UDim2.fromOffset(15, 14)
 })
-vape:CreateCategory({
+EZ:CreateCategory({
 	Name = 'Utility',
-	Icon = getvapeasset('newvape/assets/new/utility.png'),
+	Icon = get_ez_asset('Elite Zone/Assets/utility.png'),
 	Size = UDim2.fromOffset(15, 14)
 })
-vape:CreateCategory({
+EZ:CreateCategory({
 	Name = 'World',
-	Icon = getvapeasset('newvape/assets/new/world.png'),
+	Icon = get_ez_asset('Elite Zone/Assets/world.png'),
 	Size = UDim2.fromOffset(14, 14)
 })
-vape:CreateCategory({
+EZ:CreateCategory({
 	Name = 'Inventory',
-	Icon = getvapeasset('newvape/assets/new/inventory.png'),
+	Icon = get_ez_asset('Elite Zone/Assets/inventory.png'),
 	Size = UDim2.fromOffset(15, 14)
 })
-vape.Categories.Main:CreateDivider({
+EZ.Categories.Main:CreateDivider({
 	Text = 'misc'
 })
 
@@ -6419,9 +6451,9 @@ do
 		Value = 1
 	}
 
-	friends = vape:CreateCategoryList({
+	friends = EZ:CreateCategoryList({
 		Name = 'Friends',
-		Icon = getvapeasset('newvape/assets/new/friends.png'),
+		Icon = get_ez_asset('Elite Zone/Assets/friends.png'),
 		Size = UDim2.fromOffset(17, 16),
 		Placeholder = 'Roblox username',
 		Color = Color3.fromRGB(5, 134, 105),
@@ -6447,7 +6479,7 @@ do
 		Function = function(hue, sat, val)
 			for _, v in friends.Object.Children:GetChildren() do
 				local dot = v:FindFirstChild('Dot')
-				if dot and dot.BackgroundColor3 ~= color.Light(uipallet.Main, 0.37) then
+				if dot and dot.BackgroundColor3 ~= color.Light(ui_pallet.Main, 0.37) then
 					dot.BackgroundColor3 = Color3.fromHSV(hue, sat, val)
 					dot.Dot.BackgroundColor3 = dot.BackgroundColor3
 				end
@@ -6465,16 +6497,16 @@ do
 			friends.ColorUpdate:Fire(friendscolor.Hue, friendscolor.Sat, friendscolor.Value)
 		end
 	})
-	vape:Clean(friends.Update)
-	vape:Clean(friends.ColorUpdate)
+	EZ:Clean(friends.Update)
+	EZ:Clean(friends.ColorUpdate)
 end
 
 --[[
 	Profiles
 ]]
-vape:CreateCategoryList({
+EZ:CreateCategoryList({
 	Name = 'Profiles',
-	Icon = getvapeasset('newvape/assets/new/profiles.png'),
+	Icon = get_ez_asset('Elite Zone/Assets/profiles.png'),
 	Size = UDim2.fromOffset(17, 10),
 	Position = UDim2.fromOffset(12, 16),
 	Placeholder = 'Type name',
@@ -6485,9 +6517,9 @@ vape:CreateCategoryList({
 	Targets
 ]]
 local targets
-targets = vape:CreateCategoryList({
+targets = EZ:CreateCategoryList({
 	Name = 'Targets',
-	Icon = getvapeasset('newvape/assets/new/friends.png'),
+	Icon = get_ez_asset('Elite Zone/Assets/friends.png'),
 	Size = UDim2.fromOffset(17, 16),
 	Placeholder = 'Roblox username',
 	Function = function()
@@ -6495,19 +6527,19 @@ targets = vape:CreateCategoryList({
 	end
 })
 targets.Update = Instance.new('BindableEvent')
-vape:Clean(targets.Update)
+EZ:Clean(targets.Update)
 
 components.LegitWindow()
-vape.SearchBar = components.SearchBar()
-vape.Categories.Main:CreateOverlayBar()
+EZ.SearchBar = components.SearchBar()
+EZ.Categories.Main:CreateOverlayBar()
 
 --[[
 	General Settings
 ]]
 
-local general = vape.Categories.Main.Settings:CreateSettingsPane({Name = 'General'})
+local general = EZ.Categories.Main.Settings:CreateSettingsPane({Name = 'General'})
 local settingConnections = {}
-vape.MultiKeybind = general:CreateToggle({
+EZ.MultiKeybind = general:CreateToggle({
 	Name = 'Enable Multi-Keybinding',
 	Tooltip = 'Allows multiple keys to be bound to a module (eg. G + H)'
 })
@@ -6515,7 +6547,7 @@ general:CreateToggle({
 	Name = 'Allow setting keybinds',
 	Function = function(callback)
 		if callback then
-			for _, container in {vape.Modules, vape.Legit.Modules} do
+			for _, container in {EZ.Modules, EZ.Legit.Modules} do
 				for _, module in container do
 					for _, component in module.Options do
 						if component.Type == 'Toggle' then
@@ -6527,15 +6559,15 @@ general:CreateToggle({
 							table.insert(settingConnections, bind.Triggered:Connect(function(isDown)
 								if bind.Hold then
 									if component.Enabled ~= isDown then
-										if vape.SettingToggleNotifications.Enabled then
-											vape:CreateNotification(module.Name, component.Name..' '..(not component.Enabled and "<font color='#00AA00'>ON</font>" or "<font color='#FF5A5A'>OFF</font>"), 1.5)
+										if EZ.setting_toggle_notifications.Enabled then
+											EZ:CreateNotification(module.Name, component.Name..' '..(not component.Enabled and "<font color='#00AA00'>ON</font>" or "<font color='#FF5A5A'>OFF</font>"), 1.5)
 										end
 
 										component:Toggle()
 									end
 								else
-									if vape.SettingToggleNotifications.Enabled then
-										vape:CreateNotification(module.Name, component.Name..' '..(not component.Enabled and "<font color='#00AA00'>ON</font>" or "<font color='#FF5A5A'>OFF</font>"), 1.5)
+									if EZ.setting_toggle_notifications.Enabled then
+										EZ:CreateNotification(module.Name, component.Name..' '..(not component.Enabled and "<font color='#00AA00'>ON</font>" or "<font color='#FF5A5A'>OFF</font>"), 1.5)
 									end
 
 									component:Toggle()
@@ -6554,7 +6586,7 @@ general:CreateToggle({
 				end
 			end
 		else
-			for _, container in {vape.Modules, vape.Legit.Modules} do
+			for _, container in {EZ.Modules, EZ.Legit.Modules} do
 				for _, module in container do
 					for _, component in module.Options do
 						if component.Bind then
@@ -6576,9 +6608,9 @@ general:CreateToggle({
 general:CreateButton({
 	Name = 'Reset current profile',
 	Function = function()
-	vape.Save = function() end
-		if isfile('newvape/profiles/'..vape.Profile..vape.Place..'.txt') and delfile then
-			delfile('newvape/profiles/'..vape.Profile..vape.Place..'.txt')
+	EZ.Save = function() end
+		if isfile('newvape/profiles/'..EZ.Profile..EZ.Place..'.txt') and delfile then
+			delfile('newvape/profiles/'..EZ.Profile..EZ.Place..'.txt')
 		end
 
 		shared.vapereload = true
@@ -6588,15 +6620,15 @@ general:CreateButton({
 			loadstring(game:HttpGet('https://raw.githubusercontent.com/7GrandDadPGN/VapeCompiled/'..readfile('newvape/profiles/commit.txt')..'/loader.lua', true))()
 		end
 	end,
-	Tooltip = 'This will set your profile to the default settings of Vape'
+	Tooltip = 'This will set your profile to the default settings of EZ'
 })
 
 general:CreateButton({
 	Name = 'Self destruct',
 	Function = function()
-		vape:Uninject()
+		EZ:Uninject()
 	end,
-	Tooltip = 'Removes vape from the current game'
+	Tooltip = 'Removes EZ from the current game'
 })
 
 general:CreateButton({
@@ -6609,21 +6641,21 @@ general:CreateButton({
 			loadstring(game:HttpGet('https://raw.githubusercontent.com/7GrandDadPGN/VapeCompiled/'..readfile('newvape/profiles/commit.txt')..'/loader.lua', true))()
 		end
 	end,
-	Tooltip = 'Reloads vape for debugging purposes'
+	Tooltip = 'Reloads EZ for debugging purposes'
 })
 
 --[[
 	Module Settings
 ]]
 
-local modules = vape.Categories.Main.Settings:CreateSettingsPane({Name = 'Modules'})
+local modules = EZ.Categories.Main.Settings:CreateSettingsPane({Name = 'Modules'})
 modules:CreateToggle({
 	Name = 'Teams by server',
 	Tooltip = 'Ignore players on your team designated by the server',
 	Default = true,
 	Function = function()
-		if vape.Libraries.entity and vape.Libraries.entity.Running then
-			vape.Libraries.entity.refresh()
+		if EZ.Libraries.entity and EZ.Libraries.entity.Running then
+			EZ.Libraries.entity.refresh()
 		end
 	end
 })
@@ -6633,8 +6665,8 @@ modules:CreateToggle({
 	Tooltip = 'Uses the TeamColor property on players for render modules',
 	Default = true,
 	Function = function()
-		if vape.Libraries.entity and vape.Libraries.entity.Running then
-			vape.Libraries.entity.refresh()
+		if EZ.Libraries.entity and EZ.Libraries.entity.Running then
+			EZ.Libraries.entity.refresh()
 		end
 	end
 })
@@ -6643,11 +6675,11 @@ modules:CreateToggle({
 	GUI Settings
 ]]
 
-local guipane = vape.Categories.Main.Settings:CreateSettingsPane({Name = 'GUI'})
-vape.Blur = guipane:CreateToggle({
+local guipane = EZ.Categories.Main.Settings:CreateSettingsPane({Name = 'GUI'})
+EZ.Blur = guipane:CreateToggle({
 	Name = 'Blur background',
 	Function = function()
-		vape:BlurCheck()
+		EZ:BlurCheck()
 	end,
 	Default = true,
 	Tooltip = 'Blur the background of the GUI'
@@ -6663,7 +6695,7 @@ guipane:CreateToggle({
 	Name = 'Show tooltips',
 	Function = function(enabled)
 		tooltip.Visible = false
-		toolblur.Enabled = enabled
+		tool_blur.Enabled = enabled
 	end,
 	Default = true,
 	Tooltip = 'Toggles visibility of these'
@@ -6672,17 +6704,17 @@ guipane:CreateToggle({
 guipane:CreateToggle({
 	Name = 'Show legit mode',
 	Function = function(enabled)
-		clickgui.Search.Legit.Visible = enabled
-		clickgui.Search.LegitDivider.Visible = enabled
-		clickgui.Search.TextBox.Size = UDim2.new(1, enabled and -50 or -10, 0, 37)
-		clickgui.Search.TextBox.Position = UDim2.fromOffset(enabled and 50 or 10, 0)
+		click_gui.Search.Legit.Visible = enabled
+		click_gui.Search.LegitDivider.Visible = enabled
+		click_gui.Search.TextBox.Size = UDim2.new(1, enabled and -50 or -10, 0, 37)
+		click_gui.Search.TextBox.Position = UDim2.fromOffset(enabled and 50 or 10, 0)
 	end,
 	Default = true,
 	Tooltip = 'Shows the button to switch to the legit mod menu'
 })
 
 local ScaleSlider = {Object = {}, Value = 1}
-vape.Scale = guipane:CreateToggle({
+EZ.Scale = guipane:CreateToggle({
 	Name = 'Auto rescale',
 	Default = true,
 	Function = function(callback)
@@ -6702,7 +6734,7 @@ ScaleSlider = guipane:CreateSlider({
 	Max = 2,
 	Decimal = 10,
 	Function = function(val, final)
-		if final and not vape.Scale.Enabled then
+		if final and not EZ.Scale.Enabled then
 			scale.Scale = val
 		end
 	end,
@@ -6711,7 +6743,7 @@ ScaleSlider = guipane:CreateSlider({
 	Visible = false
 })
 
-vape.RainbowSpeed = guipane:CreateSlider({
+EZ.RainbowSpeed = guipane:CreateSlider({
 	Name = 'Rainbow speed',
 	Min = 0.1,
 	Max = 10,
@@ -6720,7 +6752,7 @@ vape.RainbowSpeed = guipane:CreateSlider({
 	Tooltip = 'Adjusts the speed of rainbow values'
 })
 
-vape.RainbowUpdateSpeed = guipane:CreateSlider({
+EZ.RainbowUpdateSpeed = guipane:CreateSlider({
 	Name = 'Rainbow update rate',
 	Min = 1,
 	Max = 144,
@@ -6731,7 +6763,7 @@ vape.RainbowUpdateSpeed = guipane:CreateSlider({
 
 --[[guipane:CreateDropdown({
 	Name = 'GUI Theme',
-	List = inputService.TouchEnabled and {'new', 'old'} or {'new', 'old', 'rise'},
+	List = input_service.TouchEnabled and {'new', 'old'} or {'new', 'old', 'rise'},
 	Function = function(val, mouse)
 		if mouse then
 			writefile('newvape/profiles/gui.txt', val)
@@ -6743,7 +6775,7 @@ vape.RainbowUpdateSpeed = guipane:CreateSlider({
 			end
 		end
 	end,
-	Tooltip = 'new - The newest vape theme to since v4.05\nold - The vape theme pre v4.05\nrise - Rise 6.0'
+	Tooltip = 'new - The newest EZ theme to since v4.05\nold - The EZ theme pre v4.05\nrise - Rise 6.0'
 })]]
 
 guipane:CreateDropdown({
@@ -6751,12 +6783,12 @@ guipane:CreateDropdown({
 	List = {'Floating', 'None'},
 	Default = 'Floating',
 	Function = function(value)
-		vape.SearchBar.Object.Visible = value == 'Floating'
+		EZ.SearchBar.Object.Visible = value == 'Floating'
 	end,
 	Tooltip = 'Switch between search bar styles'
 })
 
-vape.RainbowMode = guipane:CreateDropdown({
+EZ.RainbowMode = guipane:CreateDropdown({
 	Name = 'Rainbow Mode',
 	List = {'Normal', 'Gradient', 'Retro'},
 	Tooltip = 'Normal - Smooth color fade\nGradient - Gradient color fade\nRetro - Static color'
@@ -6765,7 +6797,7 @@ vape.RainbowMode = guipane:CreateDropdown({
 guipane:CreateButton({
 	Name = 'Reset GUI positions',
 	Function = function()
-		for _, category in vape.Categories do
+		for _, category in EZ.Categories do
 			category.Object.Position = UDim2.fromOffset(6, 42)
 		end
 	end,
@@ -6788,7 +6820,7 @@ guipane:CreateButton({
 		}
 
 		local categories = {}
-		for _, category in vape.Categories do
+		for _, category in EZ.Categories do
 			if category.Type ~= 'Overlay' then
 				table.insert(categories, category)
 			end
@@ -6813,43 +6845,43 @@ guipane:CreateButton({
 	Notification Settings
 ]]
 
-local notifpane = vape.Categories.Main.Settings:CreateSettingsPane({Name = 'Notifications'})
-vape.Notifications = notifpane:CreateToggle({
+local notifpane = EZ.Categories.Main.Settings:CreateSettingsPane({Name = 'Notifications'})
+EZ.Notifications = notifpane:CreateToggle({
 	Name = 'Notifications',
 	Function = function(enabled)
-		if vape.ToggleNotifications.Object then
-			vape.ToggleNotifications.Object.Visible = enabled
+		if EZ.toggle_notifications.Object then
+			EZ.toggle_notifications.Object.Visible = enabled
 		end
 
-		if vape.SettingToggleNotifications.Object then
-			vape.SettingToggleNotifications.Object.Visible = enabled
+		if EZ.setting_toggle_notifications.Object then
+			EZ.setting_toggle_notifications.Object.Visible = enabled
 		end
 	end,
 	Tooltip = 'Shows notifications',
 	Default = true
 })
 
-vape.ToggleNotifications = notifpane:CreateToggle({
+EZ.toggle_notifications = notifpane:CreateToggle({
 	Name = 'Toggle alert',
 	Tooltip = 'Notifies you if a module is enabled/disabled.',
 	Default = true,
 	Darker = true
 })
-vape.SettingToggleNotifications = notifpane:CreateToggle({
+EZ.setting_toggle_notifications = notifpane:CreateToggle({
 	Name = 'Setting toggle alert',
 	Tooltip = 'Notifies you when a bound setting is toggled.',
 	Default = true,
 	Darker = true
 })
 
-vape.GUIColor = vape.Categories.Main.Settings:CreateGUISlider({
+EZ.gui_color = EZ.Categories.Main.Settings:CreateGUISlider({
 	Name = 'GUI Theme',
 	Function = function(h, s, v)
-		vape:UpdateGUI()
+		EZ:UpdateGUI()
 	end
 })
 
-vape.GUIBind = vape.Categories.Main.Settings:CreateBind({
+EZ.gui_bind = EZ.Categories.Main.Settings:CreateBind({
 	Name = 'Rebind GUI',
 	Default = {'RightShift'},
 	NoRemove = true,
@@ -6858,34 +6890,34 @@ vape.GUIBind = vape.Categories.Main.Settings:CreateBind({
 
 --Overlays
 
-vape:Clean(task.spawn(function()
+EZ:Clean(task.spawn(function()
 	local hue = 0
 	repeat
-		for _, component in vape.RainbowSliders do
+		for _, component in EZ.rainbow_sliders do
 			if component.Type == 'GUISlider' then
-				component:SetValue(vape:Color(hue))
+				component:SetValue(EZ:Color(hue))
 			else
 				component:SetValue(hue)
 			end
 		end
 
-		local delta = task.wait(1 / vape.RainbowUpdateSpeed.Value)
-		hue = (hue + (delta * (0.2 * vape.RainbowSpeed.Value))) % 1
+		local delta = task.wait(1 / EZ.RainbowUpdateSpeed.Value)
+		hue = (hue + (delta * (0.2 * EZ.RainbowSpeed.Value))) % 1
 	until false
 end))
 
 local cursorConnection
-vape:Clean(clickgui:GetPropertyChangedSignal('Visible'):Connect(function()
-	vape:UpdateGUI()
+EZ:Clean(click_gui:GetPropertyChangedSignal('Visible'):Connect(function()
+	EZ:UpdateGUI()
 
-	if clickgui.Visible and inputService.MouseEnabled then
+	if click_gui.Visible and input_service.MouseEnabled then
 		if cursorConnection then
 			cursorConnection:Disconnect()
 		end
 
-		cursorConnection = runService.RenderStepped:Connect(function()
-			local isVisible = clickgui.Visible
-			for _, window in vape.Windows do
+		cursorConnection = run_service.RenderStepped:Connect(function()
+			local isVisible = click_gui.Visible
+			for _, window in EZ.Windows do
 				isVisible = isVisible or window.Visible
 			end
 
@@ -6896,28 +6928,28 @@ vape:Clean(clickgui:GetPropertyChangedSignal('Visible'):Connect(function()
 				return
 			end
 
-			cursor.Visible = not inputService.MouseIconEnabled
+			cursor.Visible = not input_service.MouseIconEnabled
 			if cursor.Visible then
-				local mouseLocation = inputService:GetMouseLocation()
+				local mouseLocation = input_service:GetMouseLocation()
 				cursor.Position = UDim2.fromOffset(mouseLocation.X - 31, mouseLocation.Y - 32)
 			end
 		end)
 	end
 end))
 
-vape:Clean(function()
+EZ:Clean(function()
 	if cursorConnection then
 		cursorConnection:Disconnect()
 	end
 end)
 
-vape:Clean(gui:GetPropertyChangedSignal('AbsoluteSize'):Connect(function()
-	if vape.Scale.Enabled then
+EZ:Clean(gui:GetPropertyChangedSignal('AbsoluteSize'):Connect(function()
+	if EZ.Scale.Enabled then
 		scale.Scale = math.max(gui.AbsoluteSize.X / 1920, 0.6)
 	end
 end))
 
-vape:Clean(notifications.ChildRemoved:Connect(function()
+EZ:Clean(notifications.ChildRemoved:Connect(function()
 	for index, notif in notifications:GetChildren() do
 		if tween.Tween then
 			tween:Tween(notif, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {
@@ -6927,17 +6959,17 @@ vape:Clean(notifications.ChildRemoved:Connect(function()
 	end
 end))
 
-vape:Clean(scale:GetPropertyChangedSignal('Scale'):Connect(function()
-	scaledgui.Size = UDim2.fromScale(1 / scale.Scale, 1 / scale.Scale)
+EZ:Clean(scale:GetPropertyChangedSignal('Scale'):Connect(function()
+	scaled_gui.Size = UDim2.fromScale(1 / scale.Scale, 1 / scale.Scale)
 
-	for _, obj in scaledgui:QueryDescendants('GuiObject >> [Visible = true]') do
+	for _, obj in scaled_gui:QueryDescendants('GuiObject >> [Visible = true]') do
 		obj.Visible = false
 		obj.Visible = true
 	end
 end))
 
-vape:Clean(vape.GUIBind.Triggered:Connect(function()
-	if vape.ThreadFix then
+EZ:Clean(EZ.gui_bind.Triggered:Connect(function()
+	if EZ.thread_fix then
 		setthreadidentity(8)
 	end
 
@@ -6947,74 +6979,74 @@ vape:Clean(vape.GUIBind.Triggered:Connect(function()
 
 	for _, module in self.Modules do
 		if module.Bind.Mobile then
-			module.Bind.Mobile.Visible = clickgui.Visible
+			module.Bind.Mobile.Visible = click_gui.Visible
 		end
 	end
 
-	clickgui.Visible = not clickgui.Visible
-	vape:BlurCheck()
+	click_gui.Visible = not click_gui.Visible
+	EZ:BlurCheck()
 end))
 
-vape:Clean(inputService.InputBegan:Connect(function(input)
-	if vape.CurrentTooltip and input.KeyCode == Enum.KeyCode.LeftShift then
-		vape.CurrentTooltip()
+EZ:Clean(input_service.InputBegan:Connect(function(input)
+	if EZ.CurrentTooltip and input.KeyCode == Enum.KeyCode.LeftShift then
+		EZ.CurrentTooltip()
 	end
 
-	if not inputService:GetFocusedTextBox() and input.KeyCode ~= Enum.KeyCode.Unknown then
-		table.insert(vape.HeldKeybinds, input.KeyCode.Name)
-		if vape.Binding then return end
+	if not input_service:GetFocusedTextBox() and input.KeyCode ~= Enum.KeyCode.Unknown then
+		table.insert(EZ.held_keybinds, input.KeyCode.Name)
+		if EZ.Binding then return end
 
-		for _, bind in vape.ActiveBinds do
-			if checkKeybinds(vape.HeldKeybinds, bind.Keys, input.KeyCode.Name) then
+		for _, bind in EZ.active_binds do
+			if checkKeybinds(EZ.held_keybinds, bind.Keys, input.KeyCode.Name) then
 				bind.Triggered:Fire(true)
 			end
 		end
 	end
 end))
 
-vape:Clean(inputService.InputEnded:Connect(function(input)
-	if vape.CurrentTooltip and input.KeyCode == Enum.KeyCode.LeftShift then
-		vape.CurrentTooltip()
+EZ:Clean(input_service.InputEnded:Connect(function(input)
+	if EZ.CurrentTooltip and input.KeyCode == Enum.KeyCode.LeftShift then
+		EZ.CurrentTooltip()
 	end
 
-	if not inputService:GetFocusedTextBox() and input.KeyCode ~= Enum.KeyCode.Unknown then
-		if vape.Binding then
-			if not vape.MultiKeybind.Enabled then
-				vape.HeldKeybinds = {input.KeyCode.Name}
+	if not input_service:GetFocusedTextBox() and input.KeyCode ~= Enum.KeyCode.Unknown then
+		if EZ.Binding then
+			if not EZ.MultiKeybind.Enabled then
+				EZ.held_keybinds = {input.KeyCode.Name}
 			end
 
-			vape.Binding:SetBind(vape.HeldKeybinds, true)
-			vape.Binding = nil
+			EZ.Binding:SetBind(EZ.held_keybinds, true)
+			EZ.Binding = nil
 		else
-			for _, bind in vape.ActiveBinds do
-				if bind.Hold and checkKeybinds(vape.HeldKeybinds, bind.Keys, input.KeyCode.Name) then
+			for _, bind in EZ.active_binds do
+				if bind.Hold and checkKeybinds(EZ.held_keybinds, bind.Keys, input.KeyCode.Name) then
 					bind.Triggered:Fire(false)
 				end
 			end
 		end
 	end
 
-	local index = table.find(vape.HeldKeybinds, input.KeyCode.Name)
+	local index = table.find(EZ.held_keybinds, input.KeyCode.Name)
 	if index then
-		table.remove(vape.HeldKeybinds, index)
+		table.remove(EZ.held_keybinds, index)
 	end
 end))
 
 -- libraries\color.lua
 local color = {}
-local uipallet = {}
+local ui_pallet = {}
 do
 	function color.Dark(col, num)
 		local h, s, v = col:ToHSV()
-		return Color3.fromHSV(h, s, math.clamp(select(3, uipallet.Main:ToHSV()) > 0.5 and v + num or v - num, 0, 1))
+		return Color3.fromHSV(h, s, math.clamp(select(3, ui_pallet.Main:ToHSV()) > 0.5 and v + num or v - num, 0, 1))
 	end
 
 	function color.Light(col, num)
 		local h, s, v = col:ToHSV()
-		return Color3.fromHSV(h, s, math.clamp(select(3, uipallet.Main:ToHSV()) > 0.5 and v - num or v + num, 0, 1))
+		return Color3.fromHSV(h, s, math.clamp(select(3, ui_pallet.Main:ToHSV()) > 0.5 and v - num or v + num, 0, 1))
 	end
 
-	function vape:Color(h)
+	function EZ:Color(h)
 		local s = 0.74 + (0.26 * math.min(h / 0.045, 1))
 
 		if h > 0.577 then
@@ -7032,7 +7064,7 @@ do
 		return h, s, 1
 	end
 
-	function vape:TextColor(h, s, v)
+	function EZ:TextColor(h, s, v)
 		if v >= 0.7 and (s < 0.6 or h > 0.04 and h < 0.56) then
 			return Color3.new(0.19, 0.19, 0.19)
 		end
@@ -7042,95 +7074,95 @@ do
 end
 
 -- libraries\getfontbounds.lua
-local function getfontbounds(text, size, font)
-	fontsize.Text = text
-	fontsize.Size = size
+local function get_font_bounds(text, size, font)
+	font_size.Text = text
+	font_size.Size = size
 	if typeof(font) == 'Font' then
-		fontsize.Font = font
+		font_size.Font = font
 	end
 
-	return textService:GetTextBoundsAsync(fontsize)
+	return text_service:GetTextBoundsAsync(font_size)
 end
 
 -- libraries\getvapeasset.lua
 do
-	local vapeAssets = {
-		['newvape/assets/new/add.png'] = 'rbxassetid://121642387707174',
-		['newvape/assets/new/aim.png'] = 'rbxassetid://122207028123421',
-		['newvape/assets/new/allowedicon.png'] = 'rbxassetid://112336790299036',
-		['newvape/assets/new/allowediconmini.png'] = 'rbxassetid://90142384730147',
-		['newvape/assets/new/back.png'] = 'rbxassetid://80523803497740',
-		['newvape/assets/new/backmini.png'] = 'rbxassetid://85859225495272',
-		['newvape/assets/new/bind.png'] = 'rbxassetid://81399857677684',
-		['newvape/assets/new/bindbkg.png'] = 'rbxassetid://101996225428926',
-		['newvape/assets/new/blatant.png'] = 'rbxassetid://126929923309265',
-		['newvape/assets/new/blur.png'] = 'rbxassetid://79246816170155',
-		['newvape/assets/new/blurnoti.png'] = 'rbxassetid://124705876663719',
-		['newvape/assets/new/close.png'] = 'rbxassetid://121816018671466',
-		['newvape/assets/new/closemini.png'] = 'rbxassetid://108320409341289',
-		['newvape/assets/new/closetiny.png'] = 'rbxassetid://71393233149714',
-		['newvape/assets/new/colorpreview.png'] = 'rbxassetid://140438628568318',
-		['newvape/assets/new/combat.png'] = 'rbxassetid://94762732349053',
-		['newvape/assets/new/customtheme.png'] = 'rbxassetid://91756736022800',
-		['newvape/assets/new/discord.png'] = 'rbxassetid://99871463341003',
-		['newvape/assets/new/downexpand.png'] = 'rbxassetid://94197751291504',
-		['newvape/assets/new/downexpandslider.png'] = 'rbxassetid://90289944682645',
-		['newvape/assets/new/edit.png'] = 'rbxassetid://105801951237137',
-		['newvape/assets/new/editlarge.png'] = 'rbxassetid://119233876755282',
-		['newvape/assets/new/expandarrow.png'] = 'rbxassetid://86360332526471',
-		['newvape/assets/new/friends.png'] = 'rbxassetid://92957214042038',
-		['newvape/assets/new/inventory.png'] = 'rbxassetid://93264756888499',
-		['newvape/assets/new/legit_mode_icon.png'] = 'rbxassetid://102858626075156',
-		['newvape/assets/new/legit_switch.png'] = 'rbxassetid://127508881124779',
-		['newvape/assets/new/min.png'] = 'rbxassetid://82175054487146',
-		['newvape/assets/new/noti_alert.png'] = 'rbxassetid://82356478726846',
-		['newvape/assets/new/noti_info.png'] = 'rbxassetid://102614825645099',
-		['newvape/assets/new/noti_warning.png'] = 'rbxassetid://119631730212167',
-		['newvape/assets/new/notification.png'] = 'rbxassetid://90300780458781',
-		['newvape/assets/new/npcs.png'] = 'rbxassetid://104434365485227',
-		['newvape/assets/new/overlaydots.png'] = 'rbxassetid://78012624671930',
-		['newvape/assets/new/overlays.png'] = 'rbxassetid://136535637407545',
-		['newvape/assets/new/overlayslarge.png'] = 'rbxassetid://127574141208160',
-		['newvape/assets/new/pin.png'] = 'rbxassetid://92459145800579',
-		['newvape/assets/new/players.png'] = 'rbxassetid://105137446428129',
-		['newvape/assets/new/profiles.png'] = 'rbxassetid://126051451865127',
-		['newvape/assets/new/radar.png'] = 'rbxassetid://97983828696086',
-		['newvape/assets/new/rainbow_1.png'] = 'rbxassetid://101329996188554',
-		['newvape/assets/new/rainbow_2.png'] = 'rbxassetid://72739074644654',
-		['newvape/assets/new/rainbow_3.png'] = 'rbxassetid://100716555253397',
-		['newvape/assets/new/rainbow_4.png'] = 'rbxassetid://133424174227092',
-		['newvape/assets/new/range.png'] = 'rbxassetid://107794917650053',
-		['newvape/assets/new/rangeindicator.png'] = 'rbxassetid://107038094175283',
-		['newvape/assets/new/render.png'] = 'rbxassetid://125472576898654',
-		['newvape/assets/new/search.png'] = 'rbxassetid://115611852955611',
-		['newvape/assets/new/settingdots.png'] = 'rbxassetid://130896840048276',
-		['newvape/assets/new/settings.png'] = 'rbxassetid://73820177347303',
-		['newvape/assets/new/settingsmini.png'] = 'rbxassetid://115732118290997',
-		['newvape/assets/new/targetinfo.png'] = 'rbxassetid://121604266095276',
-		['newvape/assets/new/textgui.png'] = 'rbxassetid://99438663817412',
-		['newvape/assets/new/theme.png'] = 'rbxassetid://111525258317113',
-		['newvape/assets/new/utility.png'] = 'rbxassetid://108303206513893',
-		['newvape/assets/new/vape.png'] = 'rbxassetid://92153855792786',
-		['newvape/assets/new/vapelogo.png'] = 'rbxassetid://126205920310261',
-		['newvape/assets/new/vapelogomini.png'] = 'rbxassetid://109041903452149',
-		['newvape/assets/new/v4.png'] = 'rbxassetid://102549752760489',
-		['newvape/assets/new/v4mini.png'] = 'rbxassetid://115213099001611',
-		['newvape/assets/new/world.png'] = 'rbxassetid://118917453153459'
+	local ez_assets = {
+		['Elite Zone/Assets/add.png'] = 'rbxassetid://121642387707174',
+		['Elite Zone/Assets/aim.png'] = 'rbxassetid://122207028123421',
+		['Elite Zone/Assets/allowedicon.png'] = 'rbxassetid://112336790299036',
+		['Elite Zone/Assets/allowediconmini.png'] = 'rbxassetid://90142384730147',
+		['Elite Zone/Assets/back.png'] = 'rbxassetid://80523803497740',
+		['Elite Zone/Assets/backmini.png'] = 'rbxassetid://85859225495272',
+		['Elite Zone/Assets/bind.png'] = 'rbxassetid://81399857677684',
+		['Elite Zone/Assets/bindbkg.png'] = 'rbxassetid://101996225428926',
+		['Elite Zone/Assets/blatant.png'] = 'rbxassetid://126929923309265',
+		['Elite Zone/Assets/blur.png'] = 'rbxassetid://79246816170155',
+		['Elite Zone/Assets/blurnoti.png'] = 'rbxassetid://124705876663719',
+		['Elite Zone/Assets/close.png'] = 'rbxassetid://121816018671466',
+		['Elite Zone/Assets/closemini.png'] = 'rbxassetid://108320409341289',
+		['Elite Zone/Assets/closetiny.png'] = 'rbxassetid://71393233149714',
+		['Elite Zone/Assets/colorpreview.png'] = 'rbxassetid://140438628568318',
+		['Elite Zone/Assets/combat.png'] = 'rbxassetid://94762732349053',
+		['Elite Zone/Assets/customtheme.png'] = 'rbxassetid://91756736022800',
+		['Elite Zone/Assets/discord.png'] = 'rbxassetid://99871463341003',
+		['Elite Zone/Assets/downexpand.png'] = 'rbxassetid://94197751291504',
+		['Elite Zone/Assets/downexpandslider.png'] = 'rbxassetid://90289944682645',
+		['Elite Zone/Assets/edit.png'] = 'rbxassetid://105801951237137',
+		['Elite Zone/Assets/editlarge.png'] = 'rbxassetid://119233876755282',
+		['Elite Zone/Assets/expandarrow.png'] = 'rbxassetid://86360332526471',
+		['Elite Zone/Assets/friends.png'] = 'rbxassetid://92957214042038',
+		['Elite Zone/Assets/inventory.png'] = 'rbxassetid://93264756888499',
+		['Elite Zone/Assets/legit_mode_icon.png'] = 'rbxassetid://102858626075156',
+		['Elite Zone/Assets/legit_switch.png'] = 'rbxassetid://127508881124779',
+		['Elite Zone/Assets/min.png'] = 'rbxassetid://82175054487146',
+		['Elite Zone/Assets/noti_alert.png'] = 'rbxassetid://82356478726846',
+		['Elite Zone/Assets/noti_info.png'] = 'rbxassetid://102614825645099',
+		['Elite Zone/Assets/noti_warning.png'] = 'rbxassetid://119631730212167',
+		['Elite Zone/Assets/notification.png'] = 'rbxassetid://90300780458781',
+		['Elite Zone/Assets/npcs.png'] = 'rbxassetid://104434365485227',
+		['Elite Zone/Assets/overlaydots.png'] = 'rbxassetid://78012624671930',
+		['Elite Zone/Assets/overlays.png'] = 'rbxassetid://136535637407545',
+		['Elite Zone/Assets/overlayslarge.png'] = 'rbxassetid://127574141208160',
+		['Elite Zone/Assets/pin.png'] = 'rbxassetid://92459145800579',
+		['Elite Zone/Assets/players.png'] = 'rbxassetid://105137446428129',
+		['Elite Zone/Assets/profiles.png'] = 'rbxassetid://126051451865127',
+		['Elite Zone/Assets/radar.png'] = 'rbxassetid://97983828696086',
+		['Elite Zone/Assets/rainbow_1.png'] = 'rbxassetid://101329996188554',
+		['Elite Zone/Assets/rainbow_2.png'] = 'rbxassetid://72739074644654',
+		['Elite Zone/Assets/rainbow_3.png'] = 'rbxassetid://100716555253397',
+		['Elite Zone/Assets/rainbow_4.png'] = 'rbxassetid://133424174227092',
+		['Elite Zone/Assets/range.png'] = 'rbxassetid://107794917650053',
+		['Elite Zone/Assets/rangeindicator.png'] = 'rbxassetid://107038094175283',
+		['Elite Zone/Assets/render.png'] = 'rbxassetid://125472576898654',
+		['Elite Zone/Assets/search.png'] = 'rbxassetid://115611852955611',
+		['Elite Zone/Assets/settingdots.png'] = 'rbxassetid://130896840048276',
+		['Elite Zone/Assets/settings.png'] = 'rbxassetid://73820177347303',
+		['Elite Zone/Assets/settingsmini.png'] = 'rbxassetid://115732118290997',
+		['Elite Zone/Assets/targetinfo.png'] = 'rbxassetid://121604266095276',
+		['Elite Zone/Assets/textgui.png'] = 'rbxassetid://99438663817412',
+		['Elite Zone/Assets/theme.png'] = 'rbxassetid://111525258317113',
+		['Elite Zone/Assets/utility.png'] = 'rbxassetid://108303206513893',
+		['Elite Zone/Assets/EZ.png'] = 'rbxassetid://92153855792786',
+		['Elite Zone/Assets/vapelogo.png'] = 'rbxassetid://126205920310261',
+		['Elite Zone/Assets/vapelogomini.png'] = 'rbxassetid://109041903452149',
+		['Elite Zone/Assets/v4.png'] = 'rbxassetid://102549752760489',
+		['Elite Zone/Assets/v4mini.png'] = 'rbxassetid://115213099001611',
+		['Elite Zone/Assets/world.png'] = 'rbxassetid://118917453153459'
 	}
 
 	local function createDownloader(text)
-		if vape.Loaded ~= true then
-			local downloader = vape.Downloader
+		if EZ.Loaded ~= true then
+			local downloader = EZ.Downloader
 			if not downloader then
 				downloader = Instance.new('TextLabel')
 				downloader.BackgroundTransparency = 1
-				downloader.FontFace = uipallet.Font
+				downloader.FontFace = ui_pallet.Font
 				downloader.Size = UDim2.new(1, 0, 0, 40)
 				downloader.TextColor3 = Color3.new(1, 1, 1)
 				downloader.TextSize = 20
 				downloader.TextStrokeTransparency = 0
-				downloader.Parent = vape.gui
-				vape.Downloader = downloader
+				downloader.Parent = EZ.gui
+				EZ.Downloader = downloader
 			end
 
 			downloader.Text = 'Downloading '..text
@@ -7150,7 +7182,7 @@ do
 			end
 
 			if path:find('.lua') then
-				data = '--This watermark is used to delete the file if its cached, remove it to make the file persist after vape updates.\n'..data
+				data = '--This watermark is used to delete the file if its cached, remove it to make the file persist after EZ updates.\n'..data
 			end
 
 			writefile(path, data)
@@ -7159,10 +7191,10 @@ do
 		return (callback or readfile)(path)
 	end
 
-	getvapeasset = not inputService.TouchEnabled and getcustomasset and function(path)
+	get_ez_asset = not input_service.TouchEnabled and getcustomasset and function(path)
 		return downloadFile(path, getcustomasset)
 	end or function(path)
-		return vapeAssets[path] or ''
+		return ez_assets[path] or ''
 	end
 end
 
@@ -7182,7 +7214,7 @@ do
 		end
 
 		if obj.Parent and (obj:IsA('UIStroke') or obj.Visible) then
-			index[obj] = tweenService:Create(obj, info, goal)
+			index[obj] = tween_service:Create(obj, info, goal)
 			index[obj].Completed:Once(function()
 				if index then
 					index[obj] = nil
@@ -7209,7 +7241,7 @@ do
 end
 
 -- libraries\uipallet.lua
-uipallet = {
+ui_pallet = {
 	Main = Color3.fromRGB(26, 25, 26),
 	Text = Color3.fromRGB(200, 200, 200),
 	Font = Font.fromEnum(Enum.Font.Arial),
@@ -7220,16 +7252,16 @@ uipallet = {
 do
 	local data = isfile('newvape/profiles/color.txt') and loadJson('newvape/profiles/color.txt')
 	if data then
-		uipallet.Main = data.Main and Color3.fromRGB(unpack(data.Main)) or uipallet.Main
-		uipallet.Text = data.Text and Color3.fromRGB(unpack(data.Text)) or uipallet.Text
-		uipallet.Font = data.Font and Font.new(
+		ui_pallet.Main = data.Main and Color3.fromRGB(unpack(data.Main)) or ui_pallet.Main
+		ui_pallet.Text = data.Text and Color3.fromRGB(unpack(data.Text)) or ui_pallet.Text
+		ui_pallet.Font = data.Font and Font.new(
 			data.Font:find('rbxasset') and data.Font
 			or string.format('rbxasset://fonts/families/%s.json', data.Font)
-		) or uipallet.Font
-		uipallet.FontSemiBold = Font.new(uipallet.Font.Family, Enum.FontWeight.SemiBold)
+		) or ui_pallet.Font
+		ui_pallet.FontSemiBold = Font.new(ui_pallet.Font.Family, Enum.FontWeight.SemiBold)
 	end
 
-	fontsize.Font = uipallet.Font
+	font_size.Font = ui_pallet.Font
 end
 
 -- overlays\TargetInfo.lua
@@ -7253,15 +7285,15 @@ local BKGColor
 local CustomColor
 local DisplayName
 
-TargetInfoOverlay = vape:CreateOverlay({
+TargetInfoOverlay = EZ:CreateOverlay({
 	Name = 'Target Info',
-	Icon = getvapeasset('newvape/assets/new/targetinfo.png'),
+	Icon = get_ez_asset('Elite Zone/Assets/targetinfo.png'),
 	Size = UDim2.fromOffset(14, 14),
 	Position = UDim2.fromOffset(12, 14),
 	CategorySize = 240,
 	Function = function(callback)
 		if callback then
-			TargetInfoOverlay:Clean(runService.RenderStepped:Connect(function()
+			TargetInfoOverlay:Clean(run_service.RenderStepped:Connect(function()
 				targetinfo:Update()
 			end))
 		end
@@ -7270,7 +7302,7 @@ TargetInfoOverlay = vape:CreateOverlay({
 
 local Holder = Instance.new('Frame')
 Holder.Size = UDim2.fromOffset(240, 89)
-Holder.BackgroundColor3 = color.Dark(uipallet.Main, 0.1)
+Holder.BackgroundColor3 = color.Dark(ui_pallet.Main, 0.1)
 Holder.BackgroundTransparency = 0.5
 Holder.Parent = TargetInfoOverlay.Children
 local BlurHolder = addBlur(Holder, nil, true)
@@ -7279,7 +7311,7 @@ addCorner(Holder)
 local Headshot = Instance.new('ImageLabel')
 Headshot.Size = UDim2.fromOffset(26, 27)
 Headshot.Position = UDim2.fromOffset(19, 17)
-Headshot.BackgroundColor3 = uipallet.Main
+Headshot.BackgroundColor3 = ui_pallet.Main
 Headshot.Image = 'rbxthumb://type=AvatarHeadShot&id=1&w=420&h=420'
 Headshot.Parent = Holder
 addCorner(Headshot)
@@ -7299,9 +7331,9 @@ Name.Text = 'Target name'
 Name.TextXAlignment = Enum.TextXAlignment.Left
 Name.TextYAlignment = Enum.TextYAlignment.Top
 Name.TextScaled = true
-Name.TextColor3 = color.Light(uipallet.Text, 0.4)
+Name.TextColor3 = color.Light(ui_pallet.Text, 0.4)
 Name.TextStrokeTransparency = 1
-Name.FontFace = uipallet.Font
+Name.FontFace = ui_pallet.Font
 local NameShadow = Name:Clone()
 NameShadow.Position = UDim2.fromOffset(55, 21)
 NameShadow.TextColor3 = Color3.new()
@@ -7318,7 +7350,7 @@ local HealthBKG = Instance.new('Frame')
 HealthBKG.Name = 'HealthBKG'
 HealthBKG.Size = UDim2.fromOffset(200, 9)
 HealthBKG.Position = UDim2.fromOffset(20, 56)
-HealthBKG.BackgroundColor3 = uipallet.Main
+HealthBKG.BackgroundColor3 = ui_pallet.Main
 HealthBKG.BorderSizePixel = 0
 HealthBKG.Parent = Holder
 addCorner(HealthBKG, UDim.new(1, 0))
@@ -7390,9 +7422,9 @@ CustomColor = TargetInfoOverlay:CreateToggle({
 			Headshot.BackgroundColor3 = Color3.fromHSV(BKGColor.Hue, BKGColor.Sat, math.max(BKGColor.Value - 0.1, 0.075))
 			HealthBKG.BackgroundColor3 = Headshot.BackgroundColor3
 		else
-			Holder.BackgroundColor3 = color.Dark(uipallet.Main, 0.1)
-			Headshot.BackgroundColor3 = uipallet.Main
-			HealthBKG.BackgroundColor3 = uipallet.Main
+			Holder.BackgroundColor3 = color.Dark(ui_pallet.Main, 0.1)
+			Headshot.BackgroundColor3 = ui_pallet.Main
+			HealthBKG.BackgroundColor3 = ui_pallet.Main
 		end
 	end
 })
@@ -7426,7 +7458,7 @@ BorderColor = TargetInfoOverlay:CreateColorSlider({
 })
 
 function targetinfo:Update()
-	local entitylib = vape.Libraries
+	local entitylib = EZ.Libraries
 	if not entitylib then return end
 
 	local cloned = table.clone(self.Targets)
@@ -7445,7 +7477,7 @@ function targetinfo:Update()
 		end
 	end
 
-	Holder.Visible = entity ~= nil or clickgui.Visible
+	Holder.Visible = entity ~= nil or click_gui.Visible
 	if entity then
 		Name.Text = entity.Player and (DisplayName.Enabled and entity.Player.DisplayName or entity.Player.Name) or entity.Character and entity.Character.Name or Name.Text
 		Headshot.Image = 'rbxthumb://type=AvatarHeadShot&id='..(entity.Player and entity.Player.UserId or 1)..'&w=420&h=420'
@@ -7486,7 +7518,7 @@ function targetinfo:Update()
 	end
 end
 
-vape.Libraries.targetinfo = targetinfo
+EZ.Libraries.targetinfo = targetinfo
 
 -- overlays\TextGUI.lua
 local Sort
@@ -7524,46 +7556,46 @@ local function findValidLabel(labels, index, dir)
 	end
 end
 
-TextGUI = vape:CreateOverlay({
+text_gui = EZ:CreateOverlay({
 	Name = 'Text GUI',
-	Icon = getvapeasset('newvape/assets/new/textgui.png'),
+	Icon = get_ez_asset('Elite Zone/Assets/textgui.png'),
 	Size = UDim2.fromOffset(16, 12),
 	Position = UDim2.fromOffset(12, 14),
 	Function = function()
-		vape:UpdateTextGUI()
+		EZ:Updatetext_gui()
 	end
 })
-Sort = TextGUI:CreateDropdown({
+Sort = text_gui:CreateDropdown({
 	Name = 'Sort',
 	List = {'Alphabetical', 'Length'},
 	Function = function()
-		vape:UpdateTextGUI()
+		EZ:Updatetext_gui()
 	end
 })
-FontOption = TextGUI:CreateFont({
+FontOption = text_gui:CreateFont({
 	Name = 'Font',
 	Default = 'Arial',
 	Function = function()
-		vape:UpdateTextGUI()
+		EZ:Updatetext_gui()
 	end
 })
-ColorMode = TextGUI:CreateDropdown({
+ColorMode = text_gui:CreateDropdown({
 	Name = 'Color Mode',
 	List = {'Match GUI color', 'Custom color'},
 	Function = function(value)
 		ColorSlider.Object.Visible = value == 'Custom color'
-		vape:UpdateTextGUI()
+		EZ:Updatetext_gui()
 	end
 })
-ColorSlider = TextGUI:CreateColorSlider({
+ColorSlider = text_gui:CreateColorSlider({
 	Name = 'Text GUI color',
 	Function = function()
-		vape:UpdateGUI()
+		EZ:UpdateGUI()
 	end,
 	Darker = true,
 	Visible = false
 })
-TextGUI:CreateSlider({
+text_gui:CreateSlider({
 	Name = 'Scale',
 	Min = 0,
 	Max = 2,
@@ -7571,138 +7603,138 @@ TextGUI:CreateSlider({
 	Default = 1,
 	Function = function(val)
 		Scale.Scale = val
-		vape:UpdateTextGUI()
+		EZ:Updatetext_gui()
 	end
 })
-Shadow = TextGUI:CreateToggle({
+Shadow = text_gui:CreateToggle({
 	Name = 'Shadow',
 	Tooltip = 'Renders shadowed text.',
 	Function = function()
-		vape:UpdateTextGUI()
+		EZ:Updatetext_gui()
 	end
 })
-Gradient = TextGUI:CreateToggle({
+Gradient = text_gui:CreateToggle({
 	Name = 'Gradient',
 	Tooltip = 'Renders a gradient',
 	Function = function(callback)
 		GradientV4.Object.Visible = callback
-		vape:UpdateTextGUI()
+		EZ:Updatetext_gui()
 	end
 })
-GradientV4 = TextGUI:CreateToggle({
+GradientV4 = text_gui:CreateToggle({
 	Name = 'V4 Gradient',
 	Function = function()
-		vape:UpdateTextGUI()
+		EZ:Updatetext_gui()
 	end,
 	Darker = true,
 	Visible = false
 })
-Animations = TextGUI:CreateToggle({
+Animations = text_gui:CreateToggle({
 	Name = 'Animations',
 	Tooltip = 'Use animations on text gui',
 	Function = function()
-		vape:UpdateTextGUI()
+		EZ:Updatetext_gui()
 	end
 })
-Watermark = TextGUI:CreateToggle({
+Watermark = text_gui:CreateToggle({
 	Name = 'Watermark',
-	Tooltip = 'Renders a vape watermark',
+	Tooltip = 'Renders a EZ watermark',
 	Function = function()
-		vape:UpdateTextGUI()
+		EZ:Updatetext_gui()
 	end
 })
-Background = TextGUI:CreateToggle({
+Background = text_gui:CreateToggle({
 	Name = 'Render background',
 	Function = function(callback)
 		BackgroundTransparency.Object.Visible = callback
 		BackgroundTint.Object.Visible = callback
-		vape:UpdateTextGUI()
+		EZ:Updatetext_gui()
 	end
 })
-BackgroundTransparency = TextGUI:CreateSlider({
+BackgroundTransparency = text_gui:CreateSlider({
 	Name = 'Transparency',
 	Min = 0,
 	Max = 1,
 	Default = 0.5,
 	Decimal = 10,
 	Function = function()
-		vape:UpdateTextGUI()
+		EZ:Updatetext_gui()
 	end,
 	Darker = true,
 	Visible = false
 })
-BackgroundTint = TextGUI:CreateToggle({
+BackgroundTint = text_gui:CreateToggle({
 	Name = 'Tint',
 	Function = function()
-		vape:UpdateTextGUI()
+		EZ:Updatetext_gui()
 	end,
 	Darker = true,
 	Visible = false
 })
-HideModules = TextGUI:CreateToggle({
+HideModules = text_gui:CreateToggle({
 	Name = 'Hide modules',
 	Tooltip = 'Allows you to blacklist certain modules from being shown.',
 	Function = function(enabled)
 		HideModulesList.Object.Visible = enabled
-		vape:UpdateTextGUI()
+		EZ:Updatetext_gui()
 	end
 })
-HideModulesList = TextGUI:CreateTextList({
+HideModulesList = text_gui:CreateTextList({
 	Name = 'Blacklist',
 	Tooltip = 'Name of module to hide.',
 	Color = Color3.fromRGB(250, 50, 56),
 	Function = function()
-		vape:UpdateTextGUI()
+		EZ:Updatetext_gui()
 	end,
 	Visible = false,
 	Darker = true
 })
-HideRender = TextGUI:CreateToggle({
+HideRender = text_gui:CreateToggle({
 	Name = 'Hide render',
 	Function = function()
-		vape:UpdateTextGUI()
+		EZ:Updatetext_gui()
 	end
 })
-CustomText = TextGUI:CreateToggle({
+CustomText = text_gui:CreateToggle({
 	Name = 'Add custom text',
 	Function = function(enabled)
 		CustomTextBox.Object.Visible = enabled
 		CustomTextFont.Object.Visible = enabled
 		CustomTextColor.Object.Visible = enabled
 		CustomTextColorSlider.Object.Visible = CustomTextColor.Enabled and enabled
-		vape:UpdateTextGUI()
+		EZ:Updatetext_gui()
 	end
 })
-CustomTextBox = TextGUI:CreateTextBox({
+CustomTextBox = text_gui:CreateTextBox({
 	Name = 'Custom text',
 	Function = function()
-		vape:UpdateTextGUI()
+		EZ:Updatetext_gui()
 	end,
 	Darker = true,
 	Visible = false
 })
-CustomTextFont = TextGUI:CreateFont({
+CustomTextFont = text_gui:CreateFont({
 	Name = 'Custom Font',
 	Default = 'Arial',
 	Function = function()
-		vape:UpdateTextGUI()
+		EZ:Updatetext_gui()
 	end,
 	Darker = true,
 	Visible = false
 })
-CustomTextColor = TextGUI:CreateToggle({
+CustomTextColor = text_gui:CreateToggle({
 	Name = 'Set custom text color',
 	Function = function(enabled)
 		CustomTextColorSlider.Object.Visible = enabled
-		vape:UpdateGUI()
+		EZ:UpdateGUI()
 	end,
 	Darker = true,
 	Visible = false
 })
-CustomTextColorSlider = TextGUI:CreateColorSlider({
+CustomTextColorSlider = text_gui:CreateColorSlider({
 	Name = 'Color of custom text',
 	Function = function(afterload)
-		vape:UpdateGUI()
+		EZ:UpdateGUI()
 	end,
 	Darker = true,
 	Visible = false
@@ -7714,22 +7746,22 @@ CustomTextColorSlider = TextGUI:CreateColorSlider({
 ]]
 
 Scale = Instance.new('UIScale')
-Scale.Parent = TextGUI.Children
+Scale.Parent = text_gui.Children
 local Logo = Instance.new('ImageLabel')
 Logo.BackgroundColor3 = Color3.new()
 Logo.BackgroundTransparency = 1
 Logo.BorderSizePixel = 0
-Logo.Image = getvapeasset('newvape/assets/new/vapelogo.png')
+Logo.Image = get_ez_asset('Elite Zone/Assets/vapelogo.png')
 Logo.Name = 'Logo'
 Logo.Position = UDim2.new(1, -142, 0, 3)
 Logo.Size = UDim2.fromOffset(81, 24)
 Logo.Visible = false
-Logo.Parent = TextGUI.Children
+Logo.Parent = text_gui.Children
 local LogoV4 = Instance.new('ImageLabel')
 LogoV4.BackgroundColor3 = Color3.new()
 LogoV4.BackgroundTransparency = 1
 LogoV4.BorderSizePixel = 0
-LogoV4.Image = getvapeasset('newvape/assets/new/v4.png')
+LogoV4.Image = get_ez_asset('Elite Zone/Assets/v4.png')
 LogoV4.Name = 'Logo2'
 LogoV4.Position = UDim2.new(1, -1, 0, 0)
 LogoV4.Size = UDim2.fromOffset(35, 24)
@@ -7762,14 +7794,14 @@ LabelCustom.RichText = true
 local LabelCustomShadow = LabelCustom:Clone()
 LabelCustomShadow.TextColor3 = Color3.new()
 LabelCustomShadow.TextTransparency = 0.65
-LabelCustomShadow.Parent = TextGUI.Children
-LabelCustom.Parent = TextGUI.Children
+LabelCustomShadow.Parent = text_gui.Children
+LabelCustom.Parent = text_gui.Children
 local LabelHolder = Instance.new('Frame')
 LabelHolder.Name = 'Holder'
 LabelHolder.Size = UDim2.fromScale(1, 1)
 LabelHolder.Position = UDim2.fromOffset(5, 37)
 LabelHolder.BackgroundTransparency = 1
-LabelHolder.Parent = TextGUI.Children
+LabelHolder.Parent = text_gui.Children
 local ListLayout = Instance.new('UIListLayout')
 ListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
 ListLayout.VerticalAlignment = Enum.VerticalAlignment.Top
@@ -7797,23 +7829,23 @@ LabelCustom:GetPropertyChangedSignal('Size'):Connect(function()
 	LabelCustomShadow.Size = LabelCustom.Size
 end)
 
-local oldRight = TextGUI.Children.AbsolutePosition.X > (gui.AbsoluteSize.X / 2)
-vape:Clean(TextGUI.Children:GetPropertyChangedSignal('AbsolutePosition'):Connect(function()
-	if vape.ThreadFix then
+local oldRight = text_gui.Children.AbsolutePosition.X > (gui.AbsoluteSize.X / 2)
+EZ:Clean(text_gui.Children:GetPropertyChangedSignal('AbsolutePosition'):Connect(function()
+	if EZ.thread_fix then
 		setthreadidentity(8)
 	end
 
-	local isRight = TextGUI.Children.AbsolutePosition.X > (gui.AbsoluteSize.X / 2)
+	local isRight = text_gui.Children.AbsolutePosition.X > (gui.AbsoluteSize.X / 2)
 	if oldRight ~= isRight then
-		vape:UpdateTextGUI()
+		EZ:Updatetext_gui()
 		oldRight = isRight
 	end
 end))
 
-function vape:UpdateTextGUI(afterload)
-	if not afterload and not vape.Loaded then return end
-	if TextGUI.Button.Enabled then
-		local isRight = TextGUI.Children.AbsolutePosition.X > (gui.AbsoluteSize.X / 2)
+function EZ:Updatetext_gui(afterload)
+	if not afterload and not EZ.Loaded then return end
+	if text_gui.Button.Enabled then
+		local isRight = text_gui.Children.AbsolutePosition.X > (gui.AbsoluteSize.X / 2)
 
 		Logo.Visible = Watermark.Enabled
 		Logo.Position = isRight and UDim2.new(1 / Scale.Scale, -113, 0, 6) or UDim2.fromOffset(0, 6)
@@ -7827,7 +7859,7 @@ function vape:UpdateTextGUI(afterload)
 		LabelHolder.Position = UDim2.fromOffset(isRight and 3 or 0, 11 + (Logo.Visible and Logo.Size.Y.Offset or 0) + (LabelCustom.Visible and 28 or 0) + (Background.Enabled and 3 or 0))
 
 		if LabelCustom.Visible then
-			local size = getfontbounds(LabelCustom.ContentText, LabelCustom.TextSize, LabelCustom.FontFace)
+			local size = get_font_bounds(LabelCustom.ContentText, LabelCustom.TextSize, LabelCustom.FontFace)
 			LabelCustom.Size = UDim2.fromOffset(size.X, size.Y)
 			LabelCustom.Position = UDim2.new(isRight and 1 / Scale.Scale or 0, isRight and -size.X or 0, 0, (Logo.Visible and 32 or 8))
 		end
@@ -7842,7 +7874,7 @@ function vape:UpdateTextGUI(afterload)
 		end
 		table.clear(Labels)
 
-		for name, module in vape.Modules do
+		for name, module in EZ.Modules do
 			if HideModules.Enabled and table.find(HideModulesList.ListEnabled, name) then
 				continue
 			end
@@ -7862,7 +7894,7 @@ function vape:UpdateTextGUI(afterload)
 
 				if Background.Enabled then
 					bkg = Instance.new('Frame')
-					bkg.BackgroundColor3 = color.Dark(uipallet.Main, 0.15)
+					bkg.BackgroundColor3 = color.Dark(ui_pallet.Main, 0.15)
 					bkg.BackgroundTransparency = BackgroundTransparency.Value
 					bkg.BorderSizePixel = 0
 					bkg.Size = UDim2.new(1, 0, 1, 0)
@@ -7899,7 +7931,7 @@ function vape:UpdateTextGUI(afterload)
 				label.TextSize = 18
 				label.RichText = true
 
-				local size = getfontbounds(label.ContentText, label.TextSize, label.FontFace)
+				local size = get_font_bounds(label.ContentText, label.TextSize, label.FontFace)
 				label.Size = UDim2.fromOffset(size.X, size.Y)
 
 				if Shadow.Enabled then
@@ -7977,10 +8009,10 @@ function vape:UpdateTextGUI(afterload)
 	self:UpdateGUI()
 end
 
-function TextGUI:UpdateColor(hue, sat, val, default)
+function text_gui:UpdateColor(hue, sat, val, default)
 	LogoGradient.Color = ColorSequence.new({
 		ColorSequenceKeypoint.new(0, Color3.fromHSV(hue, sat, val)),
-		ColorSequenceKeypoint.new(1, Gradient.Enabled and Color3.fromHSV(vape:Color((hue - 0.075) % 1)) or Color3.fromHSV(hue, sat, val))
+		ColorSequenceKeypoint.new(1, Gradient.Enabled and Color3.fromHSV(EZ:Color((hue - 0.075) % 1)) or Color3.fromHSV(hue, sat, val))
 	})
 	LogoGradient2.Color = Gradient.Enabled and GradientV4.Enabled and LogoGradient.Color or ColorSequence.new({
 		ColorSequenceKeypoint.new(0, Color3.new(1, 1, 1)),
@@ -7990,7 +8022,7 @@ function TextGUI:UpdateColor(hue, sat, val, default)
 
 	local isCustom = ColorMode.Value == 'Custom color' and Color3.fromHSV(ColorSlider.Hue, ColorSlider.Sat, ColorSlider.Value) or nil
 	for index, label in Labels do
-		label.Text.TextColor3 = isCustom or (vape.GUIColor.Rainbow and Color3.fromHSV(vape:Color((hue - ((Gradient.Enabled and index + 2 or index) * 0.025)) % 1)) or LogoGradient.Color.Keypoints[2].Value)
+		label.Text.TextColor3 = isCustom or (EZ.gui_color.Rainbow and Color3.fromHSV(EZ:Color((hue - ((Gradient.Enabled and index + 2 or index) * 0.025)) % 1)) or LogoGradient.Color.Keypoints[2].Value)
 
 		if label.Color then
 			label.Color.BackgroundColor3 = label.Text.TextColor3
@@ -8002,3 +8034,5 @@ function TextGUI:UpdateColor(hue, sat, val, default)
 	end
 end
 
+
+return EZ
