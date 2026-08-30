@@ -56,6 +56,8 @@ do
 		['Elite Zone/Assets/theme.png'] = 'rbxassetid://111525258317113',
 		['Elite Zone/Assets/utility.png'] = 'rbxassetid://108303206513893',
 		['Elite Zone/Assets/EZ.png'] = 'rbxassetid://92153855792786',
+		['Elite Zone/Assets/vapelogo.png'] = 'rbxassetid://126205920310261',
+		['Elite Zone/Assets/vapelogomini.png'] = 'rbxassetid://109041903452149',
 		['Elite Zone/Assets/v4.png'] = 'rbxassetid://102549752760489',
 		['Elite Zone/Assets/v4mini.png'] = 'rbxassetid://115213099001611',
 		['Elite Zone/Assets/world.png'] = 'rbxassetid://118917453153459'

@@ -16,7 +16,7 @@ addCorner(window)
 addDragHandler(window)
 local logo = Instance.new('ImageLabel')
 logo.BackgroundTransparency = 1
-logo.Image = get_ez_asset('Elite Zone/Assets/EZ.png')
+logo.Image = get_ez_asset('Elite Zone/Assets/vapelogomini.png')
 logo.ImageColor3 = select(3, uipallet.Main:ToHSV()) > 0.5 and uipallet.Text or Color3.new(1, 1, 1)
 logo.Name = 'EZLogo'
 logo.Position = UDim2.fromOffset(12, 11)
