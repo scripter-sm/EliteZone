@@ -1,4 +1,4 @@
-do
+﻿do
 	local vapeAssets = {
 		['Elite Zone/Assets/add.png'] = 'rbxassetid://121642387707174',
 		['Elite Zone/Assets/aim.png'] = 'rbxassetid://122207028123421',

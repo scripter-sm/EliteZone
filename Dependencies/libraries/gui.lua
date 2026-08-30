@@ -95,7 +95,7 @@ EZ.themes_path = themes_path
 EZ.autoload_data = load_autoload()
 EZ.LoadAutoload = save_autoload
 
-﻿local run = function(func)
+local run = function(func)
 	func()
 end
 local cloneref = cloneref or function(obj)
@@ -872,7 +872,7 @@ function EZ:LoadOptions(obj, data)
 end
 
 function EZ:LoadGUI()
-	﻿addMaid(EZ)
+	addMaid(EZ)
 	gui = Instance.new('ScreenGui')
 	gui.Name = randomString()
 	gui.DisplayOrder = 9999999
@@ -1429,7 +1429,7 @@ function EZ:LoadGUI()
 	})
 	
 	run(function()
-		﻿local Sort
+		local Sort
 		local FontOption
 		local ColorSlider
 		local ColorMode
@@ -2540,7 +2540,7 @@ end
 
 components = {
 	Bind = function(props, children, api)
-		﻿local component = {
+		local component = {
 			Hold = props.Hold or false,
 			Keys = {},
 			Triggered = createSignal(),
@@ -5755,7 +5755,7 @@ components = {
 		
 	end,
 	Module = function(props, children, api)
-		﻿EZ:Remove(props.Name)
+		EZ:Remove(props.Name)
 		local component = {
 			Category = api.Name,
 			Enabled = false,

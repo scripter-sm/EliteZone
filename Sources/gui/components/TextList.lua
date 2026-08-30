@@ -1,4 +1,4 @@
-local component = {
+﻿local component = {
 	Index = getTableSize(api.Options),
 	List = props.Default and table.clone(props.Default) or {},
 	ListEnabled = props.Default and table.clone(props.Default) or {},

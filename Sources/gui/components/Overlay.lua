@@ -1,4 +1,4 @@
-local window
+﻿local window
 local component
 component = {
 	Button = EZ.Overlays:CreateImageToggle({

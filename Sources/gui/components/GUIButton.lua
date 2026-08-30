@@ -1,4 +1,4 @@
-local component = {
+﻿local component = {
 	Enabled = false,
 	Index = getTableSize(api.Buttons),
 	Name = props.Name

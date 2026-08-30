@@ -1,4 +1,4 @@
-EZ:Remove(props.Name)
+﻿EZ:Remove(props.Name)
 local component = {
 	Enabled = false,
 	Legit = true,

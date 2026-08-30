@@ -1,4 +1,4 @@
-local divider = Instance.new('Frame')
+﻿local divider = Instance.new('Frame')
 divider.Size = UDim2.new(1, 0, 0, 1)
 divider.BackgroundColor3 = color.Light(uipallet.Main, 0.02)
 divider.BorderSizePixel = 0

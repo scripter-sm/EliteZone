@@ -1,4 +1,4 @@
-local component = {
+﻿local component = {
 	Buttons = {},
 	Options = {},
 	Parent = api.Parent or children,

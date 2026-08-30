@@ -1,4 +1,4 @@
-local fonts = {
+﻿local fonts = {
 	props.Default,
 	'Custom'
 }

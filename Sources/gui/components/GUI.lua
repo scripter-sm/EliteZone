@@ -1,4 +1,4 @@
-local component = {
+﻿local component = {
 	Buttons = {},
 	Type = 'MainWindow'
 }

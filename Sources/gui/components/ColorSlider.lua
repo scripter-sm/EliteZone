@@ -1,4 +1,4 @@
-local component = {
+﻿local component = {
 	Type = 'ColorSlider',
 	Hue = props.DefaultHue or 0.44,
 	Sat = props.DefaultSat or 1,
