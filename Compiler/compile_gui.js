@@ -1,9 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 
-const sources_path = path.join(__dirname, '..', 'Dependencies', 'sources', 'gui');
+const gui_path = path.join(__dirname, '..', 'Dependencies', 'sources', 'gui');
 const output_path = path.join(__dirname, '..', 'Dependencies', 'libraries', 'gui.lua');
-const assets_path = path.join(__dirname, '..', 'Dependencies', 'assets');
 
 function getFiles(dir, ext) {
     const files = [];
@@ -27,13 +26,96 @@ function getFiles(dir, ext) {
 }
 
 function compile() {
-    const files = getFiles(sources_path, 'lua');
-    files.sort();
+    const components = [], libraries = [], overlays = [];
+    const component_path = path.join(gui_path, 'components');
+    const library_path = path.join(gui_path, 'libraries');
+    const overlay_path = path.join(gui_path, 'overlays');
     
-    let combined = 'local EZ = {}\nlocal function load_assets()\n';
+    // Read libraries
+    if (fs.existsSync(library_path)) {
+        for (const library of fs.readdirSync(library_path)) {
+            libraries.push({
+                name: library.substring(0, library.length - 4),
+                data: fs.readFileSync(path.join(library_path, library), {encoding: 'utf8'})
+            });
+        }
+    }
     
-    // Add asset download function
-    combined += `    local assets_url = "https://raw.githubusercontent.com/scripter-sm/EliteZone/main/Dependencies/assets/"
+    // Read overlays
+    if (fs.existsSync(overlay_path)) {
+        for (const overlay of fs.readdirSync(overlay_path)) {
+            overlays.push({
+                name: overlay.substring(0, overlay.length - 4),
+                data: fs.readFileSync(path.join(overlay_path, overlay), {encoding: 'utf8'})
+            });
+        }
+    }
+    
+    // Read components
+    if (fs.existsSync(component_path)) {
+        for (const component of fs.readdirSync(component_path)) {
+            const cname = component.substring(0, component.length - 4);
+            let data = fs.readFileSync(path.join(component_path, component), {encoding: 'utf8'});
+            data = data.split('\n').map((line) => '\t\t' + line).join('\n');
+            components.push({
+                name: cname,
+                data
+            });
+        }
+    }
+    
+    libraries.sort((a, b) => a.name.localeCompare(b.name));
+    overlays.sort((b, a) => a.name.localeCompare(b.name));
+    components.sort((a, b) => a.name.localeCompare(b.name));
+    
+    let init_data = fs.readFileSync(path.join(gui_path, 'init.lua'), {encoding: 'utf8'});
+    let base_data = fs.readFileSync(path.join(gui_path, 'base.lua'), {encoding: 'utf8'});
+    
+    // Replace markers like VapeBundler does
+    init_data = init_data.replace('--Overlays', overlays.map((data) => {
+        return 'run(function()\n' + data.data.split('\n').map((line) => '\t' + line).join('\n') + '\nend)';
+    }).join('\n\n'));
+    
+    init_data = init_data.split('\n').map((line) => '\t' + line).join('\n');
+    
+    base_data = base_data.replace('--Libraries', libraries.map((data) => {
+        return data.data;
+    }).join('\n\n') + '\n\nEZ.Libraries = {\n' + libraries.map(data => {
+        return '\t' + data.name + ' = ' + data.name + ',';
+    }).join('\n') + '\n}');
+    
+    base_data = base_data.replace('--Components', 'components = {\n' + components.map((data) => {
+        return '\t' + data.name + ' = function(props, children, api)\n' + data.data + '\n\tend,';
+    }).join('\n') + '\n}');
+    
+    base_data = base_data.replace('--Init', init_data);
+    
+    // Remove return statements except final one
+    const lines = base_data.split('\n');
+    const filtered_lines = [];
+    let return_count = 0;
+    
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (line.includes('return')) {
+            return_count++;
+            if (return_count > 1) {
+                continue; // Skip extra return statements
+            }
+        }
+        filtered_lines.push(line);
+    }
+    
+    // Ensure final return statement
+    if (!filtered_lines[filtered_lines.length - 1].includes('return EZ')) {
+        filtered_lines.push('return EZ');
+    }
+    
+    base_data = filtered_lines.join('\n');
+    
+    // Add asset loading at the top
+    const asset_loader = `local function load_assets()
+    local assets_url = "https://raw.githubusercontent.com/scripter-sm/EliteZone/main/Dependencies/assets/"
     local assets_path = "Elite Zone/Assets"
     
     if not isfolder(assets_path) then
@@ -68,59 +150,10 @@ end
 local get_ez_asset = load_assets()
 `;
     
-    // Process each file
-    for (const f of files) {
-        let content = fs.readFileSync(f, 'utf8');
-        const rel = f.substring(sources_path.length + 1);
-        
-        // Replace vape with EZ
-        content = content.replace(/\bvape\b/g, 'EZ');
-        content = content.replace(/\bVape\b/g, 'EZ');
-        content = content.replace(/\bVAPE\b/g, 'EZ');
-        
-        // Replace getvapeasset with get_ez_asset
-        content = content.replace(/getvapeasset/g, 'get_ez_asset');
-        
-        // Replace asset paths
-        content = content.replace(/newvape\/assets\/new/g, 'Elite Zone/Assets');
-        
-        // Replace vapeAssets with ez_assets
-        content = content.replace(/vapeAssets/g, 'ez_assets');
-        
-        // Convert camelCase to snake_case for common variables
-        content = content.replace(/tweenService/g, 'tween_service');
-        content = content.replace(/inputService/g, 'input_service');
-        content = content.replace(/textService/g, 'text_service');
-        content = content.replace(/guiService/g, 'gui_service');
-        content = content.replace(/runService/g, 'run_service');
-        content = content.replace(/httpService/g, 'http_service');
-        content = content.replace(/fontsize/g, 'font_size');
-        content = content.replace(/clickgui/g, 'click_gui');
-        content = content.replace(/scaledgui/g, 'scaled_gui');
-        content = content.replace(/toolblur/g, 'tool_blur');
-        content = content.replace(/TextGUI/g, 'text_gui');
-        content = content.replace(/ActiveBinds/g, 'active_binds');
-        content = content.replace(/GUIColor/g, 'gui_color');
-        content = content.replace(/HeldKeybinds/g, 'held_keybinds');
-        content = content.replace(/RainbowSliders/g, 'rainbow_sliders');
-        content = content.replace(/SettingToggleNotifications/g, 'setting_toggle_notifications');
-        content = content.replace(/ThreadFix/g, 'thread_fix');
-        content = content.replace(/ToggleNotifications/g, 'toggle_notifications');
-        content = content.replace(/GUIBind/g, 'gui_bind');
-        content = content.replace(/GUIEnabled/g, 'gui_enabled');
-        content = content.replace(/GUIVisible/g, 'gui_visible');
-        content = content.replace(/LegitVisible/g, 'legit_visible');
-        content = content.replace(/uipallet/g, 'ui_pallet');
-        content = content.replace(/getfontbounds/g, 'get_font_bounds');
-        
-        combined += '-- ' + rel + '\n' + content + '\n\n';
-    }
+    base_data = asset_loader + '\n' + base_data;
     
-    // Add return statement
-    combined += '\nreturn EZ';
-    
-    fs.writeFileSync(output_path, combined, 'utf8');
-    console.log('Compiled ' + files.length + ' files to gui.lua (' + combined.length + ' bytes)');
+    fs.writeFileSync(output_path, base_data, 'utf8');
+    console.log('Compiled GUI to gui.lua');
     
     // Remove gui folder from libraries if it exists
     const gui_folder = path.join(__dirname, '..', 'Dependencies', 'libraries', 'gui');

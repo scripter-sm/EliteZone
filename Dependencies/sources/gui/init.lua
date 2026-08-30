@@ -1,22 +1,22 @@
-addMaid(vape)
+addMaid(EZ)
 gui = Instance.new('ScreenGui')
 gui.Name = randomString()
 gui.DisplayOrder = 9999999
 gui.ZIndexBehavior = Enum.ZIndexBehavior.Global
 gui.IgnoreGuiInset = true
 
-if vape.ThreadFix then
+if EZ.thread_fix then
 	local holder = Instance.new('Folder')
 	holder.Parent = cloneref(game:GetService('CoreGui'))
 	gui.OnTopOfCoreBlur = true
 	gui.Parent = (gethui and gethui()) or cloneref(game:GetService('CoreGui'))
-	vape.holder = holder
+	EZ.holder = holder
 else
 	gui.Parent = cloneref(game:GetService('Players')).LocalPlayer.PlayerGui
 	gui.ResetOnSpawn = false
-	vape.holder = gui
+	EZ.holder = gui
 end
-vape.gui = gui
+EZ.gui = gui
 
 scaledgui = Instance.new('Frame')
 scaledgui.BackgroundTransparency = 1
@@ -72,37 +72,37 @@ scale.Parent = scaledgui
 scaledgui.Size = UDim2.fromScale(1 / scale.Scale, 1 / scale.Scale)
 components.GUI({})
 
-vape:CreateCategory({
+EZ:CreateCategory({
 	Name = 'Combat',
-	Icon = getvapeasset('newvape/assets/new/combat.png'),
+	Icon = getEZasset('newEZ/assets/new/combat.png'),
 	Size = UDim2.fromOffset(13, 14)
 })
-vape:CreateCategory({
+EZ:CreateCategory({
 	Name = 'Blatant',
-	Icon = getvapeasset('newvape/assets/new/blatant.png'),
+	Icon = getEZasset('newEZ/assets/new/blatant.png'),
 	Size = UDim2.fromOffset(14, 14)
 })
-vape:CreateCategory({
+EZ:CreateCategory({
 	Name = 'Render',
-	Icon = getvapeasset('newvape/assets/new/render.png'),
+	Icon = getEZasset('newEZ/assets/new/render.png'),
 	Size = UDim2.fromOffset(15, 14)
 })
-vape:CreateCategory({
+EZ:CreateCategory({
 	Name = 'Utility',
-	Icon = getvapeasset('newvape/assets/new/utility.png'),
+	Icon = getEZasset('newEZ/assets/new/utility.png'),
 	Size = UDim2.fromOffset(15, 14)
 })
-vape:CreateCategory({
+EZ:CreateCategory({
 	Name = 'World',
-	Icon = getvapeasset('newvape/assets/new/world.png'),
+	Icon = getEZasset('newEZ/assets/new/world.png'),
 	Size = UDim2.fromOffset(14, 14)
 })
-vape:CreateCategory({
+EZ:CreateCategory({
 	Name = 'Inventory',
-	Icon = getvapeasset('newvape/assets/new/inventory.png'),
+	Icon = getEZasset('newEZ/assets/new/inventory.png'),
 	Size = UDim2.fromOffset(15, 14)
 })
-vape.Categories.Main:CreateDivider({
+EZ.Categories.Main:CreateDivider({
 	Text = 'misc'
 })
 
@@ -117,9 +117,9 @@ do
 		Value = 1
 	}
 
-	friends = vape:CreateCategoryList({
+	friends = EZ:CreateCategoryList({
 		Name = 'Friends',
-		Icon = getvapeasset('newvape/assets/new/friends.png'),
+		Icon = getEZasset('newEZ/assets/new/friends.png'),
 		Size = UDim2.fromOffset(17, 16),
 		Placeholder = 'Roblox username',
 		Color = Color3.fromRGB(5, 134, 105),
@@ -163,16 +163,16 @@ do
 			friends.ColorUpdate:Fire(friendscolor.Hue, friendscolor.Sat, friendscolor.Value)
 		end
 	})
-	vape:Clean(friends.Update)
-	vape:Clean(friends.ColorUpdate)
+	EZ:Clean(friends.Update)
+	EZ:Clean(friends.ColorUpdate)
 end
 
 --[[
 	Profiles
 ]]
-vape:CreateCategoryList({
+EZ:CreateCategoryList({
 	Name = 'Profiles',
-	Icon = getvapeasset('newvape/assets/new/profiles.png'),
+	Icon = getEZasset('newEZ/assets/new/profiles.png'),
 	Size = UDim2.fromOffset(17, 10),
 	Position = UDim2.fromOffset(12, 16),
 	Placeholder = 'Type name',
@@ -183,9 +183,9 @@ vape:CreateCategoryList({
 	Targets
 ]]
 local targets
-targets = vape:CreateCategoryList({
+targets = EZ:CreateCategoryList({
 	Name = 'Targets',
-	Icon = getvapeasset('newvape/assets/new/friends.png'),
+	Icon = getEZasset('newEZ/assets/new/friends.png'),
 	Size = UDim2.fromOffset(17, 16),
 	Placeholder = 'Roblox username',
 	Function = function()
@@ -193,19 +193,19 @@ targets = vape:CreateCategoryList({
 	end
 })
 targets.Update = Instance.new('BindableEvent')
-vape:Clean(targets.Update)
+EZ:Clean(targets.Update)
 
 components.LegitWindow()
-vape.SearchBar = components.SearchBar()
-vape.Categories.Main:CreateOverlayBar()
+EZ.SearchBar = components.SearchBar()
+EZ.Categories.Main:CreateOverlayBar()
 
 --[[
 	General Settings
 ]]
 
-local general = vape.Categories.Main.Settings:CreateSettingsPane({Name = 'General'})
+local general = EZ.Categories.Main.Settings:CreateSettingsPane({Name = 'General'})
 local settingConnections = {}
-vape.MultiKeybind = general:CreateToggle({
+EZ.MultiKeybind = general:CreateToggle({
 	Name = 'Enable Multi-Keybinding',
 	Tooltip = 'Allows multiple keys to be bound to a module (eg. G + H)'
 })
@@ -213,7 +213,7 @@ general:CreateToggle({
 	Name = 'Allow setting keybinds',
 	Function = function(callback)
 		if callback then
-			for _, container in {vape.Modules, vape.Legit.Modules} do
+			for _, container in {EZ.Modules, EZ.Legit.Modules} do
 				for _, module in container do
 					for _, component in module.Options do
 						if component.Type == 'Toggle' then
@@ -225,15 +225,15 @@ general:CreateToggle({
 							table.insert(settingConnections, bind.Triggered:Connect(function(isDown)
 								if bind.Hold then
 									if component.Enabled ~= isDown then
-										if vape.SettingToggleNotifications.Enabled then
-											vape:CreateNotification(module.Name, component.Name..' '..(not component.Enabled and "<font color='#00AA00'>ON</font>" or "<font color='#FF5A5A'>OFF</font>"), 1.5)
+										if EZ.SettingToggleNotifications.Enabled then
+											EZ:CreateNotification(module.Name, component.Name..' '..(not component.Enabled and "<font color='#00AA00'>ON</font>" or "<font color='#FF5A5A'>OFF</font>"), 1.5)
 										end
 
 										component:Toggle()
 									end
 								else
-									if vape.SettingToggleNotifications.Enabled then
-										vape:CreateNotification(module.Name, component.Name..' '..(not component.Enabled and "<font color='#00AA00'>ON</font>" or "<font color='#FF5A5A'>OFF</font>"), 1.5)
+									if EZ.SettingToggleNotifications.Enabled then
+										EZ:CreateNotification(module.Name, component.Name..' '..(not component.Enabled and "<font color='#00AA00'>ON</font>" or "<font color='#FF5A5A'>OFF</font>"), 1.5)
 									end
 
 									component:Toggle()
@@ -252,7 +252,7 @@ general:CreateToggle({
 				end
 			end
 		else
-			for _, container in {vape.Modules, vape.Legit.Modules} do
+			for _, container in {EZ.Modules, EZ.Legit.Modules} do
 				for _, module in container do
 					for _, component in module.Options do
 						if component.Bind then
@@ -274,16 +274,16 @@ general:CreateToggle({
 general:CreateButton({
 	Name = 'Reset current profile',
 	Function = function()
-	vape.Save = function() end
-		if isfile('newvape/profiles/'..vape.Profile..vape.Place..'.txt') and delfile then
-			delfile('newvape/profiles/'..vape.Profile..vape.Place..'.txt')
+	EZ.Save = function() end
+		if isfile('newEZ/profiles/'..EZ.Profile..EZ.Place..'.txt') and delfile then
+			delfile('newEZ/profiles/'..EZ.Profile..EZ.Place..'.txt')
 		end
 
-		shared.vapereload = true
+		shared.EZreload = true
 		if shared.VapeDeveloper then
-			loadstring(readfile('newvape/loader.lua'), 'loader')()
+			loadstring(readfile('newEZ/loader.lua'), 'loader')()
 		else
-			loadstring(game:HttpGet('https://raw.githubusercontent.com/7GrandDadPGN/VapeCompiled/'..readfile('newvape/profiles/commit.txt')..'/loader.lua', true))()
+			loadstring(game:HttpGet('https://raw.githubusercontent.com/7GrandDadPGN/VapeCompiled/'..readfile('newEZ/profiles/commit.txt')..'/loader.lua', true))()
 		end
 	end,
 	Tooltip = 'This will set your profile to the default settings of Vape'
@@ -292,36 +292,36 @@ general:CreateButton({
 general:CreateButton({
 	Name = 'Self destruct',
 	Function = function()
-		vape:Uninject()
+		EZ:Uninject()
 	end,
-	Tooltip = 'Removes vape from the current game'
+	Tooltip = 'Removes EZ from the current game'
 })
 
 general:CreateButton({
 	Name = 'Reinject',
 	Function = function()
-		shared.vapereload = true
+		shared.EZreload = true
 		if shared.VapeDeveloper then
-			loadstring(readfile('newvape/loader.lua'), 'loader')()
+			loadstring(readfile('newEZ/loader.lua'), 'loader')()
 		else
-			loadstring(game:HttpGet('https://raw.githubusercontent.com/7GrandDadPGN/VapeCompiled/'..readfile('newvape/profiles/commit.txt')..'/loader.lua', true))()
+			loadstring(game:HttpGet('https://raw.githubusercontent.com/7GrandDadPGN/VapeCompiled/'..readfile('newEZ/profiles/commit.txt')..'/loader.lua', true))()
 		end
 	end,
-	Tooltip = 'Reloads vape for debugging purposes'
+	Tooltip = 'Reloads EZ for debugging purposes'
 })
 
 --[[
 	Module Settings
 ]]
 
-local modules = vape.Categories.Main.Settings:CreateSettingsPane({Name = 'Modules'})
+local modules = EZ.Categories.Main.Settings:CreateSettingsPane({Name = 'Modules'})
 modules:CreateToggle({
 	Name = 'Teams by server',
 	Tooltip = 'Ignore players on your team designated by the server',
 	Default = true,
 	Function = function()
-		if vape.Libraries.entity and vape.Libraries.entity.Running then
-			vape.Libraries.entity.refresh()
+		if EZ.Libraries.entity and EZ.Libraries.entity.Running then
+			EZ.Libraries.entity.refresh()
 		end
 	end
 })
@@ -331,8 +331,8 @@ modules:CreateToggle({
 	Tooltip = 'Uses the TeamColor property on players for render modules',
 	Default = true,
 	Function = function()
-		if vape.Libraries.entity and vape.Libraries.entity.Running then
-			vape.Libraries.entity.refresh()
+		if EZ.Libraries.entity and EZ.Libraries.entity.Running then
+			EZ.Libraries.entity.refresh()
 		end
 	end
 })
@@ -341,11 +341,11 @@ modules:CreateToggle({
 	GUI Settings
 ]]
 
-local guipane = vape.Categories.Main.Settings:CreateSettingsPane({Name = 'GUI'})
-vape.Blur = guipane:CreateToggle({
+local guipane = EZ.Categories.Main.Settings:CreateSettingsPane({Name = 'GUI'})
+EZ.Blur = guipane:CreateToggle({
 	Name = 'Blur background',
 	Function = function()
-		vape:BlurCheck()
+		EZ:BlurCheck()
 	end,
 	Default = true,
 	Tooltip = 'Blur the background of the GUI'
@@ -380,7 +380,7 @@ guipane:CreateToggle({
 })
 
 local ScaleSlider = {Object = {}, Value = 1}
-vape.Scale = guipane:CreateToggle({
+EZ.Scale = guipane:CreateToggle({
 	Name = 'Auto rescale',
 	Default = true,
 	Function = function(callback)
@@ -400,7 +400,7 @@ ScaleSlider = guipane:CreateSlider({
 	Max = 2,
 	Decimal = 10,
 	Function = function(val, final)
-		if final and not vape.Scale.Enabled then
+		if final and not EZ.Scale.Enabled then
 			scale.Scale = val
 		end
 	end,
@@ -409,7 +409,7 @@ ScaleSlider = guipane:CreateSlider({
 	Visible = false
 })
 
-vape.RainbowSpeed = guipane:CreateSlider({
+EZ.RainbowSpeed = guipane:CreateSlider({
 	Name = 'Rainbow speed',
 	Min = 0.1,
 	Max = 10,
@@ -418,7 +418,7 @@ vape.RainbowSpeed = guipane:CreateSlider({
 	Tooltip = 'Adjusts the speed of rainbow values'
 })
 
-vape.RainbowUpdateSpeed = guipane:CreateSlider({
+EZ.RainbowUpdateSpeed = guipane:CreateSlider({
 	Name = 'Rainbow update rate',
 	Min = 1,
 	Max = 144,
@@ -432,16 +432,16 @@ vape.RainbowUpdateSpeed = guipane:CreateSlider({
 	List = inputService.TouchEnabled and {'new', 'old'} or {'new', 'old', 'rise'},
 	Function = function(val, mouse)
 		if mouse then
-			writefile('newvape/profiles/gui.txt', val)
-			shared.vapereload = true
+			writefile('newEZ/profiles/gui.txt', val)
+			shared.EZreload = true
 			if shared.VapeDeveloper then
-				loadstring(readfile('newvape/loader.lua'), 'loader')()
+				loadstring(readfile('newEZ/loader.lua'), 'loader')()
 			else
-				loadstring(game:HttpGet('https://raw.githubusercontent.com/7GrandDadPGN/VapeCompiled/'..readfile('newvape/profiles/commit.txt')..'/loader.lua', true))()
+				loadstring(game:HttpGet('https://raw.githubusercontent.com/7GrandDadPGN/VapeCompiled/'..readfile('newEZ/profiles/commit.txt')..'/loader.lua', true))()
 			end
 		end
 	end,
-	Tooltip = 'new - The newest vape theme to since v4.05\nold - The vape theme pre v4.05\nrise - Rise 6.0'
+	Tooltip = 'new - The newest EZ theme to since v4.05\nold - The EZ theme pre v4.05\nrise - Rise 6.0'
 })]]
 
 guipane:CreateDropdown({
@@ -449,12 +449,12 @@ guipane:CreateDropdown({
 	List = {'Floating', 'None'},
 	Default = 'Floating',
 	Function = function(value)
-		vape.SearchBar.Object.Visible = value == 'Floating'
+		EZ.SearchBar.Object.Visible = value == 'Floating'
 	end,
 	Tooltip = 'Switch between search bar styles'
 })
 
-vape.RainbowMode = guipane:CreateDropdown({
+EZ.RainbowMode = guipane:CreateDropdown({
 	Name = 'Rainbow Mode',
 	List = {'Normal', 'Gradient', 'Retro'},
 	Tooltip = 'Normal - Smooth color fade\nGradient - Gradient color fade\nRetro - Static color'
@@ -463,7 +463,7 @@ vape.RainbowMode = guipane:CreateDropdown({
 guipane:CreateButton({
 	Name = 'Reset GUI positions',
 	Function = function()
-		for _, category in vape.Categories do
+		for _, category in EZ.Categories do
 			category.Object.Position = UDim2.fromOffset(6, 42)
 		end
 	end,
@@ -486,7 +486,7 @@ guipane:CreateButton({
 		}
 
 		local categories = {}
-		for _, category in vape.Categories do
+		for _, category in EZ.Categories do
 			if category.Type ~= 'Overlay' then
 				table.insert(categories, category)
 			end
@@ -511,43 +511,43 @@ guipane:CreateButton({
 	Notification Settings
 ]]
 
-local notifpane = vape.Categories.Main.Settings:CreateSettingsPane({Name = 'Notifications'})
-vape.Notifications = notifpane:CreateToggle({
+local notifpane = EZ.Categories.Main.Settings:CreateSettingsPane({Name = 'Notifications'})
+EZ.Notifications = notifpane:CreateToggle({
 	Name = 'Notifications',
 	Function = function(enabled)
-		if vape.ToggleNotifications.Object then
-			vape.ToggleNotifications.Object.Visible = enabled
+		if EZ.ToggleNotifications.Object then
+			EZ.ToggleNotifications.Object.Visible = enabled
 		end
 
-		if vape.SettingToggleNotifications.Object then
-			vape.SettingToggleNotifications.Object.Visible = enabled
+		if EZ.SettingToggleNotifications.Object then
+			EZ.SettingToggleNotifications.Object.Visible = enabled
 		end
 	end,
 	Tooltip = 'Shows notifications',
 	Default = true
 })
 
-vape.ToggleNotifications = notifpane:CreateToggle({
+EZ.ToggleNotifications = notifpane:CreateToggle({
 	Name = 'Toggle alert',
 	Tooltip = 'Notifies you if a module is enabled/disabled.',
 	Default = true,
 	Darker = true
 })
-vape.SettingToggleNotifications = notifpane:CreateToggle({
+EZ.SettingToggleNotifications = notifpane:CreateToggle({
 	Name = 'Setting toggle alert',
 	Tooltip = 'Notifies you when a bound setting is toggled.',
 	Default = true,
 	Darker = true
 })
 
-vape.GUIColor = vape.Categories.Main.Settings:CreateGUISlider({
+EZ.GUIColor = EZ.Categories.Main.Settings:CreateGUISlider({
 	Name = 'GUI Theme',
 	Function = function(h, s, v)
-		vape:UpdateGUI()
+		EZ:UpdateGUI()
 	end
 })
 
-vape.GUIBind = vape.Categories.Main.Settings:CreateBind({
+EZ.GUIBind = EZ.Categories.Main.Settings:CreateBind({
 	Name = 'Rebind GUI',
 	Default = {'RightShift'},
 	NoRemove = true,
@@ -556,25 +556,25 @@ vape.GUIBind = vape.Categories.Main.Settings:CreateBind({
 
 --Overlays
 
-vape:Clean(task.spawn(function()
+EZ:Clean(task.spawn(function()
 	local hue = 0
 	repeat
-		for _, component in vape.RainbowSliders do
+		for _, component in EZ.RainbowSliders do
 			if component.Type == 'GUISlider' then
-				component:SetValue(vape:Color(hue))
+				component:SetValue(EZ:Color(hue))
 			else
 				component:SetValue(hue)
 			end
 		end
 
-		local delta = task.wait(1 / vape.RainbowUpdateSpeed.Value)
-		hue = (hue + (delta * (0.2 * vape.RainbowSpeed.Value))) % 1
+		local delta = task.wait(1 / EZ.RainbowUpdateSpeed.Value)
+		hue = (hue + (delta * (0.2 * EZ.RainbowSpeed.Value))) % 1
 	until false
 end))
 
 local cursorConnection
-vape:Clean(clickgui:GetPropertyChangedSignal('Visible'):Connect(function()
-	vape:UpdateGUI()
+EZ:Clean(clickgui:GetPropertyChangedSignal('Visible'):Connect(function()
+	EZ:UpdateGUI()
 
 	if clickgui.Visible and inputService.MouseEnabled then
 		if cursorConnection then
@@ -583,7 +583,7 @@ vape:Clean(clickgui:GetPropertyChangedSignal('Visible'):Connect(function()
 
 		cursorConnection = runService.RenderStepped:Connect(function()
 			local isVisible = clickgui.Visible
-			for _, window in vape.Windows do
+			for _, window in EZ.Windows do
 				isVisible = isVisible or window.Visible
 			end
 
@@ -603,19 +603,19 @@ vape:Clean(clickgui:GetPropertyChangedSignal('Visible'):Connect(function()
 	end
 end))
 
-vape:Clean(function()
+EZ:Clean(function()
 	if cursorConnection then
 		cursorConnection:Disconnect()
 	end
 end)
 
-vape:Clean(gui:GetPropertyChangedSignal('AbsoluteSize'):Connect(function()
-	if vape.Scale.Enabled then
+EZ:Clean(gui:GetPropertyChangedSignal('AbsoluteSize'):Connect(function()
+	if EZ.Scale.Enabled then
 		scale.Scale = math.max(gui.AbsoluteSize.X / 1920, 0.6)
 	end
 end))
 
-vape:Clean(notifications.ChildRemoved:Connect(function()
+EZ:Clean(notifications.ChildRemoved:Connect(function()
 	for index, notif in notifications:GetChildren() do
 		if tween.Tween then
 			tween:Tween(notif, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {
@@ -625,7 +625,7 @@ vape:Clean(notifications.ChildRemoved:Connect(function()
 	end
 end))
 
-vape:Clean(scale:GetPropertyChangedSignal('Scale'):Connect(function()
+EZ:Clean(scale:GetPropertyChangedSignal('Scale'):Connect(function()
 	scaledgui.Size = UDim2.fromScale(1 / scale.Scale, 1 / scale.Scale)
 
 	for _, obj in scaledgui:QueryDescendants('GuiObject >> [Visible = true]') do
@@ -634,8 +634,8 @@ vape:Clean(scale:GetPropertyChangedSignal('Scale'):Connect(function()
 	end
 end))
 
-vape:Clean(vape.GUIBind.Triggered:Connect(function()
-	if vape.ThreadFix then
+EZ:Clean(EZ.GUIBind.Triggered:Connect(function()
+	if EZ.ThreadFix then
 		setthreadidentity(8)
 	end
 
@@ -650,50 +650,50 @@ vape:Clean(vape.GUIBind.Triggered:Connect(function()
 	end
 
 	clickgui.Visible = not clickgui.Visible
-	vape:BlurCheck()
+	EZ:BlurCheck()
 end))
 
-vape:Clean(inputService.InputBegan:Connect(function(input)
-	if vape.CurrentTooltip and input.KeyCode == Enum.KeyCode.LeftShift then
-		vape.CurrentTooltip()
+EZ:Clean(inputService.InputBegan:Connect(function(input)
+	if EZ.CurrentTooltip and input.KeyCode == Enum.KeyCode.LeftShift then
+		EZ.CurrentTooltip()
 	end
 
 	if not inputService:GetFocusedTextBox() and input.KeyCode ~= Enum.KeyCode.Unknown then
-		table.insert(vape.HeldKeybinds, input.KeyCode.Name)
-		if vape.Binding then return end
+		table.insert(EZ.HeldKeybinds, input.KeyCode.Name)
+		if EZ.Binding then return end
 
-		for _, bind in vape.ActiveBinds do
-			if checkKeybinds(vape.HeldKeybinds, bind.Keys, input.KeyCode.Name) then
+		for _, bind in EZ.ActiveBinds do
+			if checkKeybinds(EZ.HeldKeybinds, bind.Keys, input.KeyCode.Name) then
 				bind.Triggered:Fire(true)
 			end
 		end
 	end
 end))
 
-vape:Clean(inputService.InputEnded:Connect(function(input)
-	if vape.CurrentTooltip and input.KeyCode == Enum.KeyCode.LeftShift then
-		vape.CurrentTooltip()
+EZ:Clean(inputService.InputEnded:Connect(function(input)
+	if EZ.CurrentTooltip and input.KeyCode == Enum.KeyCode.LeftShift then
+		EZ.CurrentTooltip()
 	end
 
 	if not inputService:GetFocusedTextBox() and input.KeyCode ~= Enum.KeyCode.Unknown then
-		if vape.Binding then
-			if not vape.MultiKeybind.Enabled then
-				vape.HeldKeybinds = {input.KeyCode.Name}
+		if EZ.Binding then
+			if not EZ.MultiKeybind.Enabled then
+				EZ.HeldKeybinds = {input.KeyCode.Name}
 			end
 
-			vape.Binding:SetBind(vape.HeldKeybinds, true)
-			vape.Binding = nil
+			EZ.Binding:SetBind(EZ.HeldKeybinds, true)
+			EZ.Binding = nil
 		else
-			for _, bind in vape.ActiveBinds do
-				if bind.Hold and checkKeybinds(vape.HeldKeybinds, bind.Keys, input.KeyCode.Name) then
+			for _, bind in EZ.ActiveBinds do
+				if bind.Hold and checkKeybinds(EZ.HeldKeybinds, bind.Keys, input.KeyCode.Name) then
 					bind.Triggered:Fire(false)
 				end
 			end
 		end
 	end
 
-	local index = table.find(vape.HeldKeybinds, input.KeyCode.Name)
+	local index = table.find(EZ.HeldKeybinds, input.KeyCode.Name)
 	if index then
-		table.remove(vape.HeldKeybinds, index)
+		table.remove(EZ.HeldKeybinds, index)
 	end
 end))

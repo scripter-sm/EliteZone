@@ -1,4 +1,4 @@
-EZ = {
+local EZ = {
 	active_binds = {},
 	categories = {},
 	gui_color = {
