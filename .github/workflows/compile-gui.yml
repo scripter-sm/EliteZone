@@ -20,7 +20,7 @@ jobs:
     
     - name: Compile GUI
       run: |
-        node compile_gui.js
+        node Compiler/compile_gui.js
     
     - name: Commit compiled GUI
       run: |
