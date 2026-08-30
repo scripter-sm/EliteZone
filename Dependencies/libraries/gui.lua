@@ -136,7 +136,7 @@ local function loadJson(path)
 	return success and type(data) == 'table' and data or nil
 end
 
-﻿local color = {}
+local color = {}
 local uipallet = {}
 do
 	function color.Dark(col, num)
@@ -177,7 +177,7 @@ do
 end
 
 
-﻿local function getfontbounds(text, size, font)
+local function getfontbounds(text, size, font)
 	fontsize.Text = text
 	fontsize.Size = size
 	if typeof(font) == 'Font' then
@@ -188,7 +188,7 @@ end
 end
 
 
-﻿do
+do
 	local vapeAssets = {
 		['Elite Zone/Assets/add.png'] = 'rbxassetid://121642387707174',
 		['Elite Zone/Assets/aim.png'] = 'rbxassetid://122207028123421',
@@ -302,7 +302,7 @@ end
 end
 
 
-﻿local tween = setmetatable({}, {
+local tween = setmetatable({}, {
 	__index = function()
 		return {}
 	end
@@ -344,7 +344,7 @@ do
 end
 
 
-﻿uipallet = {
+uipallet = {
 	Main = Color3.fromRGB(26, 25, 26),
 	Text = Color3.fromRGB(200, 200, 200),
 	Font = Font.fromEnum(Enum.Font.Arial),
@@ -871,7 +871,7 @@ function EZ:LoadOptions(obj, data)
 end
 
 function EZ:LoadGUI()
-	﻿addMaid(EZ)
+	addMaid(EZ)
 	gui = Instance.new('ScreenGui')
 	gui.Name = randomString()
 	gui.DisplayOrder = 9999999
@@ -1099,14 +1099,14 @@ function EZ:LoadGUI()
 									if bind.Hold then
 										if component.Enabled ~= isDown then
 											if EZ.SettingToggleNotifications.Enabled then
-												EZ:CreateNotification(module.Name, component.Name..' '..(not component.Enabled and "<font color="#00AA00">ON</font>" or "<font color="#FF5A5A">OFF</font>"), 1.5)
+												EZ:CreateNotification(module.Name, component.Name..' '..(not component.Enabled and '<font color="#00AA00">ON</font>' or '<font color="#FF5A5A">OFF</font>'), 1.5)
 											end
 	
 											component:Toggle()
 										end
 									else
 										if EZ.SettingToggleNotifications.Enabled then
-											EZ:CreateNotification(module.Name, component.Name..' '..(not component.Enabled and "<font color="#00AA00">ON</font>" or "<font color="#FF5A5A">OFF</font>"), 1.5)
+											EZ:CreateNotification(module.Name, component.Name..' '..(not component.Enabled and '<font color="#00AA00">ON</font>' or '<font color="#FF5A5A">OFF</font>'), 1.5)
 										end
 	
 										component:Toggle()
@@ -1428,7 +1428,7 @@ function EZ:LoadGUI()
 	})
 	
 	run(function()
-		﻿local Sort
+		local Sort
 		local FontOption
 		local ColorSlider
 		local ColorMode
@@ -1944,7 +1944,7 @@ function EZ:LoadGUI()
 	end)
 	
 	run(function()
-		﻿--[[
+		--[[
 			Target Info
 		]]
 		
@@ -2539,7 +2539,7 @@ end
 
 components = {
 	Bind = function(props, children, api)
-		﻿local component = {
+		local component = {
 			Hold = props.Hold or false,
 			Keys = {},
 			Triggered = createSignal(),
@@ -2849,7 +2849,7 @@ components = {
 		
 	end,
 	Button = function(props, children, api)
-		﻿local button = Instance.new('TextButton')
+		local button = Instance.new('TextButton')
 		button.AutoButtonColor = false
 		button.BackgroundColor3 = color.Dark(children.BackgroundColor3, props.Darker and 0.02 or 0)
 		button.BorderSizePixel = 0
@@ -2891,7 +2891,7 @@ components = {
 		
 	end,
 	Category = function(props, children, api)
-		﻿local component = {
+		local component = {
 			Expanded = false,
 			Name = props.Name,
 			Type = 'Category'
@@ -3153,7 +3153,7 @@ components = {
 		
 	end,
 	CategoryList = function(props, children, api)
-		﻿local component = {
+		local component = {
 			Expanded = false,
 			List = {},
 			ListEnabled = {},
@@ -3757,7 +3757,7 @@ components = {
 		
 	end,
 	ColorSlider = function(props, children, api)
-		﻿local component = {
+		local component = {
 			Type = 'ColorSlider',
 			Hue = props.DefaultHue or 0.44,
 			Sat = props.DefaultSat or 1,
@@ -4181,7 +4181,7 @@ components = {
 		
 	end,
 	Divider = function(props, children, api)
-		﻿local divider = Instance.new('Frame')
+		local divider = Instance.new('Frame')
 		divider.Size = UDim2.new(1, 0, 0, 1)
 		divider.BackgroundColor3 = color.Light(uipallet.Main, 0.02)
 		divider.BorderSizePixel = 0
@@ -4204,7 +4204,7 @@ components = {
 		
 	end,
 	Dropdown = function(props, children, api)
-		﻿local component = {
+		local component = {
 			Index = 0,
 			Type = 'Dropdown',
 			Value = props.List[1] or 'None'
@@ -4354,7 +4354,7 @@ components = {
 		
 	end,
 	Font = function(props, children, api)
-		﻿local fonts = {
+		local fonts = {
 			props.Default,
 			'Custom'
 		}
@@ -4417,7 +4417,7 @@ components = {
 		
 	end,
 	GUI = function(props, children, api)
-		﻿local component = {
+		local component = {
 			Buttons = {},
 			Type = 'MainWindow'
 		}
@@ -4601,7 +4601,7 @@ components = {
 		
 	end,
 	GUIButton = function(props, children, api)
-		﻿local component = {
+		local component = {
 			Enabled = false,
 			Index = getTableSize(api.Buttons),
 			Name = props.Name
@@ -4713,7 +4713,7 @@ components = {
 		
 	end,
 	GUISlider = function(props, children, api)
-		﻿local component = {
+		local component = {
 			CustomColor = false,
 			Hue = 0.46,
 			Notch = 4,
@@ -5188,7 +5188,7 @@ components = {
 		
 	end,
 	ImageToggle = function(props, children, api)
-		﻿local component = {
+		local component = {
 			Enabled = false,
 			Index = getTableSize(api.Options),
 			Type = 'ImageToggle'
@@ -5291,7 +5291,7 @@ components = {
 		
 	end,
 	LegitModule = function(props, children, api)
-		﻿EZ:Remove(props.Name)
+		EZ:Remove(props.Name)
 		local component = {
 			Enabled = false,
 			Legit = true,
@@ -5599,7 +5599,7 @@ components = {
 		
 	end,
 	LegitWindow = function(props, children, api)
-		﻿local component = {
+		local component = {
 			Modules = {}
 		}
 		
@@ -5754,7 +5754,7 @@ components = {
 		
 	end,
 	Module = function(props, children, api)
-		﻿EZ:Remove(props.Name)
+		EZ:Remove(props.Name)
 		local component = {
 			Category = api.Name,
 			Enabled = false,
@@ -6030,14 +6030,14 @@ components = {
 			if bind.Hold then
 				if component.Enabled ~= isDown then
 					if EZ.ToggleNotifications.Enabled then
-						EZ:CreateNotification(props.Name, (not component.Enabled and "<font color="00AA00'>Enabled</font>" or "<font color="FF5A5A'>Disabled</font>"), 1.5)
+						EZ:CreateNotification(props.Name, (not component.Enabled and '<font color="#00AA00">Enabled</font>' or '<font color="#FF5A5A">Disabled</font>'), 1.5)
 					end
 		
 					component:Toggle(true)
 				end
 			else
 				if EZ.ToggleNotifications.Enabled then
-					EZ:CreateNotification(props.Name, (not component.Enabled and "<font color="00AA00'>Enabled</font>" or "<font color="FF5A5A'>Disabled</font>"), 1.5)
+					EZ:CreateNotification(props.Name, (not component.Enabled and '<font color="#00AA00">Enabled</font>' or '<font color="#FF5A5A">Disabled</font>'), 1.5)
 				end
 		
 				component:Toggle(true)
@@ -6104,7 +6104,7 @@ components = {
 		
 	end,
 	Overlay = function(props, children, api)
-		﻿local window
+		local window
 		local component
 		component = {
 			Button = EZ.Overlays:CreateImageToggle({
@@ -6351,7 +6351,7 @@ components = {
 		
 	end,
 	OverlayBar = function(props, children, api)
-		﻿local component = {
+		local component = {
 			Options = {},
 			Type = 'OverlayBar'
 		}
@@ -6498,7 +6498,7 @@ components = {
 		
 	end,
 	SearchBar = function(props, children, api)
-		﻿local component = {
+		local component = {
 			Type = 'SearchBar'
 		}
 		
@@ -6655,7 +6655,7 @@ components = {
 		
 	end,
 	SettingsPane = function(props, children, api)
-		﻿local component = {
+		local component = {
 			Buttons = {},
 			Options = {},
 			Parent = api.Parent or children,
@@ -6775,7 +6775,7 @@ components = {
 		
 	end,
 	Slider = function(props, children, api)
-		﻿local component = {
+		local component = {
 			Index = getTableSize(api.Options),
 			Max = props.Max,
 			Type = 'Slider',
@@ -6950,7 +6950,7 @@ components = {
 		
 	end,
 	Targets = function(props, children, api)
-		﻿local component = {
+		local component = {
 			Index = getTableSize(api.Options),
 			Type = 'Targets'
 		}
@@ -7225,7 +7225,7 @@ components = {
 		
 	end,
 	TargetsButton = function(props, children, api)
-		﻿local component = {
+		local component = {
 			Enabled = false,
 			Type = 'TargetsButton'
 		}
@@ -7304,7 +7304,7 @@ components = {
 		
 	end,
 	TextBox = function(props, children, api)
-		﻿local component = {
+		local component = {
 			Index = 0,
 			Type = 'TextBox',
 			Value = props.Default or ''
@@ -7387,7 +7387,7 @@ components = {
 		
 	end,
 	TextList = function(props, children, api)
-		﻿local component = {
+		local component = {
 			Index = getTableSize(api.Options),
 			List = props.Default and table.clone(props.Default) or {},
 			ListEnabled = props.Default and table.clone(props.Default) or {},
@@ -7734,7 +7734,7 @@ components = {
 		
 	end,
 	Toggle = function(props, children, api)
-		﻿local component = {
+		local component = {
 			Enabled = false,
 			Index = getTableSize(api.Options),
 			Name = props.Name,
@@ -7847,7 +7847,7 @@ components = {
 		
 	end,
 	TwoSlider = function(props, children, api)
-		﻿local component = {
+		local component = {
 			Index = getTableSize(api.Options),
 			Max = props.Max,
 			Type = 'TwoSlider',
