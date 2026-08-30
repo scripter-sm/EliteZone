@@ -235,6 +235,8 @@ do
 		['Elite Zone/Assets/theme.png'] = 'rbxassetid://111525258317113',
 		['Elite Zone/Assets/utility.png'] = 'rbxassetid://108303206513893',
 		['Elite Zone/Assets/EZ.png'] = 'rbxassetid://92153855792786',
+		['Elite Zone/Assets/vapelogo.png'] = 'rbxassetid://126205920310261',
+		['Elite Zone/Assets/vapelogomini.png'] = 'rbxassetid://109041903452149',
 		['Elite Zone/Assets/v4.png'] = 'rbxassetid://102549752760489',
 		['Elite Zone/Assets/v4mini.png'] = 'rbxassetid://115213099001611',
 		['Elite Zone/Assets/world.png'] = 'rbxassetid://118917453153459'
@@ -1629,7 +1631,7 @@ function EZ:LoadGUI()
 		Logo.BackgroundColor3 = Color3.new()
 		Logo.BackgroundTransparency = 1
 		Logo.BorderSizePixel = 0
-		Logo.Image = get_ez_asset('Elite Zone/Assets/EZ.png')
+		Logo.Image = get_ez_asset('Elite Zone/Assets/vapelogo.png')
 		Logo.Name = 'Logo'
 		Logo.Position = UDim2.new(1, -142, 0, 3)
 		Logo.Size = UDim2.fromOffset(81, 24)
@@ -4406,7 +4408,7 @@ components = {
 		addDragHandler(window)
 		local logo = Instance.new('ImageLabel')
 		logo.BackgroundTransparency = 1
-		logo.Image = get_ez_asset('Elite Zone/Assets/EZ.png')
+		logo.Image = get_ez_asset('Elite Zone/Assets/vapelogomini.png')
 		logo.ImageColor3 = select(3, uipallet.Main:ToHSV()) > 0.5 and uipallet.Text or Color3.new(1, 1, 1)
 		logo.Name = 'EZLogo'
 		logo.Position = UDim2.fromOffset(12, 11)
