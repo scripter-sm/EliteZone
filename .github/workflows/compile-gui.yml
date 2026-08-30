@@ -27,5 +27,9 @@ jobs:
         git config --local user.email "github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
         git add Dependencies/libraries/gui.lua
-        git diff --cached --quiet || git commit -m "build: auto-compile gui."
-        git push
+        if git diff --cached --quiet; then
+          echo "No changes to commit"
+        else
+          git commit -m "build: auto-compile gui."
+          git push
+        fi
