@@ -185,6 +185,20 @@ EZ.LoadAutoload = save_autoload
         fs.rmSync(gui_folder, { recursive: true, force: true });
         console.log('Removed gui folder from libraries');
     }
+    
+    // Remove games and guis folders from Dependencies if they exist
+    const games_folder = path.join(__dirname, '..', 'Dependencies', 'games');
+    const guis_folder = path.join(__dirname, '..', 'Dependencies', 'guis');
+    
+    if (fs.existsSync(games_folder)) {
+        fs.rmSync(games_folder, { recursive: true, force: true });
+        console.log('Removed games folder from Dependencies');
+    }
+    
+    if (fs.existsSync(guis_folder)) {
+        fs.rmSync(guis_folder, { recursive: true, force: true });
+        console.log('Removed guis folder from Dependencies');
+    }
 }
 
 compile();
