@@ -13,33 +13,39 @@ function compile() {
     // Read libraries
     if (fs.existsSync(library_path)) {
         for (const library of fs.readdirSync(library_path)) {
-            libraries.push({
-                name: library.substring(0, library.length - 4),
-                data: fs.readFileSync(path.join(library_path, library), {encoding: 'utf8'})
-            });
+            if (library.endsWith('.lua')) {
+                libraries.push({
+                    name: library.substring(0, library.length - 4),
+                    data: fs.readFileSync(path.join(library_path, library), {encoding: 'utf8'})
+                });
+            }
         }
     }
     
     // Read overlays
     if (fs.existsSync(overlay_path)) {
         for (const overlay of fs.readdirSync(overlay_path)) {
-            overlays.push({
-                name: overlay.substring(0, overlay.length - 4),
-                data: fs.readFileSync(path.join(overlay_path, overlay), {encoding: 'utf8'})
-            });
+            if (overlay.endsWith('.lua')) {
+                overlays.push({
+                    name: overlay.substring(0, overlay.length - 4),
+                    data: fs.readFileSync(path.join(overlay_path, overlay), {encoding: 'utf8'})
+                });
+            }
         }
     }
     
     // Read components
     if (fs.existsSync(component_path)) {
         for (const component of fs.readdirSync(component_path)) {
-            const cname = component.substring(0, component.length - 4);
-            let data = fs.readFileSync(path.join(component_path, component), {encoding: 'utf8'});
-            data = data.split('\n').map((line) => '\t\t' + line).join('\n');
-            components.push({
-                name: cname,
-                data
-            });
+            if (component.endsWith('.lua')) {
+                const cname = component.substring(0, component.length - 4);
+                let data = fs.readFileSync(path.join(component_path, component), {encoding: 'utf8'});
+                data = data.split('\n').map((line) => '\t\t' + line).join('\n');
+                components.push({
+                    name: cname,
+                    data
+                });
+            }
         }
     }
     
@@ -50,50 +56,28 @@ function compile() {
     let init_data = fs.readFileSync(path.join(gui_path, 'init.lua'), {encoding: 'utf8'});
     let base_data = fs.readFileSync(path.join(gui_path, 'base.lua'), {encoding: 'utf8'});
     
-    // Replace markers like VapeBundler does
-    init_data = init_data.replace('--Overlays', overlays.map((data) => {
+    // Replace markers like VapeBundler does using template literals
+    init_data = init_data.replace('--Overlays', `${overlays.map((data) => {
         return 'run(function()\n' + data.data.split('\n').map((line) => '\t' + line).join('\n') + '\nend)';
-    }).join('\n\n'));
+    }).join('\n\n')}`);
     
     init_data = init_data.split('\n').map((line) => '\t' + line).join('\n');
     
-    base_data = base_data.replace('--Libraries', libraries.map((data) => {
+    base_data = base_data.replace('--Libraries', `${libraries.map((data) => {
         return data.data;
-    }).join('\n\n') + '\n\nEZ.Libraries = {\n' + libraries.map(data => {
+    }).join('\n\n')}\n\nEZ.Libraries = {\n${libraries.map(data => {
         return '\t' + data.name + ' = ' + data.name + ',';
-    }).join('\n') + '\n}');
+    }).join('\n')}\n}`);
     
-    base_data = base_data.replace('--Components', 'components = {\n' + components.map((data) => {
+    base_data = base_data.replace('--Components', `components = {\n${components.map((data) => {
         return '\t' + data.name + ' = function(props, children, api)\n' + data.data + '\n\tend,';
-    }).join('\n') + '\n}');
+    }).join('\n')}\n}`);
     
     base_data = base_data.replace('--Init', init_data);
     
-    // Remove return statements except final one
-    const lines = base_data.split('\n');
-    const filtered_lines = [];
-    let return_count = 0;
-    
-    for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        if (line.includes('return')) {
-            return_count++;
-            if (return_count > 1) {
-                continue; // Skip extra return statements
-            }
-        }
-        filtered_lines.push(line);
-    }
-    
-    // Ensure final return statement
-    if (!filtered_lines[filtered_lines.length - 1].includes('return EZ')) {
-        filtered_lines.push('return EZ');
-    }
-    
-    base_data = filtered_lines.join('\n');
-    
     // Add asset loading at the top with configurable script name
-    const asset_loader = `EZ.script_name = "Elite Zone"
+    const asset_loader = `local EZ = {}
+EZ.script_name = "Elite Zone"
 EZ.active_binds = {}
 EZ.categories = {}
 EZ.gui_color = {

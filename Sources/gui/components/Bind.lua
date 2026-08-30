@@ -1,4 +1,4 @@
-local component = {
+﻿local component = {
 	Hold = props.Hold or false,
 	Keys = {},
 	Triggered = createSignal(),
@@ -19,7 +19,7 @@ addCorner(bind, UDim.new(0, 4))
 addTooltip(bind, '', function()
 	local holdText = 'Bind functionality = '..(component.Hold and 'Enable while held' or 'Toggle')
 	if inputService:IsKeyDown(Enum.KeyCode.LeftShift) then
-		holdText = "<font color='#FF5A5A'>"..holdText.."</font>"
+		holdText = "<font color="FF5A5A'>"..holdText.."</font>"
 	end
 
 	return 'Click to bind\nShift click to modify bind functionality\n'..holdText

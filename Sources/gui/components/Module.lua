@@ -1,4 +1,4 @@
-EZ:Remove(props.Name)
+﻿EZ:Remove(props.Name)
 local component = {
 	Category = api.Name,
 	Enabled = false,
@@ -274,14 +274,14 @@ bind.Triggered:Connect(function(isDown)
 	if bind.Hold then
 		if component.Enabled ~= isDown then
 			if EZ.ToggleNotifications.Enabled then
-				EZ:CreateNotification(props.Name, (not component.Enabled and "<font color='#00AA00'>Enabled</font>" or "<font color='#FF5A5A'>Disabled</font>"), 1.5)
+				EZ:CreateNotification(props.Name, (not component.Enabled and "<font color="00AA00'>Enabled</font>" or "<font color="FF5A5A'>Disabled</font>"), 1.5)
 			end
 
 			component:Toggle(true)
 		end
 	else
 		if EZ.ToggleNotifications.Enabled then
-			EZ:CreateNotification(props.Name, (not component.Enabled and "<font color='#00AA00'>Enabled</font>" or "<font color='#FF5A5A'>Disabled</font>"), 1.5)
+			EZ:CreateNotification(props.Name, (not component.Enabled and "<font color="00AA00'>Enabled</font>" or "<font color="FF5A5A'>Disabled</font>"), 1.5)
 		end
 
 		component:Toggle(true)

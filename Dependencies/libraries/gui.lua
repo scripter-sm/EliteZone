@@ -1,3 +1,4 @@
+local EZ = {}
 EZ.script_name = "Elite Zone"
 EZ.active_binds = {}
 EZ.categories = {}
@@ -94,7 +95,7 @@ EZ.themes_path = themes_path
 EZ.autoload_data = load_autoload()
 EZ.LoadAutoload = save_autoload
 
-local run = function(func)
+﻿local run = function(func)
 	func()
 end
 local cloneref = cloneref or function(obj)
@@ -122,14 +123,18 @@ local gui
 
 local isfile = isfile or function(file)
 	local success, data = pcall(function()
+		return readfile(file)
 	end)
 
+	return success and data ~= nil and data ~= ''
 end
 
 local function loadJson(path)
 	local success, data = pcall(function()
+		return httpService:JSONDecode(readfile(path))
 	end)
 
+	return success and type(data) == 'table' and data or nil
 end
 
 local color = {}
@@ -137,10 +142,12 @@ local uipallet = {}
 do
 	function color.Dark(col, num)
 		local h, s, v = col:ToHSV()
+		return Color3.fromHSV(h, s, math.clamp(select(3, uipallet.Main:ToHSV()) > 0.5 and v + num or v - num, 0, 1))
 	end
 
 	function color.Light(col, num)
 		local h, s, v = col:ToHSV()
+		return Color3.fromHSV(h, s, math.clamp(select(3, uipallet.Main:ToHSV()) > 0.5 and v - num or v + num, 0, 1))
 	end
 
 	function EZ:Color(h)
@@ -158,12 +165,15 @@ do
 			s = 1 - (0.26 * math.min((h - 0.869) / 0.131, 1))
 		end
 
+		return h, s, 1
 	end
 
 	function EZ:TextColor(h, s, v)
 		if v >= 0.7 and (s < 0.6 or h > 0.04 and h < 0.56) then
+			return Color3.new(0.19, 0.19, 0.19)
 		end
 
+		return Color3.new(1, 1, 1)
 	end
 end
 
@@ -175,6 +185,7 @@ local function getfontbounds(text, size, font)
 		fontsize.Font = font
 	end
 
+	return textService:GetTextBoundsAsync(fontsize)
 end
 
 
@@ -267,6 +278,7 @@ do
 			createDownloader(path)
 
 			local success, data = pcall(function()
+				return game:HttpGet('https://raw.githubusercontent.com/7GrandDadPGN/VapeCompiled/'..readfile('Elite Zone/configs/commit.txt')..'/'..select(1, path:gsub('Elite Zone/', '')), true)
 			end)
 
 			if not success or data == '404: Not Found' then
@@ -280,16 +292,20 @@ do
 			writefile(path, data)
 		end
 
+		return (callback or readfile)(path)
 	end
 
 	get_ez_asset = not inputService.TouchEnabled and getcustomasset and function(path)
+		return downloadFile(path, getcustomasset)
 	end or function(path)
+		return vapeAssets[path] or ''
 	end
 end
 
 
 local tween = setmetatable({}, {
 	__index = function()
+		return {}
 	end
 })
 
@@ -380,6 +396,7 @@ local function addBlur(parent, notif, old)
 		blur.Parent = parent
 	end
 
+	return blur
 end
 
 local function addCorner(parent, radius)
@@ -387,6 +404,7 @@ local function addCorner(parent, radius)
 	corner.CornerRadius = radius or UDim.new(0, 5)
 	corner.Parent = parent
 
+	return corner
 end
 
 local function addCloseButton(parent, mini, offset)
@@ -417,10 +435,12 @@ local function addCloseButton(parent, mini, offset)
 		})
 	end)
 
+	return close
 end
 
 local function addDragHandler(gui, window)
 	gui.InputBegan:Connect(function(input)
+		if window and not window.Visible then return end
 
 		if
 			(input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch)
@@ -484,9 +504,11 @@ local function addMaid(obj)
 end
 
 local function addTooltip(gui, text, customText, visCheck)
+	if not text then return end
 
 	local function tooltipMoved(x, y)
 		if visCheck and visCheck() then
+			return
 		end
 
 		local isRight = x + 16 + tooltip.Size.X.Offset > (scale.Scale * 1920)
@@ -507,6 +529,7 @@ local function addTooltip(gui, text, customText, visCheck)
 
 	gui.MouseEnter:Connect(function(x, y)
 		if visCheck and visCheck() then
+			return
 		end
 
 		tooltip.Text = text
@@ -522,6 +545,7 @@ local function addTooltip(gui, text, customText, visCheck)
 	gui.MouseMoved:Connect(tooltipMoved)
 	gui.MouseLeave:Connect(function()
 		if visCheck and visCheck() then
+			return
 		end
 
 		tooltip.Visible = false
@@ -537,6 +561,7 @@ local function createSignal()
 	function signal:Connect(callback)
 		table.insert(self.Connections, callback)
 
+		return {
 			Disconnect = function()
 				local index = table.find(signal.Connections, callback)
 				if index then
@@ -552,6 +577,7 @@ local function createSignal()
 		end
 	end
 
+	return signal
 end
 
 local function checkKeybinds(compare, target, key)
@@ -559,12 +585,15 @@ local function checkKeybinds(compare, target, key)
 		if table.find(target, key) then
 			for _, key in target do
 				if not table.find(compare, key) then
+					return false
 				end
 			end
 
+			return true
 		end
 	end
 
+	return false
 end
 
 local function getTableSize(dict)
@@ -573,6 +602,7 @@ local function getTableSize(dict)
 		size += 1
 	end
 
+	return size
 end
 
 local function loopClean(obj)
@@ -591,10 +621,12 @@ local function randomString()
 		array[i] = string.char(math.random(32, 126))
 	end
 
+	return table.concat(array)
 end
 
 local function removeTags(text)
 	text = text:gsub('<br%s*/>', '\n')
+	return text:gsub('<[^<>]->', '')
 end
 
 function EZ:BlurCheck()
@@ -605,13 +637,16 @@ function EZ:BlurCheck()
 end
 
 function EZ:CreateCategory(props)
+	return components.Category(props)
 end
 
 function EZ:CreateCategoryList(props)
+	return components.CategoryList(props)
 end
 
 function EZ:CreateNotification(title, text, duration, type)
 	if not self.Notifications.Enabled then
+		return
 	end
 
 	task.delay(0, function()
@@ -649,7 +684,7 @@ function EZ:CreateNotification(title, text, duration, type)
 		label.Position = UDim2.fromOffset(46, 16)
 		label.RichText = true
 		label.Size = UDim2.new(1, -56, 0, 20)
-		label.Text = '<stroke joins='round' thickness='0.3' transparency='0.5'>'..title..'</stroke>'
+		label.Text = title
 		label.TextColor3 = type == 'alert' and Color3.fromRGB(250, 50, 56) or Color3.new(1, 1, 1)
 		label.TextSize = 14
 		label.TextXAlignment = Enum.TextXAlignment.Left
@@ -708,6 +743,7 @@ function EZ:CreateNotification(title, text, duration, type)
 end
 
 function EZ:CreateOverlay(props)
+	return components.Overlay(props)
 end
 
 function EZ:Load(skipgui, Config)
@@ -791,7 +827,7 @@ function EZ:Load(skipgui, Config)
 	end
 
 	if self.config ~= oldConfig and skipgui then
-		self:CreateNotification('Config swap to <font color='#FFAA00'>'..self.config..'</font>', toggleCount..' modules enabled', 3)
+		self:CreateNotification('Config swap to <font color="#FFAA00">'..self.config..'</font>', toggleCount..' modules enabled', 3)
 	end
 
 	if self.Downloader then
@@ -822,6 +858,7 @@ function EZ:Load(skipgui, Config)
 		end)
 	end
 
+	return toggleData
 end
 
 function EZ:LoadOptions(obj, data)
@@ -835,7 +872,7 @@ function EZ:LoadOptions(obj, data)
 end
 
 function EZ:LoadGUI()
-	addMaid(EZ)
+	﻿addMaid(EZ)
 	gui = Instance.new('ScreenGui')
 	gui.Name = randomString()
 	gui.DisplayOrder = 9999999
@@ -1063,14 +1100,14 @@ function EZ:LoadGUI()
 									if bind.Hold then
 										if component.Enabled ~= isDown then
 											if EZ.SettingToggleNotifications.Enabled then
-												EZ:CreateNotification(module.Name, component.Name..' '..(not component.Enabled and "<font color='#00AA00'>ON</font>" or "<font color='#FF5A5A'>OFF</font>"), 1.5)
+												EZ:CreateNotification(module.Name, component.Name..' '..(not component.Enabled and "<font color="#00AA00">ON</font>" or "<font color="#FF5A5A">OFF</font>"), 1.5)
 											end
 	
 											component:Toggle()
 										end
 									else
 										if EZ.SettingToggleNotifications.Enabled then
-											EZ:CreateNotification(module.Name, component.Name..' '..(not component.Enabled and "<font color='#00AA00'>ON</font>" or "<font color='#FF5A5A'>OFF</font>"), 1.5)
+											EZ:CreateNotification(module.Name, component.Name..' '..(not component.Enabled and "<font color="#00AA00">ON</font>" or "<font color="#FF5A5A">OFF</font>"), 1.5)
 										end
 	
 										component:Toggle()
@@ -1330,6 +1367,7 @@ function EZ:LoadGUI()
 			end
 	
 			table.sort(categories, function(a, b)
+				return (priority[a.Object.Name] or 99) < (priority[b.Object.Name] or 99)
 			end)
 	
 			local index = 0
@@ -1391,7 +1429,7 @@ function EZ:LoadGUI()
 	})
 	
 	run(function()
-		local Sort
+		﻿local Sort
 		local FontOption
 		local ColorSlider
 		local ColorMode
@@ -1419,7 +1457,9 @@ function EZ:LoadGUI()
 			local label = labels[index + dir]
 			if label then
 				if label.Size ~= UDim2.fromOffset() then
+					return label
 				else
+					return findValidLabel(labels, index + dir, dir)
 				end
 			end
 		end
@@ -1711,6 +1751,7 @@ function EZ:LoadGUI()
 		end))
 		
 		function EZ:UpdateTextGUI(afterload)
+			if not afterload and not EZ.Loaded then return end
 			if TextGUI.Button.Enabled then
 				local isRight = TextGUI.Children.AbsolutePosition.X > (gui.AbsoluteSize.X / 2)
 		
@@ -1794,7 +1835,7 @@ function EZ:LoadGUI()
 						label.BorderSizePixel = 0
 						label.FontFace = FontOption.Value
 						label.Position = UDim2.fromOffset(isRight and 5 or 9, 2)
-						label.Text = name..(module.ExtraText and " <font color='#A8A8A8'>"..module.ExtraText()..'</font>' or '')
+						label.Text = name..(module.ExtraText and " <font color="A8A8A8'>"..module.ExtraText()..'</font>' or '')
 						label.TextSize = 18
 						label.RichText = true
 		
@@ -1842,9 +1883,11 @@ function EZ:LoadGUI()
 		
 				if Sort.Value == 'Alphabetical' then
 					table.sort(Labels, function(a, b)
+						return a.Text.Text < b.Text.Text
 					end)
 				else
 					table.sort(Labels, function(a, b)
+						return a.Text.Size.X.Offset > b.Text.Size.X.Offset
 					end)
 				end
 		
@@ -2096,6 +2139,7 @@ function EZ:LoadGUI()
 		
 		function targetinfo:Update()
 			local entitylib = EZ.Libraries
+			if not entitylib then return end
 		
 			local cloned = table.clone(self.Targets)
 			for index, expire in cloned do
@@ -2193,6 +2237,7 @@ function EZ:LoadGUI()
 					cursor.Visible = false
 					cursorConnection:Disconnect()
 					cursorConnection = nil
+					return
 				end
 	
 				cursor.Visible = not inputService.MouseIconEnabled
@@ -2261,6 +2306,7 @@ function EZ:LoadGUI()
 	
 		if not inputService:GetFocusedTextBox() and input.KeyCode ~= Enum.KeyCode.Unknown then
 			table.insert(EZ.HeldKeybinds, input.KeyCode.Name)
+			if EZ.Binding then return end
 	
 			for _, bind in EZ.ActiveBinds do
 				if checkKeybinds(EZ.HeldKeybinds, bind.Keys, input.KeyCode.Name) then
@@ -2333,6 +2379,7 @@ end
 
 function EZ:Save(newConfig)
 	if not self.Loaded then
+		return
 	end
 
 	local guiData = {
@@ -2374,6 +2421,7 @@ function EZ:SaveOptions(obj)
 		component:Save(data)
 	end
 
+	return data
 end
 
 function EZ:SortCategories()
@@ -2441,6 +2489,7 @@ end
 local guiUpdate
 function EZ:UpdateGUI()
 	if guiUpdate then
+		return
 	end
 
 	guiUpdate = runService.RenderStepped:Once(function()
@@ -2457,6 +2506,7 @@ function EZ:UpdateGUIQueue(hue, sat, val)
 		TextGUI:UpdateColor(hue, sat, val, default)
 	end
 
+	if not clickgui.Visible and not EZ.Legit.Window.Visible then return end
 	local isRainbow = EZ.GUIColor.Rainbow and EZ.RainbowMode.Value ~= 'Retro'
 
 	for name, component in EZ.Categories do
@@ -2490,7 +2540,7 @@ end
 
 components = {
 	Bind = function(props, children, api)
-		local component = {
+		﻿local component = {
 			Hold = props.Hold or false,
 			Keys = {},
 			Triggered = createSignal(),
@@ -2511,9 +2561,10 @@ components = {
 		addTooltip(bind, '', function()
 			local holdText = 'Bind functionality = '..(component.Hold and 'Enable while held' or 'Toggle')
 			if inputService:IsKeyDown(Enum.KeyCode.LeftShift) then
-				holdText = "<font color='#FF5A5A'>"..holdText.."</font>"
+				holdText = "<font color="FF5A5A'>"..holdText.."</font>"
 			end
 		
+			return 'Click to bind\nShift click to modify bind functionality\n'..holdText
 		end)
 		local icon = Instance.new('ImageLabel')
 		icon.BackgroundTransparency = 1
@@ -2762,6 +2813,7 @@ components = {
 					EZ.Binding = nil
 				end
 		
+				return
 			end
 		
 			if props.Module and inputService:IsKeyDown(Enum.KeyCode.LeftShift) then
@@ -2770,6 +2822,7 @@ components = {
 					EZ.CurrentTooltip()
 				end
 		
+				return
 			end
 		
 			if cover then
@@ -2793,6 +2846,7 @@ components = {
 			api.Options[props.Name] = component
 		end
 		
+		return component
 		
 	end,
 	Button = function(props, children, api)
@@ -2979,6 +3033,7 @@ components = {
 		
 		for index, comp in components do
 			component['Create'..index] = function(_, props)
+				return comp(props, children, component)
 			end
 		end
 		
@@ -3095,6 +3150,7 @@ components = {
 		component.Object = window
 		EZ.Categories[props.Name] = component
 		
+		return component
 		
 	end,
 	CategoryList = function(props, children, api)
@@ -3527,6 +3583,7 @@ components = {
 		function component:GetValue(name)
 			for index, Config in self.List do
 				if Config.Name == name then
+					return index, Config
 				end
 			end
 		end
@@ -3592,6 +3649,7 @@ components = {
 		
 		for index, comp in components do
 			component['Create'..index] = function(_, props)
+				return comp(props, childrentwo, component)
 			end
 		end
 		
@@ -3696,6 +3754,7 @@ components = {
 		component.Object = window
 		EZ.Categories[props.Name] = component
 		
+		return component
 		
 	end,
 	ColorSlider = function(props, children, api)
@@ -3792,6 +3851,7 @@ components = {
 				})
 			end)
 		
+			return colorslidercustom
 		end
 		
 		local colorslider = Instance.new('TextButton')
@@ -3995,8 +4055,10 @@ components = {
 		
 				ring1.ImageColor3 = Color3.fromRGB(5, 127, 100)
 				task.delay(0.1, function()
+					if not self.Rainbow then return end
 					ring2.ImageColor3 = Color3.fromRGB(228, 125, 43)
 					task.delay(0.1, function()
+						if not self.Rainbow then return end
 						ring3.ImageColor3 = Color3.fromRGB(225, 46, 52)
 					end)
 				end)
@@ -4008,8 +4070,10 @@ components = {
 		
 				ring3.ImageColor3 = color.Light(uipallet.Main, 0.37)
 				task.delay(0.1, function()
+					if self.Rainbow then return end
 					ring2.ImageColor3 = color.Light(uipallet.Main, 0.37)
 					task.delay(0.1, function()
+						if self.Rainbow then return end
 						ring1.ImageColor3 = color.Light(uipallet.Main, 0.37)
 					end)
 				end)
@@ -4099,6 +4163,7 @@ components = {
 			if enter then
 				local success, parsed = pcall(function()
 					local commas = custombox.Text:split(',')
+					return tonumber(commas[1]) and Color3.fromRGB(tonumber(commas[1]), tonumber(commas[2]), tonumber(commas[3])) or Color3.fromHex(valuebox.Text)
 				end)
 		
 				if success then
@@ -4113,6 +4178,7 @@ components = {
 		
 		api.Options[props.Name] = component
 		
+		return component
 		
 	end,
 	Divider = function(props, children, api)
@@ -4285,6 +4351,7 @@ components = {
 		
 		api.Options[props.Name] = component
 		
+		return component
 		
 	end,
 	Font = function(props, children, api)
@@ -4347,6 +4414,7 @@ components = {
 			fontbox.Object.Visible = fontdropdown.Object.Visible and fontdropdown.Value == 'Custom'
 		end)
 		
+		return component
 		
 	end,
 	GUI = function(props, children, api)
@@ -4465,6 +4533,7 @@ components = {
 		
 		for index, comp in components do
 			component['Create'..index] = function(_, props)
+				return comp(props, children, component)
 			end
 		end
 		
@@ -4529,6 +4598,7 @@ components = {
 		
 		EZ.Categories.Main = component
 		
+		return component
 		
 	end,
 	GUIButton = function(props, children, api)
@@ -4640,6 +4710,7 @@ components = {
 		
 		api.Buttons[props.Name] = component
 		
+		return component
 		
 	end,
 	GUISlider = function(props, children, api)
@@ -4776,6 +4847,7 @@ components = {
 				})
 			end)
 		
+			return slider
 		end
 		
 		local slider = Instance.new('TextButton')
@@ -5098,6 +5170,7 @@ components = {
 			if enter then
 				local success, parsed = pcall(function()
 					local commas = custombox.Text:split(',')
+					return tonumber(commas[1]) and Color3.fromRGB(tonumber(commas[1]), tonumber(commas[2]), tonumber(commas[3])) or Color3.fromHex(custombox.Text)
 				end)
 		
 				if success then
@@ -5112,6 +5185,7 @@ components = {
 		
 		api.Options[props.Name] = component
 		
+		return component
 		
 	end,
 	ImageToggle = function(props, children, api)
@@ -5214,6 +5288,7 @@ components = {
 		
 		api.Options[props.Name] = component
 		
+		return component
 		
 	end,
 	LegitModule = function(props, children, api)
@@ -5234,6 +5309,7 @@ components = {
 		button.Parent = children
 		component.Object = button
 		addTooltip(button, props.Tooltip, nil, function()
+			return EZ.LegitVisible
 		end)
 		addCorner(button)
 		local title = Instance.new('TextLabel')
@@ -5407,6 +5483,7 @@ components = {
 		
 		for index, comp in components do
 			component['Create'..index] = function(_, props)
+				return comp(props, settingschildren, component)
 			end
 		end
 		
@@ -5519,6 +5596,7 @@ components = {
 			api.Modules[name].Object.LayoutOrder = index
 		end
 		
+		return component
 		
 	end,
 	LegitWindow = function(props, children, api)
@@ -5604,10 +5682,12 @@ components = {
 		
 		for index, comp in components do
 			component['Create'..index] = function(_, props)
+				return comp(props, children, component)
 			end
 		end
 		
 		function component:CreateModule(props)
+			return components.LegitModule(props, children, component)
 		end
 		
 		local function visibleCheck()
@@ -5671,10 +5751,11 @@ components = {
 		
 		EZ.Legit = component
 		
+		return component
 		
 	end,
 	Module = function(props, children, api)
-		EZ:Remove(props.Name)
+		﻿EZ:Remove(props.Name)
 		local component = {
 			Category = api.Name,
 			Enabled = false,
@@ -5873,6 +5954,7 @@ components = {
 		
 		for index, comp in components do
 			component['Create'..index] = function(_, props)
+				return comp(props, modulechildren, component)
 			end
 		end
 		
@@ -5898,6 +5980,7 @@ components = {
 		
 		button.MouseButton1Click:Connect(function()
 			if EZ.EditGUI then
+				return
 			end
 		
 			component:Toggle()
@@ -5948,14 +6031,14 @@ components = {
 			if bind.Hold then
 				if component.Enabled ~= isDown then
 					if EZ.ToggleNotifications.Enabled then
-						EZ:CreateNotification(props.Name, (not component.Enabled and "<font color='#00AA00'>Enabled</font>" or "<font color='#FF5A5A'>Disabled</font>"), 1.5)
+						EZ:CreateNotification(props.Name, (not component.Enabled and "<font color="00AA00'>Enabled</font>" or "<font color="FF5A5A'>Disabled</font>"), 1.5)
 					end
 		
 					component:Toggle(true)
 				end
 			else
 				if EZ.ToggleNotifications.Enabled then
-					EZ:CreateNotification(props.Name, (not component.Enabled and "<font color='#00AA00'>Enabled</font>" or "<font color='#FF5A5A'>Disabled</font>"), 1.5)
+					EZ:CreateNotification(props.Name, (not component.Enabled and "<font color="00AA00'>Enabled</font>" or "<font color="FF5A5A'>Disabled</font>"), 1.5)
 				end
 		
 				component:Toggle(true)
@@ -6018,6 +6101,7 @@ components = {
 		EZ.Modules[props.Name] = component
 		EZ:SortCategories()
 		
+		return component
 		
 	end,
 	Overlay = function(props, children, api)
@@ -6138,6 +6222,7 @@ components = {
 		end
 		
 		function component:Expand(visCheck)
+			if visCheck and not blur.Enabled then return end
 		
 			self.Expanded = not self.Expanded
 			children.Visible = self.Expanded
@@ -6213,6 +6298,7 @@ components = {
 		
 		for index, comp in components do
 			component['Create'..index] = function(_, props)
+				return comp(props, children, component)
 			end
 		end
 		
@@ -6262,6 +6348,7 @@ components = {
 		component.Children = customchildren
 		EZ.Categories[props.Name] = component
 		
+		return component
 		
 	end,
 	OverlayBar = function(props, children, api)
@@ -6340,6 +6427,7 @@ components = {
 		
 		for index, comp in components do
 			component['Create'..index] = function(_, props)
+				return comp(props, childrentoggle, component)
 			end
 		end
 		
@@ -6407,6 +6495,7 @@ components = {
 		
 		EZ.Overlays = component
 		
+		return component
 		
 	end,
 	SearchBar = function(props, children, api)
@@ -6503,6 +6592,7 @@ components = {
 				end
 			end
 		
+			if box.Text == '' then return end
 		
 			for name, module in EZ.Modules do
 				if name:lower():find(box.Text:lower()) then
@@ -6562,6 +6652,7 @@ components = {
 			search.Size = UDim2.fromOffset(220, math.min(37 + windowlist.AbsoluteContentSize.Y / scale.Scale, 437))
 		end)
 		
+		return component
 		
 	end,
 	SettingsPane = function(props, children, api)
@@ -6650,6 +6741,7 @@ components = {
 		
 		for index, comp in components do
 			component['Create'..index] = function(_, props)
+				return comp(props, settingschildren, component)
 			end
 		end
 		
@@ -6680,6 +6772,7 @@ components = {
 		component.Object = pane
 		EZ.Settings[props.Name] = component
 		
+		return component
 		
 	end,
 	Slider = function(props, children, api)
@@ -6781,6 +6874,7 @@ components = {
 		
 		function component:SetValue(value, position, wasReleased)
 			if not math.isfinite(value) then
+				return
 			end
 		
 			tween:Tween(fill, uipallet.Tween, {
@@ -6853,6 +6947,7 @@ components = {
 		
 		api.Options[props.Name] = component
 		
+		return component
 		
 	end,
 	Targets = function(props, children, api)
@@ -7127,6 +7222,7 @@ components = {
 		
 		api.Options.Targets = component
 		
+		return component
 		
 	end,
 	TargetsButton = function(props, children, api)
@@ -7205,6 +7301,7 @@ components = {
 			component:Toggle()
 		end)
 		
+		return component
 		
 	end,
 	TextBox = function(props, children, api)
@@ -7287,6 +7384,7 @@ components = {
 		
 		api.Options[props.Name] = component
 		
+		return component
 		
 	end,
 	TextList = function(props, children, api)
@@ -7633,6 +7731,7 @@ components = {
 		
 		api.Options[props.Name] = component
 		
+		return component
 		
 	end,
 	Toggle = function(props, children, api)
@@ -7745,6 +7844,7 @@ components = {
 		
 		api.Options[props.Name] = component
 		
+		return component
 		
 	end,
 	TwoSlider = function(props, children, api)
@@ -7855,6 +7955,7 @@ components = {
 		end
 		
 		function component:GetRandomValue()
+			return random:NextNumber(component.ValueMin, component.ValueMax)
 		end
 		
 		function component:Load(data)
@@ -7876,6 +7977,7 @@ components = {
 		
 		function component:SetValue(isMax, value)
 			if not math.isfinite(value) then
+				return
 			end
 		
 			self[isMax and 'ValueMax' or 'ValueMin'] = value
@@ -7974,6 +8076,7 @@ components = {
 		
 		api.Options[props.Name] = component
 		
+		return component
 		
 	end,
 }
@@ -7982,12 +8085,14 @@ EZ.Components = setmetatable(components, {
 	__newindex = function(_, index, callback)
 		for _, module in EZ.Modules do
 			rawset(module, 'Create'..index, function(_, props)
+				return callback(props, module.Children, module)
 			end)
 		end
 
 		if EZ.Legit then
 			for _, module in EZ.Legit.Modules do
 				rawset(module, 'Create'..index, function(_, props)
+					return callback(props, module.Children, module)
 				end)
 			end
 		end
@@ -7997,6 +8102,5 @@ EZ.Components = setmetatable(components, {
 })
 
 EZ:LoadGUI()
-
 
 return EZ

@@ -1,4 +1,4 @@
-addMaid(EZ)
+﻿addMaid(EZ)
 gui = Instance.new('ScreenGui')
 gui.Name = randomString()
 gui.DisplayOrder = 9999999
@@ -226,14 +226,14 @@ general:CreateToggle({
 								if bind.Hold then
 									if component.Enabled ~= isDown then
 										if EZ.SettingToggleNotifications.Enabled then
-											EZ:CreateNotification(module.Name, component.Name..' '..(not component.Enabled and "<font color='#00AA00'>ON</font>" or "<font color='#FF5A5A'>OFF</font>"), 1.5)
+											EZ:CreateNotification(module.Name, component.Name..' '..(not component.Enabled and "<font color="#00AA00">ON</font>" or "<font color="#FF5A5A">OFF</font>"), 1.5)
 										end
 
 										component:Toggle()
 									end
 								else
 									if EZ.SettingToggleNotifications.Enabled then
-										EZ:CreateNotification(module.Name, component.Name..' '..(not component.Enabled and "<font color='#00AA00'>ON</font>" or "<font color='#FF5A5A'>OFF</font>"), 1.5)
+										EZ:CreateNotification(module.Name, component.Name..' '..(not component.Enabled and "<font color="#00AA00">ON</font>" or "<font color="#FF5A5A">OFF</font>"), 1.5)
 									end
 
 									component:Toggle()

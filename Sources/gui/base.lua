@@ -1,4 +1,4 @@
-local run = function(func)
+﻿local run = function(func)
 	func()
 end
 local cloneref = cloneref or function(obj)
@@ -349,7 +349,7 @@ function EZ:CreateNotification(title, text, duration, type)
 		label.Position = UDim2.fromOffset(46, 16)
 		label.RichText = true
 		label.Size = UDim2.new(1, -56, 0, 20)
-		label.Text = '<stroke joins='round' thickness='0.3' transparency='0.5'>'..title..'</stroke>'
+		label.Text = title
 		label.TextColor3 = type == 'alert' and Color3.fromRGB(250, 50, 56) or Color3.new(1, 1, 1)
 		label.TextSize = 14
 		label.TextXAlignment = Enum.TextXAlignment.Left
@@ -492,7 +492,7 @@ function EZ:Load(skipgui, Config)
 	end
 
 	if self.config ~= oldConfig and skipgui then
-		self:CreateNotification('Config swap to <font color='#FFAA00'>'..self.config..'</font>', toggleCount..' modules enabled', 3)
+		self:CreateNotification('Config swap to <font color="#FFAA00">'..self.config..'</font>', toggleCount..' modules enabled', 3)
 	end
 
 	if self.Downloader then
