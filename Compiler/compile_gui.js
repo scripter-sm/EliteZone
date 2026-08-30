@@ -121,6 +121,13 @@ local get_ez_asset = load_assets()
     
     fs.writeFileSync(output_path, combined, 'utf8');
     console.log('Compiled ' + files.length + ' files to gui.lua (' + combined.length + ' bytes)');
+    
+    // Remove gui folder from libraries if it exists
+    const gui_folder = path.join(__dirname, '..', 'Dependencies', 'libraries', 'gui');
+    if (fs.existsSync(gui_folder)) {
+        fs.rmSync(gui_folder, { recursive: true, force: true });
+        console.log('Removed gui folder from libraries');
+    }
 }
 
 compile();
