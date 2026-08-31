@@ -404,7 +404,7 @@ function EZ:UpdateTextGUI(afterload)
 				label.BorderSizePixel = 0
 				label.FontFace = FontOption.Value
 				label.Position = UDim2.fromOffset(isRight and 5 or 9, 2)
-				label.Text = name..(module.ExtraText and " <font color="A8A8A8'>"..module.ExtraText()..'</font>' or '')
+				label.Text = name..(module.ExtraText and ' <font color="#A8A8A8">'..module.ExtraText()..'</font>' or '')
 				label.TextSize = 18
 				label.RichText = true
 
