@@ -63,24 +63,29 @@ function compile() {
     let init_data = removeBOM(fs.readFileSync(path.join(gui_path, 'init.lua'), {encoding: 'utf8'}));
     let base_data = removeBOM(fs.readFileSync(path.join(gui_path, 'base.lua'), {encoding: 'utf8'}));
     
-    // Replace markers like VapeBundler does
-    init_data = init_data.replace('--Overlays', `${overlays.map((data) => {
+    // Replace markers like VapeBundler does.
+    // NOTE: pass a function as the replacement so JS never interprets `$`
+    // sequences (e.g. `$'`, `$&`) that legitimately appear in Lua patterns.
+    const overlays_block = overlays.map((data) => {
         return 'run(function()\n' + data.data.split('\n').map((line) => '\t' + line).join('\n') + '\nend)';
-    }).join('\n\n')}`);
-    
+    }).join('\n\n');
+    init_data = init_data.replace('--Overlays', () => overlays_block);
+
     init_data = init_data.split('\n').map((line) => '\t' + line).join('\n');
-    
-    base_data = base_data.replace('--Libraries', `${libraries.map((data) => {
+
+    const libraries_block = `${libraries.map((data) => {
         return data.data;
     }).join('\n\n')}\n\nEZ.Libraries = {\n${libraries.map(data => {
         return '\t' + data.name + ' = ' + data.name + ',';
-    }).join('\n')}\n}`);
-    
-    base_data = base_data.replace('--Components', `components = {\n${components.map((data) => {
+    }).join('\n')}\n}`;
+    base_data = base_data.replace('--Libraries', () => libraries_block);
+
+    const components_block = `components = {\n${components.map((data) => {
         return '\t' + data.name + ' = function(props, children, api)\n' + data.data + '\n\tend,';
-    }).join('\n')}\n}`);
-    
-    base_data = base_data.replace('--Init', init_data);
+    }).join('\n')}\n}`;
+    base_data = base_data.replace('--Components', () => components_block);
+
+    base_data = base_data.replace('--Init', () => init_data);
     
     base_data = removeBOM(base_data);
     fs.writeFileSync(output_path, base_data, 'utf8');

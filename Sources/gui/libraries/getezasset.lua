@@ -91,7 +91,7 @@ do
 		if not isfile(path) then
 			createDownloader(path)
 
-			local fileName = path:match('([^/]+)$')
+			local fileName = (path:gsub('.*/', ''))
 			local success, data = pcall(function()
 				return game:HttpGet(assetsUrl..fileName, true)
 			end)
