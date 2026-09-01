@@ -5,7 +5,7 @@ gui.DisplayOrder = 9999999
 gui.ZIndexBehavior = Enum.ZIndexBehavior.Global
 gui.IgnoreGuiInset = true
 
-if EZ.thread_fix then
+if EZ.ThreadFix then
 	local holder = Instance.new('Folder')
 	holder.Parent = cloneref(game:GetService('CoreGui'))
 	gui.OnTopOfCoreBlur = true
@@ -74,32 +74,32 @@ components.GUI({})
 
 EZ:CreateCategory({
 	Name = 'Combat',
-	Icon = getEZasset('newEZ/assets/new/combat.png'),
+	Icon = get_ez_asset('Elite Zone/Assets/combat.png'),
 	Size = UDim2.fromOffset(13, 14)
 })
 EZ:CreateCategory({
 	Name = 'Blatant',
-	Icon = getEZasset('newEZ/assets/new/blatant.png'),
+	Icon = get_ez_asset('Elite Zone/Assets/blatant.png'),
 	Size = UDim2.fromOffset(14, 14)
 })
 EZ:CreateCategory({
 	Name = 'Render',
-	Icon = getEZasset('newEZ/assets/new/render.png'),
+	Icon = get_ez_asset('Elite Zone/Assets/render.png'),
 	Size = UDim2.fromOffset(15, 14)
 })
 EZ:CreateCategory({
 	Name = 'Utility',
-	Icon = getEZasset('newEZ/assets/new/utility.png'),
+	Icon = get_ez_asset('Elite Zone/Assets/utility.png'),
 	Size = UDim2.fromOffset(15, 14)
 })
 EZ:CreateCategory({
 	Name = 'World',
-	Icon = getEZasset('newEZ/assets/new/world.png'),
+	Icon = get_ez_asset('Elite Zone/Assets/world.png'),
 	Size = UDim2.fromOffset(14, 14)
 })
 EZ:CreateCategory({
 	Name = 'Inventory',
-	Icon = getEZasset('newEZ/assets/new/inventory.png'),
+	Icon = get_ez_asset('Elite Zone/Assets/inventory.png'),
 	Size = UDim2.fromOffset(15, 14)
 })
 EZ.Categories.Main:CreateDivider({
@@ -119,7 +119,7 @@ do
 
 	friends = EZ:CreateCategoryList({
 		Name = 'Friends',
-		Icon = getEZasset('newEZ/assets/new/friends.png'),
+		Icon = get_ez_asset('Elite Zone/Assets/friends.png'),
 		Size = UDim2.fromOffset(17, 16),
 		Placeholder = 'Roblox username',
 		Color = Color3.fromRGB(5, 134, 105),
@@ -172,7 +172,7 @@ end
 ]]
 EZ:CreateCategoryList({
 	Name = 'configs',
-	Icon = getEZasset('newEZ/assets/new/configs.png'),
+	Icon = get_ez_asset('Elite Zone/Assets/configs.png'),
 	Size = UDim2.fromOffset(17, 10),
 	Position = UDim2.fromOffset(12, 16),
 	Placeholder = 'Type name',
@@ -185,7 +185,7 @@ EZ:CreateCategoryList({
 local targets
 targets = EZ:CreateCategoryList({
 	Name = 'Targets',
-	Icon = getEZasset('newEZ/assets/new/friends.png'),
+	Icon = get_ez_asset('Elite Zone/Assets/friends.png'),
 	Size = UDim2.fromOffset(17, 16),
 	Placeholder = 'Roblox username',
 	Function = function()

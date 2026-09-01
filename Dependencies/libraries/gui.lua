@@ -1,25 +1,25 @@
 local EZ = {}
 EZ.script_name = "Elite Zone"
-EZ.active_binds = {}
-EZ.categories = {}
-EZ.gui_color = {
-	hue = 0.46,
-	sat = 0.96,
-	value = 0.52
+EZ.ActiveBinds = {}
+EZ.Categories = {}
+EZ.GUIColor = {
+	Hue = 0.46,
+	Sat = 0.96,
+	Value = 0.52
 }
-EZ.held_keybinds = {}
-EZ.loaded = false
-EZ.libraries = {}
-EZ.modules = {}
-EZ.place = game.PlaceId
+EZ.HeldKeybinds = {}
+EZ.Loaded = false
+EZ.Libraries = {}
+EZ.Modules = {}
+EZ.Place = game.PlaceId
 EZ.config = 'default'
-EZ.rainbow_sliders = {}
-EZ.settings = {}
-EZ.setting_toggle_notifications = {}
-EZ.thread_fix = setthreadidentity and true or false
-EZ.toggle_notifications = {}
-EZ.version = '1.0'
-EZ.windows = {}
+EZ.RainbowSliders = {}
+EZ.Settings = {}
+EZ.SettingToggleNotifications = {}
+EZ.ThreadFix = setthreadidentity and true or false
+EZ.ToggleNotifications = {}
+EZ.Version = '1.0'
+EZ.Windows = {}
 
 local function load_assets()
     local assets_url = "https://raw.githubusercontent.com/scripter-sm/EliteZone/main/Dependencies/assets/"
@@ -71,7 +71,7 @@ local function load_assets()
         local autoload_file = cache_path .. "/__autoload.json"
         if isfile(autoload_file) then
             local success, data = pcall(function()
-                return http_service:JSONDecode(readfile(autoload_file))
+                return httpService:JSONDecode(readfile(autoload_file))
             end)
             if success and type(data) == "table" then
                 return data
@@ -82,7 +82,7 @@ local function load_assets()
     
     local function save_autoload(data)
         local autoload_file = cache_path .. "/__autoload.json"
-        writefile(autoload_file, http_service:JSONEncode(data))
+        writefile(autoload_file, httpService:JSONEncode(data))
     end
     
     return get_ez_asset, config_path, cache_path, themes_path, load_autoload, save_autoload
@@ -101,15 +101,15 @@ end
 local cloneref = cloneref or function(obj)
 	return obj
 end
-local tween_service = cloneref(game:GetService('TweenService'))
-local input_service = cloneref(game:GetService('UserInputService'))
-local text_service = cloneref(game:GetService('TextService'))
-local gui_service = cloneref(game:GetService('GuiService'))
-local run_service = cloneref(game:GetService('RunService'))
-local http_service = cloneref(game:GetService('HttpService'))
+local tweenService = cloneref(game:GetService('TweenService'))
+local inputService = cloneref(game:GetService('UserInputService'))
+local textService = cloneref(game:GetService('TextService'))
+local guiService = cloneref(game:GetService('GuiService'))
+local runService = cloneref(game:GetService('RunService'))
+local httpService = cloneref(game:GetService('HttpService'))
 
-local font_size = Instance.new('GetTextBoundsParams')
-font_size.Width = math.huge
+local fontsize = Instance.new('GetTextBoundsParams')
+fontsize.Width = math.huge
 local notifications
 local components
 local click_gui
@@ -631,7 +631,7 @@ end
 function EZ:BlurCheck()
 	if self.ThreadFix then
 		setthreadidentity(8)
-		runService:SetRobloxGuiFocused((clickgui.Visible or guiService:GetErrorType() ~= Enum.ConnectionError.OK) and self.Blur.Enabled)
+		runService:SetRobloxGuiFocused((clickgui.Visible or guiService:GetErrorType() ~= Enum.ConnectionError.OK) and (self.Blur and self.Blur.Enabled or false))
 	end
 end
 
@@ -878,7 +878,7 @@ function EZ:LoadGUI()
 	gui.ZIndexBehavior = Enum.ZIndexBehavior.Global
 	gui.IgnoreGuiInset = true
 	
-	if EZ.thread_fix then
+	if EZ.ThreadFix then
 		local holder = Instance.new('Folder')
 		holder.Parent = cloneref(game:GetService('CoreGui'))
 		gui.OnTopOfCoreBlur = true
@@ -947,32 +947,32 @@ function EZ:LoadGUI()
 	
 	EZ:CreateCategory({
 		Name = 'Combat',
-		Icon = getEZasset('newEZ/assets/new/combat.png'),
+		Icon = get_ez_asset('Elite Zone/Assets/combat.png'),
 		Size = UDim2.fromOffset(13, 14)
 	})
 	EZ:CreateCategory({
 		Name = 'Blatant',
-		Icon = getEZasset('newEZ/assets/new/blatant.png'),
+		Icon = get_ez_asset('Elite Zone/Assets/blatant.png'),
 		Size = UDim2.fromOffset(14, 14)
 	})
 	EZ:CreateCategory({
 		Name = 'Render',
-		Icon = getEZasset('newEZ/assets/new/render.png'),
+		Icon = get_ez_asset('Elite Zone/Assets/render.png'),
 		Size = UDim2.fromOffset(15, 14)
 	})
 	EZ:CreateCategory({
 		Name = 'Utility',
-		Icon = getEZasset('newEZ/assets/new/utility.png'),
+		Icon = get_ez_asset('Elite Zone/Assets/utility.png'),
 		Size = UDim2.fromOffset(15, 14)
 	})
 	EZ:CreateCategory({
 		Name = 'World',
-		Icon = getEZasset('newEZ/assets/new/world.png'),
+		Icon = get_ez_asset('Elite Zone/Assets/world.png'),
 		Size = UDim2.fromOffset(14, 14)
 	})
 	EZ:CreateCategory({
 		Name = 'Inventory',
-		Icon = getEZasset('newEZ/assets/new/inventory.png'),
+		Icon = get_ez_asset('Elite Zone/Assets/inventory.png'),
 		Size = UDim2.fromOffset(15, 14)
 	})
 	EZ.Categories.Main:CreateDivider({
@@ -992,7 +992,7 @@ function EZ:LoadGUI()
 	
 		friends = EZ:CreateCategoryList({
 			Name = 'Friends',
-			Icon = getEZasset('newEZ/assets/new/friends.png'),
+			Icon = get_ez_asset('Elite Zone/Assets/friends.png'),
 			Size = UDim2.fromOffset(17, 16),
 			Placeholder = 'Roblox username',
 			Color = Color3.fromRGB(5, 134, 105),
@@ -1045,7 +1045,7 @@ function EZ:LoadGUI()
 	]]
 	EZ:CreateCategoryList({
 		Name = 'configs',
-		Icon = getEZasset('newEZ/assets/new/configs.png'),
+		Icon = get_ez_asset('Elite Zone/Assets/configs.png'),
 		Size = UDim2.fromOffset(17, 10),
 		Position = UDim2.fromOffset(12, 16),
 		Placeholder = 'Type name',
@@ -1058,7 +1058,7 @@ function EZ:LoadGUI()
 	local targets
 	targets = EZ:CreateCategoryList({
 		Name = 'Targets',
-		Icon = getEZasset('newEZ/assets/new/friends.png'),
+		Icon = get_ez_asset('Elite Zone/Assets/friends.png'),
 		Size = UDim2.fromOffset(17, 16),
 		Placeholder = 'Roblox username',
 		Function = function()
@@ -2533,7 +2533,7 @@ components = {
 		addTooltip(bind, '', function()
 			local holdText = 'Bind functionality = '..(component.Hold and 'Enable while held' or 'Toggle')
 			if inputService:IsKeyDown(Enum.KeyCode.LeftShift) then
-				holdText = "<font color="FF5A5A'>"..holdText.."</font>"
+				holdText = '<font color="#FF5A5A">'..holdText..'</font>'
 			end
 		
 			return 'Click to bind\nShift click to modify bind functionality\n'..holdText
