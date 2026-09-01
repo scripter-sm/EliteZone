@@ -266,7 +266,7 @@ do
 
 	-- path looks like 'Elite Zone/Assets/combat.png'; the GitHub folder is flat
 	-- (Dependencies/assets/combat.png) so we only need the file name for the URL.
-	local function downloadFile(path, callback)
+	local function downloadFile(path)
 		if not isfile(path) then
 			createDownloader(path)
 
@@ -276,19 +276,24 @@ do
 			end)
 
 			if not success or data == nil or data == '' or data == '404: Not Found' then
-				error('[ Elite Zone ] Failed to download asset "'..tostring(fileName)..'": '..tostring(data))
+				return false
 			end
 
 			writefile(path, data)
 		end
 
-		return (callback or readfile)(path)
+		return true
 	end
 
 	-- download the real assets from GitHub when the executor can turn a cached
-	-- file into an asset; otherwise fall back to the pre-uploaded asset ids.
+	-- file into an asset; fall back to the pre-uploaded asset ids when it can't
+	-- or when a download fails.
 	get_ez_asset = getassetfn and function(path)
-		return downloadFile(path, getassetfn)
+		if downloadFile(path) then
+			return getassetfn(path)
+		end
+
+		return ezAssets[path] or ''
 	end or function(path)
 		return ezAssets[path] or ''
 	end
