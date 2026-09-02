@@ -210,6 +210,14 @@ function targetinfo:Update()
 
 	Holder.Visible = entity ~= nil or clickgui.Visible
 	if entity then
+		if entity == self.Manual and entity.Player then
+			local character = entity.Player.Character
+			local humanoid = character and character:FindFirstChildWhichIsA('Humanoid')
+			entity.Character = nil
+			entity.Health = humanoid and humanoid.Health or 0
+			entity.MaxHealth = humanoid and humanoid.MaxHealth or 100
+		end
+
 		Name.Text = entity.Player and (DisplayName.Enabled and entity.Player.DisplayName or entity.Player.Name) or entity.Character and entity.Character.Name or Name.Text
 		Headshot.Image = 'rbxthumb://type=AvatarHeadShot&id='..(entity.Player and entity.Player.UserId or 1)..'&w=420&h=420'
 
@@ -241,12 +249,35 @@ function targetinfo:Update()
 			self.MaxHealth = entity.MaxHealth
 		end
 
-		if not entity.Character then
+		if not entity.Character and entity ~= self.Manual then
 			table.clear(entity)
 		end
 
 		self.LastTarget = entity
 	end
+end
+
+function EZ:SetTarget(target)
+	if typeof(target) == 'Instance' and targetinfo.Manual and targetinfo.Manual.Player == target then
+		return
+	end
+
+	if targetinfo.Manual then
+		targetinfo.Targets[targetinfo.Manual] = nil
+		targetinfo.Manual = nil
+	end
+
+	if not target then
+		return
+	end
+
+	local entity = typeof(target) == 'Instance' and {Player = target} or target
+	targetinfo.Manual = entity
+	targetinfo.Targets[entity] = math.huge
+end
+
+function EZ:GetTarget()
+	return targetinfo.Manual and (targetinfo.Manual.Player or targetinfo.Manual)
 end
 
 EZ.Libraries.targetinfo = targetinfo
