@@ -61,7 +61,7 @@ local function loadJson(path)
 	return success and type(data) == 'table' and data or nil
 end
 
-for _, path in {'Elite Zone', 'Elite Zone/Assets', 'Elite Zone/Config'} do
+for _, path in {'Elite Zone', 'Elite Zone/Assets', 'Elite Zone/Config', 'Elite Zone/Cache'} do
 	if not isfolder(path) then
 		makefolder(path)
 	end
@@ -688,6 +688,7 @@ function EZ:Load(skipgui, config)
 	if not isfolder(self.config_dir) then
 		makefolder(self.config_dir)
 	end
+	self.autoload = (loadJson('Elite Zone/Cache/__autoload.dat') or {})[self.game]
 
 	local guiData = {Categories = {}}
 	local oldConfig = self.config
@@ -706,8 +707,7 @@ function EZ:Load(skipgui, config)
 			guiData.Categories.Main = nil
 		end
 
-		self.autoload = guiData.autoload
-		self.config = config or guiData.autoload or guiData.config or 'default'
+		self.config = config or self.autoload or guiData.config or 'default'
 		if self.configLabel then
 			self.configLabel.Text = #self.config > 10 and self.config:sub(1, 10)..'...' or self.config
 			self.configLabel.Size = UDim2.fromOffset(getfontbounds(self.configLabel.Text, self.configLabel.TextSize, self.configLabel.Font).X + 16, 24)
@@ -2273,7 +2273,6 @@ function EZ:Save(newConfig)
 	local guiData = {
 		Categories = {},
 		config = newConfig or self.config,
-		autoload = self.autoload,
 		v = 1
 	}
 
@@ -2298,6 +2297,13 @@ function EZ:Save(newConfig)
 
 	writefile(self.config_dir..'gui.txt', httpService:JSONEncode(guiData))
 	writefile(self.config_dir..self.config..'.txt', httpService:JSONEncode(mainData))
+end
+
+function EZ:SetAutoload(name)
+	local data = loadJson('Elite Zone/Cache/__autoload.dat') or {}
+	data[self.game] = name
+	writefile('Elite Zone/Cache/__autoload.dat', httpService:JSONEncode(data))
+	self.autoload = name
 end
 
 function EZ:SaveOptions(obj)
@@ -3221,7 +3227,7 @@ components = {
 							table.remove(self.List, index)
 		
 							if EZ.autoload == value then
-								EZ.autoload = nil
+								EZ:SetAutoload(nil)
 							end
 		
 							if isfile(EZ.config_dir..value..'.txt') and delfile then
@@ -3346,8 +3352,7 @@ components = {
 					end)
 		
 					menu_button('Set as Autoload', function()
-						EZ.autoload = EZ.autoload ~= name.Name and name.Name or nil
-						EZ:Save()
+						EZ:SetAutoload(EZ.autoload ~= name.Name and name.Name or nil)
 						component:ChangeValue()
 					end)
 		

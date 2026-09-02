@@ -176,7 +176,7 @@ function component:ChangeValue(value, skipGUI)
 					table.remove(self.List, index)
 
 					if EZ.autoload == value then
-						EZ.autoload = nil
+						EZ:SetAutoload(nil)
 					end
 
 					if isfile(EZ.config_dir..value..'.txt') and delfile then
@@ -301,8 +301,7 @@ function component:ChangeValue(value, skipGUI)
 			end)
 
 			menu_button('Set as Autoload', function()
-				EZ.autoload = EZ.autoload ~= name.Name and name.Name or nil
-				EZ:Save()
+				EZ:SetAutoload(EZ.autoload ~= name.Name and name.Name or nil)
 				component:ChangeValue()
 			end)
 
