@@ -1,5 +1,4 @@
 local EZ = {}
-EZ.script_name = "Elite Zone"
 EZ.ActiveBinds = {}
 EZ.Categories = {}
 EZ.GUIColor = {
@@ -63,21 +62,10 @@ local function loadJson(path)
 	return success and type(data) == 'table' and data or nil
 end
 
-EZ.config_path = EZ.script_name..'/Configs'
-EZ.cache_path = EZ.script_name..'/Cache'
-EZ.themes_path = EZ.script_name..'/Themes'
-
-for _, path in {EZ.script_name..'/Assets', EZ.config_path, EZ.cache_path, EZ.themes_path} do
+for _, path in {'Elite Zone', 'Elite Zone/Assets', 'Elite Zone/configs'} do
 	if not isfolder(path) then
 		makefolder(path)
 	end
-end
-
-local autoload_file = EZ.cache_path..'/__autoload.json'
-EZ.autoload_data = loadJson(autoload_file) or {}
-
-function EZ:LoadAutoload(data)
-	writefile(autoload_file, httpService:JSONEncode(data))
 end
 
 --Libraries
@@ -618,7 +606,7 @@ function EZ:Save(newConfig)
 
 	local guiData = {
 		Categories = {},
-		Config = newConfig or self.config,
+		config = newConfig or self.config,
 		v = 1
 	}
 

@@ -262,8 +262,8 @@ general:CreateButton({
 	Name = 'Reset current Config',
 	Function = function()
 	EZ.Save = function() end
-		if isfile('Elite Zone/Configs/'..EZ.config..EZ.Place..'.txt') and delfile then
-			delfile('Elite Zone/Configs/'..EZ.config..EZ.Place..'.txt')
+		if isfile('Elite Zone/configs/'..EZ.config..EZ.Place..'.txt') and delfile then
+			delfile('Elite Zone/configs/'..EZ.config..EZ.Place..'.txt')
 		end
 
 		shared.EZreload = true
