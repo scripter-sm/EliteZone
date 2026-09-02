@@ -766,8 +766,6 @@ function EZ:Load(skipgui, config)
 		end
 
 		self:UpdateTextGUI(true)
-	else
-		self:SaveConfig()
 	end
 
 	if self.config ~= oldConfig and skipgui then
@@ -1076,19 +1074,6 @@ function EZ:LoadGUI()
 			end
 		end,
 		Tooltip = 'Hover a toggle setting to bind it to a key'
-	})
-	
-	general:CreateButton({
-		Name = 'Reset current Config',
-		Function = function()
-		EZ.Save = function() end
-			if isfile(EZ.config_dir..EZ.config..'.txt') and delfile then
-				delfile(EZ.config_dir..EZ.config..'.txt')
-			end
-	
-			shared.EZreload = true
-		end,
-		Tooltip = 'This will set your Config to the default settings'
 	})
 	
 	general:CreateButton({
@@ -3412,7 +3397,7 @@ components = {
 		
 					local menu = Instance.new('Frame')
 					menu.BackgroundColor3 = color.Dark(uipallet.Main, 0.02)
-					menu.Size = UDim2.fromOffset(110, 84)
+					menu.Size = UDim2.fromOffset(110, 112)
 					menu.Visible = false
 					menu.ZIndex = 20
 					menu.Parent = scaledgui
@@ -3449,6 +3434,14 @@ components = {
 		
 					menu_button('Overwrite', function()
 						EZ:SaveConfig(name.Name)
+					end)
+		
+					menu_button('Reset Config', function()
+						EZ.Save = function() end
+						if isfile(EZ.config_dir..name.Name..'.txt') and delfile then
+							delfile(EZ.config_dir..name.Name..'.txt')
+						end
+						shared.EZreload = true
 					end)
 		
 					menu_button('Set as Autoload', function()

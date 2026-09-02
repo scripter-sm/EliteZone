@@ -260,19 +260,6 @@ general:CreateToggle({
 })
 
 general:CreateButton({
-	Name = 'Reset current Config',
-	Function = function()
-	EZ.Save = function() end
-		if isfile(EZ.config_dir..EZ.config..'.txt') and delfile then
-			delfile(EZ.config_dir..EZ.config..'.txt')
-		end
-
-		shared.EZreload = true
-	end,
-	Tooltip = 'This will set your Config to the default settings'
-})
-
-general:CreateButton({
 	Name = 'Self destruct',
 	Function = function()
 		EZ:Uninject()

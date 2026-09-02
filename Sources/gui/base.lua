@@ -522,8 +522,6 @@ function EZ:Load(skipgui, config)
 		end
 
 		self:UpdateTextGUI(true)
-	else
-		self:SaveConfig()
 	end
 
 	if self.config ~= oldConfig and skipgui then
