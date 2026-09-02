@@ -1872,9 +1872,8 @@ function EZ:LoadGUI()
 		})
 		
 		local Holder = Instance.new('Frame')
-		Holder.Size = UDim2.fromOffset(240, 95)
-		Holder.Position = UDim2.fromOffset(0, -6)
-		Holder.ZIndex = 0
+		Holder.Size = UDim2.fromOffset(240, 90)
+		Holder.Position = UDim2.fromOffset(0, -1)
 		Holder.BackgroundColor3 = color.Dark(uipallet.Main, 0.1)
 		Holder.BackgroundTransparency = 0.5
 		Holder.Parent = TargetInfoOverlay.Children
