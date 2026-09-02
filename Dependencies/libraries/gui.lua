@@ -1938,7 +1938,7 @@ function EZ:LoadGUI()
 		Stroke.Color = Color3.fromHSV(0.44, 1, 1)
 		Stroke.Parent = Holder
 		
-		local rivals_extra_height = 112
+		local rivals_extra_height = 118
 		local devices = {MouseKeyboard = 'computer', Touch = 'mobile', Gamepad = 'controller', VR = 'vr'}
 		local device_pool = {'computer', 'mobile', 'controller', 'vr'}
 		local ranks = {
@@ -1946,11 +1946,9 @@ function EZ:LoadGUI()
 			'Gold 1', 'Gold 2', 'Gold 3', 'Platinum 1', 'Platinum 2', 'Platinum 3',
 			'Diamond 1', 'Diamond 2', 'Diamond 3', 'Onyx 1', 'Onyx 2', 'Onyx 3', 'Nemesis'
 		}
-		local weapon_pool = {
-			'Assault Rifle', 'Burst Rifle', 'Energy Rifle', 'Minigun', 'Sniper', 'Shotgun',
-			'Shorty', 'Uzi', 'Revolver', 'Handgun', 'Energy Pistols', 'Bow', 'Crossbow',
-			'RPG', 'Grenade Launcher', 'Flamethrower', 'Katana', 'Scythe', 'Battle Axe',
-			'Spear', 'Daggers', 'Knife', 'Fists', 'Grenade', 'Molotov', 'Riot Shield'
+		local preview_icons = {
+			'rbxassetid://17225649668', 'rbxassetid://17225650488',
+			'rbxassetid://17225650859', 'rbxassetid://17225651405'
 		}
 		local local_player = cloneref(game:GetService('Players')).LocalPlayer
 		
@@ -1976,45 +1974,40 @@ function EZ:LoadGUI()
 		rivals_box.BackgroundColor3 = color.Dark(uipallet.Main, 0.05)
 		rivals_box.BorderSizePixel = 0
 		rivals_box.Position = UDim2.fromOffset(10, 74)
-		rivals_box.Size = UDim2.fromOffset(220, 122)
+		rivals_box.Size = UDim2.fromOffset(220, 128)
 		rivals_box.Visible = false
 		rivals_box.Parent = Holder
 		addCorner(rivals_box)
 		local weapon_row = Instance.new('Frame')
 		weapon_row.BackgroundTransparency = 1
 		weapon_row.Position = UDim2.fromOffset(8, 8)
-		weapon_row.Size = UDim2.fromOffset(204, 40)
+		weapon_row.Size = UDim2.fromOffset(204, 46)
 		weapon_row.Parent = rivals_box
 		local weapon_layout = Instance.new('UIListLayout')
 		weapon_layout.FillDirection = Enum.FillDirection.Horizontal
 		weapon_layout.Padding = UDim.new(0, 6)
 		weapon_layout.Parent = weapon_row
-		local weapon_icons, weapon_labels = {}, {}
+		local weapon_icons = {}
 		for i = 1, 4 do
 			local slot = Instance.new('Frame')
 			slot.BackgroundColor3 = uipallet.Main
 			slot.BorderSizePixel = 0
 			slot.LayoutOrder = i
-			slot.Size = UDim2.fromOffset(46, 40)
+			slot.Size = UDim2.fromOffset(46, 46)
 			slot.Parent = weapon_row
 			addCorner(slot, UDim.new(0, 4))
+			local border = Instance.new('UIStroke')
+			border.Color = color.Light(uipallet.Main, 0.15)
+			border.Parent = slot
 			local icon = Instance.new('ImageLabel')
+			icon.AnchorPoint = Vector2.new(0.5, 0.5)
 			icon.BackgroundTransparency = 1
-			icon.Position = UDim2.fromOffset(3, 1)
-			icon.Size = UDim2.fromOffset(40, 27)
+			icon.Position = UDim2.fromScale(0.5, 0.5)
+			icon.Size = UDim2.fromScale(0.75, 0.75)
+			icon.Image = preview_icons[i]
 			icon.ScaleType = Enum.ScaleType.Fit
 			icon.Parent = slot
-			local label = Instance.new('TextLabel')
-			label.BackgroundTransparency = 1
-			label.FontFace = uipallet.Font
-			label.Position = UDim2.fromOffset(0, 28)
-			label.Size = UDim2.fromOffset(46, 10)
-			label.Text = ''
-			label.TextColor3 = color.Dark(uipallet.Text, 0.2)
-			label.TextSize = 8
-			label.TextTruncate = Enum.TextTruncate.AtEnd
-			label.Parent = slot
-			weapon_icons[i], weapon_labels[i] = icon, label
+			weapon_icons[i] = icon
 		end
 		
 		local function line(x, y, width)
@@ -2030,11 +2023,11 @@ function EZ:LoadGUI()
 			label.Parent = rivals_box
 			return label
 		end
-		local name_line = line(8, 52, 204)
-		local stat_line = line(8, 69, 204)
-		local device_line = line(8, 86, 204)
-		local health_line = line(8, 103, 70)
-		local ratio_line = line(84, 103, 128)
+		local name_line = line(8, 58, 204)
+		local stat_line = line(8, 75, 204)
+		local device_line = line(8, 92, 204)
+		local health_line = line(8, 109, 70)
+		local ratio_line = line(84, 109, 128)
 		
 		local function pick(list)
 			return list[math.random(#list)]
@@ -2049,7 +2042,6 @@ function EZ:LoadGUI()
 				end
 		
 				weapon_icons[i].Image = image
-				weapon_labels[i].Text = weapon or ''
 			end
 		end
 		
@@ -2114,8 +2106,12 @@ function EZ:LoadGUI()
 					targetinfo.rank = pick(ranks)
 					targetinfo.device = pick(device_pool)
 					targetinfo.streak = math.random(0, 30)
-					targetinfo.weapons = {pick(weapon_pool), pick(weapon_pool), pick(weapon_pool), pick(weapon_pool)}
-					show_weapons(targetinfo.weapons, libs.items)
+					for i = 1, 4 do
+						weapon_icons[i].Image = preview_icons[i]
+					end
+		
+					Name.Text = DisplayName.Enabled and subject.DisplayName or subject.Name
+					Headshot.Image = 'rbxthumb://type=AvatarHeadShot&id='..subject.UserId..'&w=420&h=420'
 				end
 				level, rank, device, streak = targetinfo.level, targetinfo.rank, targetinfo.device, targetinfo.streak
 		
