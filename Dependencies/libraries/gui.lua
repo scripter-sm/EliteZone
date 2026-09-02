@@ -21,79 +21,6 @@ EZ.ToggleNotifications = {}
 EZ.Version = '1.0'
 EZ.Windows = {}
 
-local function load_assets()
-    local assets_url = "https://raw.githubusercontent.com/scripter-sm/EliteZone/main/Dependencies/assets/"
-    local assets_path = EZ.script_name .. "/Assets"
-    local config_path = EZ.script_name .. "/Configs"
-    local cache_path = EZ.script_name .. "/Cache"
-    local themes_path = EZ.script_name .. "/Themes"
-    
-    if not isfolder(assets_path) then
-        makefolder(assets_path)
-    end
-    
-    if not isfolder(config_path) then
-        makefolder(config_path)
-    end
-    
-    if not isfolder(cache_path) then
-        makefolder(cache_path)
-    end
-    
-    if not isfolder(themes_path) then
-        makefolder(themes_path)
-    end
-    
-    local function download_asset(file_name)
-        local url = assets_url .. file_name
-        local file_path = assets_path .. "/" .. file_name
-        
-        if not isfile(file_path) then
-            local success, content = pcall(function()
-                return game:HttpGet(url, true)
-            end)
-            
-            if success then
-                writefile(file_path, content)
-            end
-        end
-        
-        return getcustomasset and getcustomasset(file_path) or file_path
-    end
-    
-    local function get_ez_asset(asset_path)
-        local file_name = asset_path:match("([^/]+)$")
-        return download_asset(file_name)
-    end
-
-    local function load_autoload()
-        local autoload_file = cache_path .. "/__autoload.json"
-        if isfile(autoload_file) then
-            local success, data = pcall(function()
-                return httpService:JSONDecode(readfile(autoload_file))
-            end)
-            if success and type(data) == "table" then
-                return data
-            end
-        end
-        return {autoload_config = nil, autoload_theme = nil}
-    end
-    
-    local function save_autoload(data)
-        local autoload_file = cache_path .. "/__autoload.json"
-        writefile(autoload_file, httpService:JSONEncode(data))
-    end
-    
-    return get_ez_asset, config_path, cache_path, themes_path, load_autoload, save_autoload
-end
-
-local get_ez_asset, config_path, cache_path, themes_path, load_autoload, save_autoload = load_assets()
-EZ.config_path = config_path
-EZ.cache_path = cache_path
-EZ.themes_path = themes_path
-EZ.autoload_data = load_autoload()
-EZ.LoadAutoload = save_autoload
-
 local run = function(func)
 	func()
 end
@@ -110,6 +37,7 @@ local httpService = cloneref(game:GetService('HttpService'))
 local fontsize = Instance.new('GetTextBoundsParams')
 fontsize.Width = math.huge
 local notifications
+local get_ez_asset
 local components
 local click_gui
 local scaled_gui
@@ -133,6 +61,23 @@ local function loadJson(path)
 	end)
 
 	return success and type(data) == 'table' and data or nil
+end
+
+EZ.config_path = EZ.script_name..'/Configs'
+EZ.cache_path = EZ.script_name..'/Cache'
+EZ.themes_path = EZ.script_name..'/Themes'
+
+for _, path in {EZ.script_name..'/Assets', EZ.config_path, EZ.cache_path, EZ.themes_path} do
+	if not isfolder(path) then
+		makefolder(path)
+	end
+end
+
+local autoload_file = EZ.cache_path..'/__autoload.json'
+EZ.autoload_data = loadJson(autoload_file) or {}
+
+function EZ:LoadAutoload(data)
+	writefile(autoload_file, httpService:JSONEncode(data))
 end
 
 local color = {}
@@ -984,9 +929,6 @@ function EZ:LoadGUI()
 		Text = 'misc'
 	})
 	
-	--[[
-		Friends
-	]]
 	do
 		local friends
 		local friendscolor = {
@@ -1045,9 +987,6 @@ function EZ:LoadGUI()
 		EZ:Clean(friends.ColorUpdate)
 	end
 	
-	--[[
-		configs
-	]]
 	EZ:CreateCategoryList({
 		Name = 'configs',
 		Icon = get_ez_asset('Elite Zone/Assets/configs.png'),
@@ -1057,9 +996,6 @@ function EZ:LoadGUI()
 		configs = true
 	})
 	
-	--[[
-		Targets
-	]]
 	local targets
 	targets = EZ:CreateCategoryList({
 		Name = 'Targets',
@@ -1076,10 +1012,6 @@ function EZ:LoadGUI()
 	components.LegitWindow()
 	EZ.SearchBar = components.SearchBar()
 	EZ.Categories.Main:CreateOverlayBar()
-	
-	--[[
-		General Settings
-	]]
 	
 	local general = EZ.Categories.Main.Settings:CreateSettingsPane({Name = 'General'})
 	local settingConnections = {}
@@ -1178,10 +1110,6 @@ function EZ:LoadGUI()
 		Tooltip = 'Reloads EZ for debugging purposes'
 	})
 	
-	--[[
-		Module Settings
-	]]
-	
 	local modules = EZ.Categories.Main.Settings:CreateSettingsPane({Name = 'Modules'})
 	modules:CreateToggle({
 		Name = 'Teams by server',
@@ -1204,10 +1132,6 @@ function EZ:LoadGUI()
 			end
 		end
 	})
-	
-	--[[
-		GUI Settings
-	]]
 	
 	local guipane = EZ.Categories.Main.Settings:CreateSettingsPane({Name = 'GUI'})
 	EZ.Blur = guipane:CreateToggle({
@@ -1254,7 +1178,7 @@ function EZ:LoadGUI()
 		Function = function(callback)
 			ScaleSlider.Object.Visible = not callback
 			if callback then
-				--scale.Scale = math.max(gui.AbsoluteSize.X / 1920, 0.6)
+	
 			else
 				scale.Scale = ScaleSlider.Value
 			end
@@ -1357,10 +1281,6 @@ function EZ:LoadGUI()
 		end,
 		Tooltip = 'Sorts GUI by category order'
 	})
-	
-	--[[
-		Notification Settings
-	]]
 	
 	local notifpane = EZ.Categories.Main.Settings:CreateSettingsPane({Name = 'Notifications'})
 	EZ.Notifications = notifpane:CreateToggle({
@@ -1626,9 +1546,7 @@ function EZ:LoadGUI()
 		})
 		
 		
-		--[[
-			Text GUI Objects
-		]]
+		
 		
 		Scale = Instance.new('UIScale')
 		Scale.Parent = TextGUI.Children
@@ -1922,9 +1840,7 @@ function EZ:LoadGUI()
 	end)
 	
 	run(function()
-		--[[
-			Target Info
-		]]
+		
 		
 		local targetinfo = {
 			Targets = {},
@@ -4176,7 +4092,7 @@ components = {
 			label.FontFace = uipallet.Font
 			label.Parent = children
 			divider.BackgroundTransparency = 1
-			--divider.Position = UDim2.fromOffset(0, 26)
+		
 			divider.Parent = label
 		end
 		
@@ -5671,9 +5587,7 @@ components = {
 			for _, module in component.Modules do
 				if module.Children then
 					local visible = clickgui.Visible
-					--[[for _, v2 in self.Windows do
-						visible = visible or v2.Visible
-					end]]
+					
 		
 					module.Children.Visible = (not visible or window.Visible) and module.Enabled
 				end

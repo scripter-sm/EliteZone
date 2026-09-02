@@ -1,6 +1,4 @@
---[[
-	Target Info
-]]
+
 
 local targetinfo = {
 	Targets = {},

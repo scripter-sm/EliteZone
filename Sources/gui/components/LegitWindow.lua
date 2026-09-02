@@ -92,9 +92,7 @@ local function visibleCheck()
 	for _, module in component.Modules do
 		if module.Children then
 			local visible = clickgui.Visible
-			--[[for _, v2 in self.Windows do
-				visible = visible or v2.Visible
-			end]]
+			
 
 			module.Children.Visible = (not visible or window.Visible) and module.Enabled
 		end

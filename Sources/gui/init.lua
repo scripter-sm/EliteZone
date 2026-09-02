@@ -106,9 +106,6 @@ EZ.Categories.Main:CreateDivider({
 	Text = 'misc'
 })
 
---[[
-	Friends
-]]
 do
 	local friends
 	local friendscolor = {
@@ -167,9 +164,6 @@ do
 	EZ:Clean(friends.ColorUpdate)
 end
 
---[[
-	configs
-]]
 EZ:CreateCategoryList({
 	Name = 'configs',
 	Icon = get_ez_asset('Elite Zone/Assets/configs.png'),
@@ -179,9 +173,6 @@ EZ:CreateCategoryList({
 	configs = true
 })
 
---[[
-	Targets
-]]
 local targets
 targets = EZ:CreateCategoryList({
 	Name = 'Targets',
@@ -198,10 +189,6 @@ EZ:Clean(targets.Update)
 components.LegitWindow()
 EZ.SearchBar = components.SearchBar()
 EZ.Categories.Main:CreateOverlayBar()
-
---[[
-	General Settings
-]]
 
 local general = EZ.Categories.Main.Settings:CreateSettingsPane({Name = 'General'})
 local settingConnections = {}
@@ -300,10 +287,6 @@ general:CreateButton({
 	Tooltip = 'Reloads EZ for debugging purposes'
 })
 
---[[
-	Module Settings
-]]
-
 local modules = EZ.Categories.Main.Settings:CreateSettingsPane({Name = 'Modules'})
 modules:CreateToggle({
 	Name = 'Teams by server',
@@ -326,10 +309,6 @@ modules:CreateToggle({
 		end
 	end
 })
-
---[[
-	GUI Settings
-]]
 
 local guipane = EZ.Categories.Main.Settings:CreateSettingsPane({Name = 'GUI'})
 EZ.Blur = guipane:CreateToggle({
@@ -376,7 +355,7 @@ EZ.Scale = guipane:CreateToggle({
 	Function = function(callback)
 		ScaleSlider.Object.Visible = not callback
 		if callback then
-			--scale.Scale = math.max(gui.AbsoluteSize.X / 1920, 0.6)
+
 		else
 			scale.Scale = ScaleSlider.Value
 		end
@@ -479,10 +458,6 @@ guipane:CreateButton({
 	end,
 	Tooltip = 'Sorts GUI by category order'
 })
-
---[[
-	Notification Settings
-]]
 
 local notifpane = EZ.Categories.Main.Settings:CreateSettingsPane({Name = 'Notifications'})
 EZ.Notifications = notifpane:CreateToggle({

@@ -21,79 +21,6 @@ EZ.ToggleNotifications = {}
 EZ.Version = '1.0'
 EZ.Windows = {}
 
-local function load_assets()
-    local assets_url = "https://raw.githubusercontent.com/scripter-sm/EliteZone/main/Dependencies/assets/"
-    local assets_path = EZ.script_name .. "/Assets"
-    local config_path = EZ.script_name .. "/Configs"
-    local cache_path = EZ.script_name .. "/Cache"
-    local themes_path = EZ.script_name .. "/Themes"
-    
-    if not isfolder(assets_path) then
-        makefolder(assets_path)
-    end
-    
-    if not isfolder(config_path) then
-        makefolder(config_path)
-    end
-    
-    if not isfolder(cache_path) then
-        makefolder(cache_path)
-    end
-    
-    if not isfolder(themes_path) then
-        makefolder(themes_path)
-    end
-    
-    local function download_asset(file_name)
-        local url = assets_url .. file_name
-        local file_path = assets_path .. "/" .. file_name
-        
-        if not isfile(file_path) then
-            local success, content = pcall(function()
-                return game:HttpGet(url, true)
-            end)
-            
-            if success then
-                writefile(file_path, content)
-            end
-        end
-        
-        return getcustomasset and getcustomasset(file_path) or file_path
-    end
-    
-    local function get_ez_asset(asset_path)
-        local file_name = asset_path:match("([^/]+)$")
-        return download_asset(file_name)
-    end
-
-    local function load_autoload()
-        local autoload_file = cache_path .. "/__autoload.json"
-        if isfile(autoload_file) then
-            local success, data = pcall(function()
-                return httpService:JSONDecode(readfile(autoload_file))
-            end)
-            if success and type(data) == "table" then
-                return data
-            end
-        end
-        return {autoload_config = nil, autoload_theme = nil}
-    end
-    
-    local function save_autoload(data)
-        local autoload_file = cache_path .. "/__autoload.json"
-        writefile(autoload_file, httpService:JSONEncode(data))
-    end
-    
-    return get_ez_asset, config_path, cache_path, themes_path, load_autoload, save_autoload
-end
-
-local get_ez_asset, config_path, cache_path, themes_path, load_autoload, save_autoload = load_assets()
-EZ.config_path = config_path
-EZ.cache_path = cache_path
-EZ.themes_path = themes_path
-EZ.autoload_data = load_autoload()
-EZ.LoadAutoload = save_autoload
-
 local run = function(func)
 	func()
 end
@@ -110,6 +37,7 @@ local httpService = cloneref(game:GetService('HttpService'))
 local fontsize = Instance.new('GetTextBoundsParams')
 fontsize.Width = math.huge
 local notifications
+local get_ez_asset
 local components
 local click_gui
 local scaled_gui
@@ -133,6 +61,23 @@ local function loadJson(path)
 	end)
 
 	return success and type(data) == 'table' and data or nil
+end
+
+EZ.config_path = EZ.script_name..'/Configs'
+EZ.cache_path = EZ.script_name..'/Cache'
+EZ.themes_path = EZ.script_name..'/Themes'
+
+for _, path in {EZ.script_name..'/Assets', EZ.config_path, EZ.cache_path, EZ.themes_path} do
+	if not isfolder(path) then
+		makefolder(path)
+	end
+end
+
+local autoload_file = EZ.cache_path..'/__autoload.json'
+EZ.autoload_data = loadJson(autoload_file) or {}
+
+function EZ:LoadAutoload(data)
+	writefile(autoload_file, httpService:JSONEncode(data))
 end
 
 --Libraries

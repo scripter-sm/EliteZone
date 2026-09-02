@@ -218,9 +218,7 @@ CustomTextColorSlider = TextGUI:CreateColorSlider({
 })
 
 
---[[
-	Text GUI Objects
-]]
+
 
 Scale = Instance.new('UIScale')
 Scale.Parent = TextGUI.Children

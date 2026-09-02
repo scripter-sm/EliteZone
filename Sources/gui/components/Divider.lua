@@ -15,6 +15,6 @@ if props and props.Text then
 	label.FontFace = uipallet.Font
 	label.Parent = children
 	divider.BackgroundTransparency = 1
-	--divider.Position = UDim2.fromOffset(0, 26)
+
 	divider.Parent = label
 end
