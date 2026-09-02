@@ -983,7 +983,7 @@ function EZ:LoadGUI()
 	
 	EZ:CreateCategoryList({
 		Name = 'configs',
-		Title = 'Config',
+		Title = 'Configs',
 		Icon = get_ez_asset('Elite Zone/Assets/configs.png'),
 		Size = UDim2.fromOffset(17, 10),
 		Position = UDim2.fromOffset(12, 16),
@@ -3315,12 +3315,13 @@ components = {
 		
 					local menu = Instance.new('Frame')
 					menu.BackgroundColor3 = color.Dark(uipallet.Main, 0.02)
-					menu.Position = UDim2.new(1, -104, 0, 30)
-					menu.Size = UDim2.fromOffset(104, 56)
+					menu.Size = UDim2.fromOffset(110, 56)
 					menu.Visible = false
-					menu.ZIndex = 6
-					menu.Parent = obj
+					menu.ZIndex = 20
+					menu.Parent = scaledgui
 					addCorner(menu)
+					addBlur(menu)
+					Instance.new('UIListLayout').Parent = menu
 		
 					local function menu_button(text, callback)
 						local button = Instance.new('TextButton')
@@ -3331,7 +3332,7 @@ components = {
 						button.Text = text
 						button.TextColor3 = color.Dark(uipallet.Text, 0.16)
 						button.TextSize = 13
-						button.ZIndex = 6
+						button.ZIndex = 20
 						button.Parent = menu
 						button.MouseEnter:Connect(function()
 							button.TextColor3 = uipallet.Text
@@ -3345,8 +3346,6 @@ components = {
 						end)
 					end
 		
-					Instance.new('UIListLayout').Parent = menu
-		
 					menu_button('Delete', function()
 						component:ChangeValue(name.Name)
 					end)
@@ -3357,7 +3356,13 @@ components = {
 					end)
 		
 					dotsbutton.MouseButton1Click:Connect(function()
-						menu.Visible = not menu.Visible
+						if menu.Visible then
+							menu.Visible = false
+							return
+						end
+						local at = dotsbutton.AbsolutePosition / scale.Scale
+						menu.Position = UDim2.fromOffset(at.X - 90, at.Y + 26)
+						menu.Visible = true
 					end)
 		
 					dotsbutton.MouseEnter:Connect(function()
@@ -3396,6 +3401,7 @@ components = {
 					table.insert(self.Objects, {
 						Destroy = function()
 							name.Bind:SetParent(nil)
+							menu:Destroy()
 							obj:Destroy()
 						end
 					})
@@ -3691,6 +3697,7 @@ components = {
 		
 		component.Button = EZ.Categories.Main:CreateGUIButton({
 			Name = props.Name,
+			Title = props.Title,
 			Icon = props.CategoryIcon,
 			Size = props.CategorySize,
 			Window = window
@@ -4560,7 +4567,7 @@ components = {
 		button.FontFace = uipallet.Font
 		button.Name = props.Name
 		button.Size = UDim2.fromOffset(220, 40)
-		button.Text = (props.Icon and string.rep(' ', 39) or props.Window and string.rep(' ', 17) or string.rep(' ', 10))..props.Name
+		button.Text = (props.Icon and string.rep(' ', 39) or props.Window and string.rep(' ', 17) or string.rep(' ', 10))..(props.Title or props.Name)
 		button.TextColor3 = color.Dark(uipallet.Text, 0.16)
 		button.TextSize = 14
 		button.TextXAlignment = Enum.TextXAlignment.Left

@@ -26,10 +26,4 @@ farm:CreateSlider({
 	end
 })
 
-farm:CreateBind({
-	Name = 'Toggle Key',
-	Default = {'RightControl'},
-	NoRemove = true
-})
-
 EZ:Load()

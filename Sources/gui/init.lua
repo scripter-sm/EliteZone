@@ -166,7 +166,7 @@ end
 
 EZ:CreateCategoryList({
 	Name = 'configs',
-	Title = 'Config',
+	Title = 'Configs',
 	Icon = get_ez_asset('Elite Zone/Assets/configs.png'),
 	Size = UDim2.fromOffset(17, 10),
 	Position = UDim2.fromOffset(12, 16),

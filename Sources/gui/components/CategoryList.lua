@@ -264,12 +264,13 @@ function component:ChangeValue(value, skipGUI)
 
 			local menu = Instance.new('Frame')
 			menu.BackgroundColor3 = color.Dark(uipallet.Main, 0.02)
-			menu.Position = UDim2.new(1, -104, 0, 30)
-			menu.Size = UDim2.fromOffset(104, 56)
+			menu.Size = UDim2.fromOffset(110, 56)
 			menu.Visible = false
-			menu.ZIndex = 6
-			menu.Parent = obj
+			menu.ZIndex = 20
+			menu.Parent = scaledgui
 			addCorner(menu)
+			addBlur(menu)
+			Instance.new('UIListLayout').Parent = menu
 
 			local function menu_button(text, callback)
 				local button = Instance.new('TextButton')
@@ -280,7 +281,7 @@ function component:ChangeValue(value, skipGUI)
 				button.Text = text
 				button.TextColor3 = color.Dark(uipallet.Text, 0.16)
 				button.TextSize = 13
-				button.ZIndex = 6
+				button.ZIndex = 20
 				button.Parent = menu
 				button.MouseEnter:Connect(function()
 					button.TextColor3 = uipallet.Text
@@ -294,8 +295,6 @@ function component:ChangeValue(value, skipGUI)
 				end)
 			end
 
-			Instance.new('UIListLayout').Parent = menu
-
 			menu_button('Delete', function()
 				component:ChangeValue(name.Name)
 			end)
@@ -306,7 +305,13 @@ function component:ChangeValue(value, skipGUI)
 			end)
 
 			dotsbutton.MouseButton1Click:Connect(function()
-				menu.Visible = not menu.Visible
+				if menu.Visible then
+					menu.Visible = false
+					return
+				end
+				local at = dotsbutton.AbsolutePosition / scale.Scale
+				menu.Position = UDim2.fromOffset(at.X - 90, at.Y + 26)
+				menu.Visible = true
 			end)
 
 			dotsbutton.MouseEnter:Connect(function()
@@ -345,6 +350,7 @@ function component:ChangeValue(value, skipGUI)
 			table.insert(self.Objects, {
 				Destroy = function()
 					name.Bind:SetParent(nil)
+					menu:Destroy()
 					obj:Destroy()
 				end
 			})
@@ -640,6 +646,7 @@ end)
 
 component.Button = EZ.Categories.Main:CreateGUIButton({
 	Name = props.Name,
+	Title = props.Title,
 	Icon = props.CategoryIcon,
 	Size = props.CategorySize,
 	Window = window
