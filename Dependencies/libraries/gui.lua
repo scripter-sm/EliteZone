@@ -1938,6 +1938,193 @@ function EZ:LoadGUI()
 		Stroke.Color = Color3.fromHSV(0.44, 1, 1)
 		Stroke.Parent = Holder
 		
+		local rivals_extra_height = 112
+		local devices = {MouseKeyboard = 'computer', Touch = 'mobile', Gamepad = 'controller', VR = 'vr'}
+		local device_pool = {'computer', 'mobile', 'controller', 'vr'}
+		local ranks = {
+			'Bronze 1', 'Bronze 2', 'Bronze 3', 'Silver 1', 'Silver 2', 'Silver 3',
+			'Gold 1', 'Gold 2', 'Gold 3', 'Platinum 1', 'Platinum 2', 'Platinum 3',
+			'Diamond 1', 'Diamond 2', 'Diamond 3', 'Onyx 1', 'Onyx 2', 'Onyx 3', 'Nemesis'
+		}
+		local weapon_pool = {
+			'Assault Rifle', 'Burst Rifle', 'Energy Rifle', 'Minigun', 'Sniper', 'Shotgun',
+			'Shorty', 'Uzi', 'Revolver', 'Handgun', 'Energy Pistols', 'Bow', 'Crossbow',
+			'RPG', 'Grenade Launcher', 'Flamethrower', 'Katana', 'Scythe', 'Battle Axe',
+			'Spear', 'Daggers', 'Knife', 'Fists', 'Grenade', 'Molotov', 'Riot Shield'
+		}
+		local local_player = cloneref(game:GetService('Players')).LocalPlayer
+		
+		local rivals
+		local function rivals_libs()
+			if rivals == nil then
+				rivals = false
+				pcall(function()
+					local storage = cloneref(game:GetService('ReplicatedStorage'))
+					rivals = {
+						fighters = require(local_player.PlayerScripts.Controllers.FighterController),
+						items = require(storage.Modules.ItemLibrary),
+						season = require(storage.Modules.SeasonLibrary)
+					}
+				end)
+			end
+		
+			return rivals
+		end
+		
+		local rivals_box = Instance.new('Frame')
+		rivals_box.Name = 'Rivals'
+		rivals_box.BackgroundColor3 = color.Dark(uipallet.Main, 0.05)
+		rivals_box.BorderSizePixel = 0
+		rivals_box.Position = UDim2.fromOffset(10, 74)
+		rivals_box.Size = UDim2.fromOffset(220, 122)
+		rivals_box.Visible = false
+		rivals_box.Parent = Holder
+		addCorner(rivals_box)
+		local weapon_row = Instance.new('Frame')
+		weapon_row.BackgroundTransparency = 1
+		weapon_row.Position = UDim2.fromOffset(8, 8)
+		weapon_row.Size = UDim2.fromOffset(204, 40)
+		weapon_row.Parent = rivals_box
+		local weapon_layout = Instance.new('UIListLayout')
+		weapon_layout.FillDirection = Enum.FillDirection.Horizontal
+		weapon_layout.Padding = UDim.new(0, 6)
+		weapon_layout.Parent = weapon_row
+		local weapon_icons, weapon_labels = {}, {}
+		for i = 1, 4 do
+			local slot = Instance.new('Frame')
+			slot.BackgroundColor3 = uipallet.Main
+			slot.BorderSizePixel = 0
+			slot.LayoutOrder = i
+			slot.Size = UDim2.fromOffset(46, 40)
+			slot.Parent = weapon_row
+			addCorner(slot, UDim.new(0, 4))
+			local icon = Instance.new('ImageLabel')
+			icon.BackgroundTransparency = 1
+			icon.Position = UDim2.fromOffset(3, 1)
+			icon.Size = UDim2.fromOffset(40, 27)
+			icon.ScaleType = Enum.ScaleType.Fit
+			icon.Parent = slot
+			local label = Instance.new('TextLabel')
+			label.BackgroundTransparency = 1
+			label.FontFace = uipallet.Font
+			label.Position = UDim2.fromOffset(0, 28)
+			label.Size = UDim2.fromOffset(46, 10)
+			label.Text = ''
+			label.TextColor3 = color.Dark(uipallet.Text, 0.2)
+			label.TextSize = 8
+			label.TextTruncate = Enum.TextTruncate.AtEnd
+			label.Parent = slot
+			weapon_icons[i], weapon_labels[i] = icon, label
+		end
+		
+		local function line(x, y, width)
+			local label = Instance.new('TextLabel')
+			label.BackgroundTransparency = 1
+			label.FontFace = uipallet.Font
+			label.Position = UDim2.fromOffset(x, y)
+			label.RichText = true
+			label.Size = UDim2.fromOffset(width, 14)
+			label.TextColor3 = color.Light(uipallet.Text, 0.3)
+			label.TextSize = 11
+			label.TextXAlignment = Enum.TextXAlignment.Left
+			label.Parent = rivals_box
+			return label
+		end
+		local name_line = line(8, 52, 204)
+		local stat_line = line(8, 69, 204)
+		local device_line = line(8, 86, 204)
+		local health_line = line(8, 103, 70)
+		local ratio_line = line(84, 103, 128)
+		
+		local function pick(list)
+			return list[math.random(#list)]
+		end
+		
+		local function show_weapons(names, items)
+			for i = 1, 4 do
+				local weapon = names[i]
+				weapon_icons[i].Image = weapon and items:GetViewModelImage(weapon) or ''
+				weapon_labels[i].Text = weapon or ''
+			end
+		end
+		
+		local function update_rivals(player)
+			local libs = rivals_libs()
+			if not libs then return end
+		
+			local now = tick()
+			local delta = math.min(now - (targetinfo.rivals_time or now), 0.1)
+			targetinfo.rivals_time = now
+		
+			local subject = player or local_player
+			local key = player and subject.UserId or 0
+			local fresh = targetinfo.rivals_key ~= key
+			targetinfo.rivals_key = key
+		
+			local level, rank, device, streak
+			if player then
+				local fighter = libs.fighters:GetFighter(subject)
+				level = subject:GetAttribute('Level') or 0
+				rank = libs.season:GetRank(subject:GetAttribute('DisplayELO') or 0, subject.UserId)
+				device = devices[fighter and fighter:Get('Controls')] or '?'
+				streak = subject:GetAttribute('StatisticDuelsWinStreak') or 0
+		
+				if fresh then
+					targetinfo.dealt, targetinfo.taken = 0, 0
+					targetinfo.last_hp, targetinfo.own_hp = nil, nil
+					targetinfo.weapon_time = 0
+				end
+		
+				if fighter and now - targetinfo.weapon_time > 0.5 then
+					targetinfo.weapon_time = now
+					local names = {}
+					for item in fighter:GetEquippedItems() do
+						names[#names + 1] = item.Name
+					end
+					show_weapons(names[1] and names or {'Assault Rifle', 'Handgun', 'Fists', 'Grenade'}, libs.items)
+				end
+		
+				local hp = fighter and fighter:GetHealth()
+				local own_fighter = libs.fighters:GetFighter(local_player)
+				local own = own_fighter and own_fighter:GetHealth()
+				if hp and targetinfo.last_hp and hp < targetinfo.last_hp then
+					targetinfo.dealt += targetinfo.last_hp - hp
+				end
+				if own and targetinfo.own_hp and own < targetinfo.own_hp then
+					targetinfo.taken += targetinfo.own_hp - own
+				end
+				targetinfo.last_hp, targetinfo.own_hp = hp or targetinfo.last_hp, own or targetinfo.own_hp
+		
+				local total = targetinfo.dealt + targetinfo.taken
+				targetinfo.ratio = total > 0 and targetinfo.dealt / total or 0.5
+				health_line.Text = hp and (math.floor(hp)..'/'..math.floor(fighter:GetMaxHealth() or 100)) or '--'
+			else
+				if fresh then
+					targetinfo.level = math.random(1, 50)
+					targetinfo.rank = pick(ranks)
+					targetinfo.device = pick(device_pool)
+					targetinfo.streak = math.random(0, 30)
+					targetinfo.weapons = {pick(weapon_pool), pick(weapon_pool), pick(weapon_pool), pick(weapon_pool)}
+					show_weapons(targetinfo.weapons, libs.items)
+				end
+				level, rank, device, streak = targetinfo.level, targetinfo.rank, targetinfo.device, targetinfo.streak
+		
+				local sweep = 0.5 - 0.5 * math.cos(now * 0.8)
+				Health.Size = UDim2.fromScale(sweep, 1)
+				Health.BackgroundColor3 = Color3.fromHSV(math.clamp(sweep / 2.5, 0, 1), 0.89, 0.75)
+				health_line.Text = math.floor(sweep * 100)..'/100'
+				targetinfo.ratio = 0.5 + 0.32 * math.sin(now * 0.45)
+			end
+		
+			targetinfo.shown = (targetinfo.shown or targetinfo.ratio) + (targetinfo.ratio - (targetinfo.shown or targetinfo.ratio)) * math.min(delta * 4, 1)
+			local dealt = math.clamp(math.floor(targetinfo.shown * 100 + 0.5), 0, 100)
+		
+			name_line.Text = '@'..subject.Name
+			stat_line.Text = 'lvl '..level..'  ·  '..rank
+			device_line.Text = device..'  ·  streak '..streak
+			ratio_line.Text = dealt..' <font color="#5ad16b">▲</font>   '..(100 - dealt)..' <font color="#ff5a5a">▼</font>'
+		end
+		
 		TargetInfoOverlay:CreateFont({
 			Name = 'Font',
 			Default = 'Arial',
@@ -2021,8 +2208,10 @@ function EZ:LoadGUI()
 			if not entitylib then return end
 		
 			local tucked = clickgui.Visible
+			local is_rivals = EZ.game and EZ.game:lower() == 'rivals'
 			Holder.Position = UDim2.fromOffset(0, tucked and -6 or 0)
-			Holder.Size = UDim2.fromOffset(240, tucked and 96 or 90)
+			Holder.Size = UDim2.fromOffset(240, (tucked and 96 or 90) + (is_rivals and rivals_extra_height or 0))
+			rivals_box.Visible = is_rivals or false
 		
 			local cloned = table.clone(self.Targets)
 			for index, expire in cloned do
@@ -2041,13 +2230,19 @@ function EZ:LoadGUI()
 			end
 		
 			Holder.Visible = entity ~= nil or clickgui.Visible
+		
+			if is_rivals and Holder.Visible then
+				update_rivals(entity and entity.Player or nil)
+			end
+		
 			if entity then
 				if entity == self.Manual and entity.Player then
-					local character = entity.Player.Character
-					local humanoid = character and character:FindFirstChildWhichIsA('Humanoid')
+					local libs = is_rivals and rivals_libs()
+					local fighter = libs and libs.fighters:GetFighter(entity.Player)
+					local humanoid = not fighter and entity.Player.Character and entity.Player.Character:FindFirstChildWhichIsA('Humanoid')
 					entity.Character = nil
-					entity.Health = humanoid and humanoid.Health or 0
-					entity.MaxHealth = humanoid and humanoid.MaxHealth or 100
+					entity.Health = fighter and fighter:GetHealth() or humanoid and humanoid.Health or 0
+					entity.MaxHealth = fighter and fighter:GetMaxHealth() or humanoid and humanoid.MaxHealth or 100
 				end
 		
 				Name.Text = entity.Player and (DisplayName.Enabled and entity.Player.DisplayName or entity.Player.Name) or entity.Character and entity.Character.Name or Name.Text
