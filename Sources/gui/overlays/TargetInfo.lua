@@ -16,22 +16,6 @@ local BKGColor
 local CustomColor
 local DisplayName
 
-local local_player = cloneref(game:GetService('Players')).LocalPlayer
-local target_gui = Instance.new('ScreenGui')
-target_gui.Name = randomString()
-target_gui.DisplayOrder = 9999999
-target_gui.IgnoreGuiInset = true
-target_gui.ResetOnSpawn = false
-target_gui.ZIndexBehavior = Enum.ZIndexBehavior.Global
-target_gui.Enabled = false
-target_gui.Parent = local_player.PlayerGui
-local target_scale = Instance.new('UIScale')
-target_scale.Scale = scale.Scale
-target_scale.Parent = target_gui
-EZ:Clean(scale:GetPropertyChangedSignal('Scale'):Connect(function()
-	target_scale.Scale = scale.Scale
-end))
-
 TargetInfoOverlay = EZ:CreateOverlay({
 	Name = 'Target Info',
 	Icon = get_ez_asset('Elite Zone/Assets/targetinfo.png'),
@@ -39,7 +23,6 @@ TargetInfoOverlay = EZ:CreateOverlay({
 	Position = UDim2.fromOffset(12, 14),
 	CategorySize = 240,
 	Function = function(callback)
-		target_gui.Enabled = callback
 		if callback then
 			TargetInfoOverlay:Clean(runService.RenderStepped:Connect(function()
 				targetinfo:Update()
@@ -54,7 +37,7 @@ Holder.Position = UDim2.fromOffset(0, -6)
 Holder.ZIndex = 0
 Holder.BackgroundColor3 = color.Dark(uipallet.Main, 0.1)
 Holder.BackgroundTransparency = 0.5
-Holder.Parent = target_gui
+Holder.Parent = TargetInfoOverlay.Children
 local BlurHolder = addBlur(Holder, nil, true)
 BlurHolder.Visible = false
 BlurHolder.ZIndex = 0
@@ -144,10 +127,13 @@ local weapon_pool = {
 	'RPG', 'Grenade Launcher', 'Flamethrower', 'Katana', 'Scythe', 'Battle Axe',
 	'Spear', 'Daggers', 'Knife', 'Fists', 'Grenade', 'Molotov', 'Riot Shield'
 }
+local local_player = cloneref(game:GetService('Players')).LocalPlayer
+
 local rivals
 local function rivals_libs()
 	if rivals == nil then
 		rivals = false
+		setthreadidentity(2)
 		pcall(function()
 			local storage = cloneref(game:GetService('ReplicatedStorage'))
 			rivals = {
@@ -239,12 +225,9 @@ local function show_weapons(names, items)
 end
 
 local function update_rivals(player)
-	if EZ.ThreadFix then
-		setthreadidentity(8)
-	end
-
 	local libs = rivals_libs()
 	if not libs then return end
+	setthreadidentity(2)
 
 	local now = tick()
 	local delta = math.min(now - (targetinfo.rivals_time or now), 0.1)
