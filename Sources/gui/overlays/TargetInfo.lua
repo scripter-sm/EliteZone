@@ -39,6 +39,19 @@ Holder.Parent = TargetInfoOverlay.Children
 local BlurHolder = addBlur(Holder, nil, true)
 BlurHolder.Visible = false
 addCorner(Holder)
+
+local SquareTop = Instance.new('Frame')
+SquareTop.BackgroundColor3 = Holder.BackgroundColor3
+SquareTop.BackgroundTransparency = Holder.BackgroundTransparency
+SquareTop.BorderSizePixel = 0
+SquareTop.Size = UDim2.new(1, 0, 0, 6)
+SquareTop.Parent = Holder
+for _, prop in {'BackgroundColor3', 'BackgroundTransparency'} do
+	Holder:GetPropertyChangedSignal(prop):Connect(function()
+		SquareTop[prop] = Holder[prop]
+	end)
+end
+
 local Headshot = Instance.new('ImageLabel')
 Headshot.Size = UDim2.fromOffset(26, 27)
 Headshot.Position = UDim2.fromOffset(19, 17)
