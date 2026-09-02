@@ -1857,13 +1857,15 @@ function EZ:LoadGUI()
 		})
 		
 		local Holder = Instance.new('Frame')
-		Holder.Size = UDim2.fromOffset(240, 90)
-		Holder.Position = UDim2.fromOffset(0, -1)
+		Holder.Size = UDim2.fromOffset(240, 96)
+		Holder.Position = UDim2.fromOffset(0, -6)
+		Holder.ZIndex = 0
 		Holder.BackgroundColor3 = color.Dark(uipallet.Main, 0.1)
 		Holder.BackgroundTransparency = 0.5
 		Holder.Parent = TargetInfoOverlay.Children
 		local BlurHolder = addBlur(Holder, nil, true)
 		BlurHolder.Visible = false
+		BlurHolder.ZIndex = 0
 		addCorner(Holder)
 		local Headshot = Instance.new('ImageLabel')
 		Headshot.Size = UDim2.fromOffset(26, 27)
@@ -2017,6 +2019,10 @@ function EZ:LoadGUI()
 		function targetinfo:Update()
 			local entitylib = EZ.Libraries
 			if not entitylib then return end
+		
+			local tucked = clickgui.Visible
+			Holder.Position = UDim2.fromOffset(0, tucked and -6 or 0)
+			Holder.Size = UDim2.fromOffset(240, tucked and 96 or 90)
 		
 			local cloned = table.clone(self.Targets)
 			for index, expire in cloned do
