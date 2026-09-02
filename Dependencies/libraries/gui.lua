@@ -2043,7 +2043,12 @@ function EZ:LoadGUI()
 		local function show_weapons(names, items)
 			for i = 1, 4 do
 				local weapon = names[i]
-				weapon_icons[i].Image = weapon and items:GetViewModelImage(weapon) or ''
+				local image = weapon and items:GetViewModelImage(weapon) or ''
+				if EZ.ThreadFix then
+					setthreadidentity(8)
+				end
+		
+				weapon_icons[i].Image = image
 				weapon_labels[i].Text = weapon or ''
 			end
 		end
@@ -2087,6 +2092,11 @@ function EZ:LoadGUI()
 				local hp = fighter and fighter:GetHealth()
 				local own_fighter = libs.fighters:GetFighter(local_player)
 				local own = own_fighter and own_fighter:GetHealth()
+				local max = fighter and fighter:GetMaxHealth() or 100
+				if EZ.ThreadFix then
+					setthreadidentity(8)
+				end
+		
 				if hp and targetinfo.last_hp and hp < targetinfo.last_hp then
 					targetinfo.dealt += targetinfo.last_hp - hp
 				end
@@ -2097,7 +2107,7 @@ function EZ:LoadGUI()
 		
 				local total = targetinfo.dealt + targetinfo.taken
 				targetinfo.ratio = total > 0 and targetinfo.dealt / total or 0.5
-				health_line.Text = hp and (math.floor(hp)..'/'..math.floor(fighter:GetMaxHealth() or 100)) or '--'
+				health_line.Text = hp and (math.floor(hp)..'/'..math.floor(max)) or '--'
 			else
 				if fresh then
 					targetinfo.level = math.random(1, 50)
@@ -2243,6 +2253,10 @@ function EZ:LoadGUI()
 					entity.Character = nil
 					entity.Health = fighter and fighter:GetHealth() or humanoid and humanoid.Health or 0
 					entity.MaxHealth = fighter and fighter:GetMaxHealth() or humanoid and humanoid.MaxHealth or 100
+		
+					if fighter and EZ.ThreadFix then
+						setthreadidentity(8)
+					end
 				end
 		
 				Name.Text = entity.Player and (DisplayName.Enabled and entity.Player.DisplayName or entity.Player.Name) or entity.Character and entity.Character.Name or Name.Text
