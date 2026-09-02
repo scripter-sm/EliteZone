@@ -2357,6 +2357,28 @@ function EZ:SetAutoload(name)
 	self.autoload = name
 end
 
+function EZ:GetTargets()
+	return self.Categories.Targets.ListEnabled
+end
+
+function EZ:IsTarget(name)
+	return table.find(self.Categories.Targets.ListEnabled, name) ~= nil
+end
+
+function EZ:AddTarget(name)
+	local targets = self.Categories.Targets
+	if not table.find(targets.List, name) then
+		targets:ChangeValue(name)
+	end
+end
+
+function EZ:RemoveTarget(name)
+	local targets = self.Categories.Targets
+	if table.find(targets.List, name) then
+		targets:ChangeValue(name)
+	end
+end
+
 function EZ:SaveOptions(obj)
 	local data = {}
 	for _, component in obj.Options do
