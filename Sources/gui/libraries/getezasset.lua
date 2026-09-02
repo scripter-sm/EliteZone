@@ -1,6 +1,6 @@
 do
-	local assetsUrl = 'https://raw.githubusercontent.com/scripter-sm/EliteZone/main/Dependencies/assets/'
-	local getassetfn = getcustomasset or getsynasset
+	local assets_url = 'https://raw.githubusercontent.com/scripter-sm/EliteZone/main/Dependencies/assets/'
+	local get_asset_fn = getcustomasset or getsynasset
 
 	local ezAssets = {
 		['Elite Zone/Assets/add.png'] = 'rbxassetid://121642387707174',
@@ -85,36 +85,31 @@ do
 		end
 	end
 
-	-- path looks like 'Elite Zone/Assets/combat.png'; the GitHub folder is flat
-	-- (Dependencies/assets/combat.png) so we only need the file name for the URL.
+	local function is_png(data)
+		return type(data) == 'string' and data:sub(1, 8) == '\137PNG\r\n\26\n'
+	end
+
 	local function downloadFile(path)
-		if not isfile(path) then
-			createDownloader(path)
-
-			local fileName = (path:gsub('.*/', ''))
-			local success, data = pcall(function()
-				return game:HttpGet(assetsUrl..fileName, true)
-			end)
-
-			if not success or data == nil or data == '' or data == '404: Not Found' then
-				return false
-			end
-
-			writefile(path, data)
+		if isfile(path) and is_png(readfile(path)) then
+			return true
 		end
 
+		createDownloader(path)
+
+		local success, data = pcall(function()
+			return game:HttpGet(assets_url..path:gsub('.*/', ''), true)
+		end)
+
+		if not success or not is_png(data) then
+			return false
+		end
+
+		writefile(path, data)
 		return true
 	end
 
-	-- download the real assets from GitHub when the executor can turn a cached
-	-- file into an asset; fall back to the pre-uploaded asset ids when it can't
-	-- or when a download fails.
-	get_ez_asset = getassetfn and function(path)
-		if downloadFile(path) then
-			return getassetfn(path)
-		end
-
-		return ezAssets[path] or ''
+	get_ez_asset = get_asset_fn and function(path)
+		return downloadFile(path) and get_asset_fn(path) or ezAssets[path] or ''
 	end or function(path)
 		return ezAssets[path] or ''
 	end

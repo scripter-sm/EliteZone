@@ -65,8 +65,7 @@ local function load_assets()
         local file_name = asset_path:match("([^/]+)$")
         return download_asset(file_name)
     end
-    
-    -- Autoload functionality
+
     local function load_autoload()
         local autoload_file = cache_path .. "/__autoload.json"
         if isfile(autoload_file) then

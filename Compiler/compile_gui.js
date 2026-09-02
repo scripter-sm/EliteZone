@@ -63,9 +63,7 @@ function compile() {
     let init_data = removeBOM(fs.readFileSync(path.join(gui_path, 'init.lua'), {encoding: 'utf8'}));
     let base_data = removeBOM(fs.readFileSync(path.join(gui_path, 'base.lua'), {encoding: 'utf8'}));
     
-    // Replace markers like VapeBundler does.
-    // NOTE: pass a function as the replacement so JS never interprets `$`
-    // sequences (e.g. `$'`, `$&`) that legitimately appear in Lua patterns.
+    // function replacements so `$` in Lua patterns isn't treated as a replacement token
     const overlays_block = overlays.map((data) => {
         return 'run(function()\n' + data.data.split('\n').map((line) => '\t' + line).join('\n') + '\nend)';
     }).join('\n\n');
