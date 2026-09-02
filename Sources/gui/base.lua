@@ -661,7 +661,7 @@ function EZ:SavePositions()
 	local all = loadJson('Elite Zone/Cache/__position.dat') or {}
 	local positions = {}
 	for name, category in self.Categories do
-		if category.Object then
+		if category.Object and category.Type ~= 'Overlay' then
 			positions[name] = {
 				X = category.Object.Position.X.Offset,
 				Y = category.Object.Position.Y.Offset
@@ -681,7 +681,7 @@ function EZ:LoadPositions()
 
 	for name, pos in positions do
 		local category = self.Categories[name]
-		if category and category.Object then
+		if category and category.Object and category.Type ~= 'Overlay' then
 			category.Object.Position = UDim2.fromOffset(pos.X, pos.Y)
 		end
 	end

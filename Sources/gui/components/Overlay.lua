@@ -139,6 +139,10 @@ function component:Load(data)
 		self:Pin()
 		self:Update()
 	end
+
+	if data.Position then
+		window.Position = UDim2.fromOffset(data.Position.X, data.Position.Y)
+	end
 end
 
 function component:Pin()
@@ -150,7 +154,11 @@ function component:Save(data)
 	data[props.Name] = {
 		Enabled = self.Button.Enabled,
 		Options = EZ:SaveOptions(self),
-		Pinned = self.Pinned
+		Pinned = self.Pinned,
+		Position = {
+			X = window.Position.X.Offset,
+			Y = window.Position.Y.Offset
+		}
 	}
 end
 

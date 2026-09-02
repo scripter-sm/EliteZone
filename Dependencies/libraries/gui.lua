@@ -2341,7 +2341,7 @@ function EZ:SavePositions()
 	local all = loadJson('Elite Zone/Cache/__position.dat') or {}
 	local positions = {}
 	for name, category in self.Categories do
-		if category.Object then
+		if category.Object and category.Type ~= 'Overlay' then
 			positions[name] = {
 				X = category.Object.Position.X.Offset,
 				Y = category.Object.Position.Y.Offset
@@ -2361,7 +2361,7 @@ function EZ:LoadPositions()
 
 	for name, pos in positions do
 		local category = self.Categories[name]
-		if category and category.Object then
+		if category and category.Object and category.Type ~= 'Overlay' then
 			category.Object.Position = UDim2.fromOffset(pos.X, pos.Y)
 		end
 	end
@@ -6313,6 +6313,10 @@ components = {
 				self:Pin()
 				self:Update()
 			end
+		
+			if data.Position then
+				window.Position = UDim2.fromOffset(data.Position.X, data.Position.Y)
+			end
 		end
 		
 		function component:Pin()
@@ -6324,7 +6328,11 @@ components = {
 			data[props.Name] = {
 				Enabled = self.Button.Enabled,
 				Options = EZ:SaveOptions(self),
-				Pinned = self.Pinned
+				Pinned = self.Pinned,
+				Position = {
+					X = window.Position.X.Offset,
+					Y = window.Position.Y.Offset
+				}
 			}
 		end
 		
