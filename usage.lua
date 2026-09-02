@@ -27,3 +27,4 @@ farm:CreateSlider({
 })
 
 EZ:Load()
+EZ:CreateNotification('Elite Zone', 'Script loaded.', 5, 'info')
