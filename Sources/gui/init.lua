@@ -419,6 +419,7 @@ guipane:CreateButton({
 		for _, category in EZ.Categories do
 			category.Object.Position = UDim2.fromOffset(6, 42)
 		end
+		EZ:SavePositions()
 	end,
 	Tooltip = 'This will reset your GUI back to the default'
 })

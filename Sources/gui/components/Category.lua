@@ -120,20 +120,12 @@ function component:Load(data)
 	if data.Expanded then
 		self:Expand()
 	end
-
-	if data.Position then
-		window.Position = UDim2.fromOffset(data.Position.X, data.Position.Y)
-	end
 end
 
 function component:Save(data)
 	data[props.Name] = {
 		Enabled = self.Button.Enabled,
-		Expanded = self.Expanded,
-		Position = {
-			X = window.Position.X.Offset,
-			Y = window.Position.Y.Offset
-		}
+		Expanded = self.Expanded
 	}
 end
 

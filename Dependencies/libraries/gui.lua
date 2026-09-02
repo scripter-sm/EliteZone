@@ -404,6 +404,7 @@ local function addDragHandler(gui, window)
 				if input.UserInputState == Enum.UserInputState.End then
 					moveConnection:Disconnect()
 					releaseConnection:Disconnect()
+					EZ:SavePositions()
 				end
 			end)
 		end
@@ -766,7 +767,7 @@ function EZ:Load(skipgui, config)
 
 		self:UpdateTextGUI(true)
 	else
-		self:Save()
+		self:SaveConfig()
 	end
 
 	if self.config ~= oldConfig and skipgui then
@@ -779,6 +780,7 @@ function EZ:Load(skipgui, config)
 	end
 
 	self.Loaded = canSave
+	self:LoadPositions()
 
 	if inputService.TouchEnabled and not skipgui then
 		local button = Instance.new('TextButton')
@@ -1236,6 +1238,7 @@ function EZ:LoadGUI()
 			for _, category in EZ.Categories do
 				category.Object.Position = UDim2.fromOffset(6, 42)
 			end
+			EZ:SavePositions()
 		end,
 		Tooltip = 'This will reset your GUI back to the default'
 	})
@@ -2270,33 +2273,81 @@ function EZ:Save(newConfig)
 		return
 	end
 
+	self.config = newConfig or self.config
+
 	local guiData = {
 		Categories = {},
-		config = newConfig or self.config,
+		config = self.config,
 		v = 1
 	}
 
-	local mainData = {
+	for name, category in self.Categories do
+		if category.Type ~= 'Overlay' then
+			category:Save(guiData.Categories)
+		end
+	end
+
+	writefile(self.config_dir..'gui.txt', httpService:JSONEncode(guiData))
+	self:SavePositions()
+end
+
+function EZ:SaveConfig(name)
+	local data = {
 		Modules = {},
 		Categories = {},
 		Legit = {},
 		v = 1
 	}
 
-	for name, category in self.Categories do
-		category:Save((category.Type == 'Overlay' and mainData or guiData).Categories)
+	for _, category in self.Categories do
+		if category.Type == 'Overlay' then
+			category:Save(data.Categories)
+		end
 	end
 
 	for _, module in self.Modules do
-		module:Save(mainData.Modules)
+		module:Save(data.Modules)
 	end
 
 	for _, module in self.Legit.Modules do
-		module:Save(mainData.Legit)
+		module:Save(data.Legit)
 	end
 
-	writefile(self.config_dir..'gui.txt', httpService:JSONEncode(guiData))
-	writefile(self.config_dir..self.config..'.txt', httpService:JSONEncode(mainData))
+	writefile(self.config_dir..(name or self.config)..'.txt', httpService:JSONEncode(data))
+end
+
+function EZ:SavePositions()
+	if not self.Loaded then
+		return
+	end
+
+	local all = loadJson('Elite Zone/Cache/__position.dat') or {}
+	local positions = {}
+	for name, category in self.Categories do
+		if category.Object then
+			positions[name] = {
+				X = category.Object.Position.X.Offset,
+				Y = category.Object.Position.Y.Offset
+			}
+		end
+	end
+
+	all[self.game] = positions
+	writefile('Elite Zone/Cache/__position.dat', httpService:JSONEncode(all))
+end
+
+function EZ:LoadPositions()
+	local positions = (loadJson('Elite Zone/Cache/__position.dat') or {})[self.game]
+	if not positions then
+		return
+	end
+
+	for name, pos in positions do
+		local category = self.Categories[name]
+		if category and category.Object then
+			category.Object.Position = UDim2.fromOffset(pos.X, pos.Y)
+		end
+	end
 end
 
 function EZ:SetAutoload(name)
@@ -2909,20 +2960,12 @@ components = {
 			if data.Expanded then
 				self:Expand()
 			end
-		
-			if data.Position then
-				window.Position = UDim2.fromOffset(data.Position.X, data.Position.Y)
-			end
 		end
 		
 		function component:Save(data)
 			data[props.Name] = {
 				Enabled = self.Button.Enabled,
-				Expanded = self.Expanded,
-				Position = {
-					X = window.Position.X.Offset,
-					Y = window.Position.Y.Offset
-				}
+				Expanded = self.Expanded
 			}
 		end
 		
@@ -3315,7 +3358,7 @@ components = {
 		
 					local menu = Instance.new('Frame')
 					menu.BackgroundColor3 = color.Dark(uipallet.Main, 0.02)
-					menu.Size = UDim2.fromOffset(110, 56)
+					menu.Size = UDim2.fromOffset(110, 84)
 					menu.Visible = false
 					menu.ZIndex = 20
 					menu.Parent = scaledgui
@@ -3348,6 +3391,10 @@ components = {
 		
 					menu_button('Delete', function()
 						component:ChangeValue(name.Name)
+					end)
+		
+					menu_button('Overwrite', function()
+						EZ:SaveConfig(name.Name)
 					end)
 		
 					menu_button('Set as Autoload', function()
@@ -3587,9 +3634,6 @@ components = {
 				end
 			end
 		
-			if data.Position then
-				window.Position = UDim2.fromOffset(data.Position.X, data.Position.Y)
-			end
 		end
 		
 		function component:Save(data)
@@ -3598,11 +3642,7 @@ components = {
 				Expanded = self.Expanded,
 				List = self.List,
 				ListEnabled = self.ListEnabled,
-				Options = EZ:SaveOptions(self),
-				Position = {
-					X = window.Position.X.Offset,
-					Y = window.Position.Y.Offset
-				}
+				Options = EZ:SaveOptions(self)
 			}
 		
 			if props.configs then
@@ -3635,12 +3675,27 @@ components = {
 			addbutton.ImageTransparency = 0.3
 		end)
 		
-		addbutton.MouseButton1Click:Connect(function()
-			if not table.find(component.List, addvalue.Text) then
-				component:ChangeValue(addvalue.Text)
-				addvalue.Text = ''
+		local function addEntry()
+			local value = addvalue.Text
+			if value == '' then
+				return
 			end
-		end)
+		
+			if props.configs then
+				if component:GetValue(value) then
+					return
+				end
+				component:ChangeValue(value)
+				EZ:SaveConfig(value)
+				EZ:Save()
+			elseif not table.find(component.List, value) then
+				component:ChangeValue(value)
+			end
+		
+			addvalue.Text = ''
+		end
+		
+		addbutton.MouseButton1Click:Connect(addEntry)
 		
 		arrowbutton.MouseEnter:Connect(function()
 			arrow.ImageColor3 = Color3.fromRGB(220, 220, 220)
@@ -3659,9 +3714,8 @@ components = {
 		end)
 		
 		addvalue.FocusLost:Connect(function(enter)
-			if enter and not table.find(component.List, addvalue.Text) then
-				component:ChangeValue(addvalue.Text)
-				addvalue.Text = ''
+			if enter then
+				addEntry()
 			end
 		end)
 		
@@ -4487,17 +4541,10 @@ components = {
 				end
 			end
 		
-			if data.Position then
-				window.Position = UDim2.fromOffset(data.Position.X, data.Position.Y)
-			end
 		end
 		
 		function component:Save(data)
 			data.Main = {
-				Position = {
-					X = window.Position.X.Offset,
-					Y = window.Position.Y.Offset
-				},
 				Settings = {}
 			}
 		
@@ -6219,10 +6266,6 @@ components = {
 				self:Pin()
 				self:Update()
 			end
-		
-			if data.Position then
-				window.Position = UDim2.fromOffset(data.Position.X, data.Position.Y)
-			end
 		end
 		
 		function component:Pin()
@@ -6234,11 +6277,7 @@ components = {
 			data[props.Name] = {
 				Enabled = self.Button.Enabled,
 				Options = EZ:SaveOptions(self),
-				Pinned = self.Pinned,
-				Position = {
-					X = window.Position.X.Offset,
-					Y = window.Position.Y.Offset
-				}
+				Pinned = self.Pinned
 			}
 		end
 		

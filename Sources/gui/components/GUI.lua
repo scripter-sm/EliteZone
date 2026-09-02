@@ -92,17 +92,10 @@ function component:Load(data)
 		end
 	end
 
-	if data.Position then
-		window.Position = UDim2.fromOffset(data.Position.X, data.Position.Y)
-	end
 end
 
 function component:Save(data)
 	data.Main = {
-		Position = {
-			X = window.Position.X.Offset,
-			Y = window.Position.Y.Offset
-		},
 		Settings = {}
 	}
 

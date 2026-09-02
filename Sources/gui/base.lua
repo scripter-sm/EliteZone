@@ -160,6 +160,7 @@ local function addDragHandler(gui, window)
 				if input.UserInputState == Enum.UserInputState.End then
 					moveConnection:Disconnect()
 					releaseConnection:Disconnect()
+					EZ:SavePositions()
 				end
 			end)
 		end
@@ -522,7 +523,7 @@ function EZ:Load(skipgui, config)
 
 		self:UpdateTextGUI(true)
 	else
-		self:Save()
+		self:SaveConfig()
 	end
 
 	if self.config ~= oldConfig and skipgui then
@@ -535,6 +536,7 @@ function EZ:Load(skipgui, config)
 	end
 
 	self.Loaded = canSave
+	self:LoadPositions()
 
 	if inputService.TouchEnabled and not skipgui then
 		local button = Instance.new('TextButton')
@@ -610,33 +612,81 @@ function EZ:Save(newConfig)
 		return
 	end
 
+	self.config = newConfig or self.config
+
 	local guiData = {
 		Categories = {},
-		config = newConfig or self.config,
+		config = self.config,
 		v = 1
 	}
 
-	local mainData = {
+	for name, category in self.Categories do
+		if category.Type ~= 'Overlay' then
+			category:Save(guiData.Categories)
+		end
+	end
+
+	writefile(self.config_dir..'gui.txt', httpService:JSONEncode(guiData))
+	self:SavePositions()
+end
+
+function EZ:SaveConfig(name)
+	local data = {
 		Modules = {},
 		Categories = {},
 		Legit = {},
 		v = 1
 	}
 
-	for name, category in self.Categories do
-		category:Save((category.Type == 'Overlay' and mainData or guiData).Categories)
+	for _, category in self.Categories do
+		if category.Type == 'Overlay' then
+			category:Save(data.Categories)
+		end
 	end
 
 	for _, module in self.Modules do
-		module:Save(mainData.Modules)
+		module:Save(data.Modules)
 	end
 
 	for _, module in self.Legit.Modules do
-		module:Save(mainData.Legit)
+		module:Save(data.Legit)
 	end
 
-	writefile(self.config_dir..'gui.txt', httpService:JSONEncode(guiData))
-	writefile(self.config_dir..self.config..'.txt', httpService:JSONEncode(mainData))
+	writefile(self.config_dir..(name or self.config)..'.txt', httpService:JSONEncode(data))
+end
+
+function EZ:SavePositions()
+	if not self.Loaded then
+		return
+	end
+
+	local all = loadJson('Elite Zone/Cache/__position.dat') or {}
+	local positions = {}
+	for name, category in self.Categories do
+		if category.Object then
+			positions[name] = {
+				X = category.Object.Position.X.Offset,
+				Y = category.Object.Position.Y.Offset
+			}
+		end
+	end
+
+	all[self.game] = positions
+	writefile('Elite Zone/Cache/__position.dat', httpService:JSONEncode(all))
+end
+
+function EZ:LoadPositions()
+	local positions = (loadJson('Elite Zone/Cache/__position.dat') or {})[self.game]
+	if not positions then
+		return
+	end
+
+	for name, pos in positions do
+		local category = self.Categories[name]
+		if category and category.Object then
+			category.Object.Position = UDim2.fromOffset(pos.X, pos.Y)
+		end
+	end
 end
 
 function EZ:SetAutoload(name)

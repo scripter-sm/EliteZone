@@ -264,7 +264,7 @@ function component:ChangeValue(value, skipGUI)
 
 			local menu = Instance.new('Frame')
 			menu.BackgroundColor3 = color.Dark(uipallet.Main, 0.02)
-			menu.Size = UDim2.fromOffset(110, 56)
+			menu.Size = UDim2.fromOffset(110, 84)
 			menu.Visible = false
 			menu.ZIndex = 20
 			menu.Parent = scaledgui
@@ -297,6 +297,10 @@ function component:ChangeValue(value, skipGUI)
 
 			menu_button('Delete', function()
 				component:ChangeValue(name.Name)
+			end)
+
+			menu_button('Overwrite', function()
+				EZ:SaveConfig(name.Name)
 			end)
 
 			menu_button('Set as Autoload', function()
@@ -536,9 +540,6 @@ function component:Load(data)
 		end
 	end
 
-	if data.Position then
-		window.Position = UDim2.fromOffset(data.Position.X, data.Position.Y)
-	end
 end
 
 function component:Save(data)
@@ -547,11 +548,7 @@ function component:Save(data)
 		Expanded = self.Expanded,
 		List = self.List,
 		ListEnabled = self.ListEnabled,
-		Options = EZ:SaveOptions(self),
-		Position = {
-			X = window.Position.X.Offset,
-			Y = window.Position.Y.Offset
-		}
+		Options = EZ:SaveOptions(self)
 	}
 
 	if props.configs then
@@ -584,12 +581,27 @@ addbutton.MouseLeave:Connect(function()
 	addbutton.ImageTransparency = 0.3
 end)
 
-addbutton.MouseButton1Click:Connect(function()
-	if not table.find(component.List, addvalue.Text) then
-		component:ChangeValue(addvalue.Text)
-		addvalue.Text = ''
+local function addEntry()
+	local value = addvalue.Text
+	if value == '' then
+		return
 	end
-end)
+
+	if props.configs then
+		if component:GetValue(value) then
+			return
+		end
+		component:ChangeValue(value)
+		EZ:SaveConfig(value)
+		EZ:Save()
+	elseif not table.find(component.List, value) then
+		component:ChangeValue(value)
+	end
+
+	addvalue.Text = ''
+end
+
+addbutton.MouseButton1Click:Connect(addEntry)
 
 arrowbutton.MouseEnter:Connect(function()
 	arrow.ImageColor3 = Color3.fromRGB(220, 220, 220)
@@ -608,9 +620,8 @@ arrowbutton.MouseButton2Click:Connect(function()
 end)
 
 addvalue.FocusLost:Connect(function(enter)
-	if enter and not table.find(component.List, addvalue.Text) then
-		component:ChangeValue(addvalue.Text)
-		addvalue.Text = ''
+	if enter then
+		addEntry()
 	end
 end)
 
