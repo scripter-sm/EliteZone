@@ -1,5 +1,5 @@
 local EZ = loadstring(game:HttpGet('https://raw.githubusercontent.com/scripter-sm/EliteZone/main/Dependencies/libraries/gui.lua', true))()
-EZ.game = 'rivals'
+EZ.game = 'Rivals'
 
 local farm = EZ.Categories.Combat:CreateModule({
 	Name = 'Auto Farm',

@@ -383,7 +383,7 @@ function targetinfo:Update()
 	if not entitylib then return end
 
 	local tucked = clickgui.Visible
-	local is_rivals = EZ.game and EZ.game:lower() == 'rivals'
+	local is_rivals = EZ.game == 'Rivals'
 	Holder.Position = UDim2.fromOffset(0, tucked and -6 or 0)
 	Holder.Size = UDim2.fromOffset(240, (tucked and 96 or 90) + (is_rivals and rivals_extra_height or 0))
 	rivals_box.Visible = is_rivals or false

@@ -2078,7 +2078,7 @@ function EZ:LoadGUI()
 				if fighter and now - targetinfo.weapon_time > 0.5 then
 					targetinfo.weapon_time = now
 					local names = {}
-					for item in fighter:GetEquippedItems() do
+					for item in fighter:GetEquippedItems() or {} do
 						names[#names + 1] = item.Name
 					end
 					show_weapons(names[1] and names or {'Assault Rifle', 'Handgun', 'Fists', 'Grenade'}, libs.items)
@@ -2208,7 +2208,7 @@ function EZ:LoadGUI()
 			if not entitylib then return end
 		
 			local tucked = clickgui.Visible
-			local is_rivals = EZ.game and EZ.game:lower() == 'rivals'
+			local is_rivals = EZ.game == 'Rivals'
 			Holder.Position = UDim2.fromOffset(0, tucked and -6 or 0)
 			Holder.Size = UDim2.fromOffset(240, (tucked and 96 or 90) + (is_rivals and rivals_extra_height or 0))
 			rivals_box.Visible = is_rivals or false
