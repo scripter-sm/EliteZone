@@ -7,7 +7,7 @@ uipallet = {
 }
 
 do
-	local data = isfile('Elite Zone/configs/color.txt') and loadJson('Elite Zone/configs/color.txt')
+	local data = isfile('Elite Zone/Config/color.txt') and loadJson('Elite Zone/Config/color.txt')
 	if data then
 		uipallet.Main = data.Main and Color3.fromRGB(unpack(data.Main)) or uipallet.Main
 		uipallet.Text = data.Text and Color3.fromRGB(unpack(data.Text)) or uipallet.Text

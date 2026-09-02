@@ -34,7 +34,7 @@ title.FontFace = uipallet.Font
 title.Name = 'Title'
 title.Size = UDim2.new(1, -(props.Size.X.Offset > 20 and 44 or 36), 0, 20)
 title.Position = UDim2.fromOffset(math.abs(title.Size.X.Offset), 12)
-title.Text = props.Name
+title.Text = props.Title or props.Name
 title.TextColor3 = uipallet.Text
 title.TextSize = 13
 title.TextXAlignment = Enum.TextXAlignment.Left
@@ -175,8 +175,12 @@ function component:ChangeValue(value, skipGUI)
 					Config.Bind:Destroy()
 					table.remove(self.List, index)
 
-					if isfile('Elite Zone/configs/'..value..EZ.Place..'.txt') and delfile then
-						delfile('Elite Zone/configs/'..value..EZ.Place..'.txt')
+					if EZ.autoload == value then
+						EZ.autoload = nil
+					end
+
+					if isfile(EZ.config_dir..value..'.txt') and delfile then
+						delfile(EZ.config_dir..value..'.txt')
 					end
 				end
 			else
@@ -253,22 +257,69 @@ function component:ChangeValue(value, skipGUI)
 			name.Bind:SetParent(obj)
 			name.Enabled = name.Name == EZ.config
 
+			if name.Name == EZ.autoload then
+				label.TextColor3 = props.Color
+				dots.ImageColor3 = props.Color
+			end
+
+			local menu = Instance.new('Frame')
+			menu.BackgroundColor3 = color.Dark(uipallet.Main, 0.02)
+			menu.Position = UDim2.new(1, -104, 0, 30)
+			menu.Size = UDim2.fromOffset(104, 56)
+			menu.Visible = false
+			menu.ZIndex = 6
+			menu.Parent = obj
+			addCorner(menu)
+
+			local function menu_button(text, callback)
+				local button = Instance.new('TextButton')
+				button.AutoButtonColor = false
+				button.BackgroundTransparency = 1
+				button.FontFace = uipallet.Font
+				button.Size = UDim2.new(1, 0, 0, 28)
+				button.Text = text
+				button.TextColor3 = color.Dark(uipallet.Text, 0.16)
+				button.TextSize = 13
+				button.ZIndex = 6
+				button.Parent = menu
+				button.MouseEnter:Connect(function()
+					button.TextColor3 = uipallet.Text
+				end)
+				button.MouseLeave:Connect(function()
+					button.TextColor3 = color.Dark(uipallet.Text, 0.16)
+				end)
+				button.MouseButton1Click:Connect(function()
+					menu.Visible = false
+					callback()
+				end)
+			end
+
+			Instance.new('UIListLayout').Parent = menu
+
+			menu_button('Delete', function()
+				component:ChangeValue(name.Name)
+			end)
+
+			menu_button('Set as Autoload', function()
+				EZ.autoload = EZ.autoload ~= name.Name and name.Name or nil
+				EZ:Save()
+				component:ChangeValue()
+			end)
+
 			dotsbutton.MouseButton1Click:Connect(function()
-				if not name.Enabled then
-					component:ChangeValue(name.Name)
-				end
+				menu.Visible = not menu.Visible
 			end)
 
 			dotsbutton.MouseEnter:Connect(function()
-				if not name.Enabled then
-					dots.ImageColor3 = uipallet.Text
-				end
+				dots.ImageColor3 = uipallet.Text
 			end)
 
 			dotsbutton.MouseLeave:Connect(function()
-				if not name.Enabled then
-					dots.ImageColor3 = color.Light(uipallet.Main, 0.37)
-				end
+				dots.ImageColor3 = name.Name == EZ.autoload and props.Color or color.Light(uipallet.Main, 0.37)
+			end)
+
+			menu.MouseLeave:Connect(function()
+				menu.Visible = false
 			end)
 
 

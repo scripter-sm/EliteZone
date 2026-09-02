@@ -10,7 +10,6 @@ EZ.HeldKeybinds = {}
 EZ.Loaded = false
 EZ.Libraries = {}
 EZ.Modules = {}
-EZ.Place = game.PlaceId
 EZ.config = 'default'
 EZ.RainbowSliders = {}
 EZ.Settings = {}
@@ -62,7 +61,7 @@ local function loadJson(path)
 	return success and type(data) == 'table' and data or nil
 end
 
-for _, path in {'Elite Zone', 'Elite Zone/Assets', 'Elite Zone/configs'} do
+for _, path in {'Elite Zone', 'Elite Zone/Assets', 'Elite Zone/Config'} do
 	if not isfolder(path) then
 		makefolder(path)
 	end
@@ -291,7 +290,7 @@ uipallet = {
 }
 
 do
-	local data = isfile('Elite Zone/configs/color.txt') and loadJson('Elite Zone/configs/color.txt')
+	local data = isfile('Elite Zone/Config/color.txt') and loadJson('Elite Zone/Config/color.txt')
 	if data then
 		uipallet.Main = data.Main and Color3.fromRGB(unpack(data.Main)) or uipallet.Main
 		uipallet.Text = data.Text and Color3.fromRGB(unpack(data.Text)) or uipallet.Text
@@ -683,14 +682,20 @@ function EZ:CreateOverlay(props)
 	return components.Overlay(props)
 end
 
-function EZ:Load(skipgui, Config)
+function EZ:Load(skipgui, config)
+	self.game = self.game or tostring(game.GameId)
+	self.config_dir = 'Elite Zone/Config/'..self.game..'/'
+	if not isfolder(self.config_dir) then
+		makefolder(self.config_dir)
+	end
+
 	local guiData = {Categories = {}}
 	local oldConfig = self.config
 	local canSave = true
 	local toggleCount = 0
 
-	if isfile('Elite Zone/configs/'..game.GameId..'.gui.txt') then
-		guiData = loadJson('Elite Zone/configs/'..game.GameId..'.gui.txt')
+	if isfile(self.config_dir..'gui.txt') then
+		guiData = loadJson(self.config_dir..'gui.txt')
 		if not guiData then
 			guiData = {Categories = {}}
 			self:CreateNotification('Elite Zone', 'Failed to load GUI settings.', 10, 'alert')
@@ -701,7 +706,8 @@ function EZ:Load(skipgui, Config)
 			guiData.Categories.Main = nil
 		end
 
-		self.config = Config or guiData.config or 'default'
+		self.autoload = guiData.autoload
+		self.config = config or guiData.autoload or guiData.config or 'default'
 		if self.configLabel then
 			self.configLabel.Text = #self.config > 10 and self.config:sub(1, 10)..'...' or self.config
 			self.configLabel.Size = UDim2.fromOffset(getfontbounds(self.configLabel.Text, self.configLabel.TextSize, self.configLabel.Font).X + 16, 24)
@@ -721,8 +727,8 @@ function EZ:Load(skipgui, Config)
 		self.Categories.configs:ChangeValue('default', true)
 	end
 
-	if isfile('Elite Zone/configs/'..self.config..self.Place..'.txt') then
-		local mainData = loadJson('Elite Zone/configs/'..self.config..self.Place..'.txt')
+	if isfile(self.config_dir..self.config..'.txt') then
+		local mainData = loadJson(self.config_dir..self.config..'.txt')
 		if not mainData then
 			mainData = {Categories = {}, Modules = {}, Legit = {}}
 			self:CreateNotification('Elite Zone', 'Failed to load '..self.config..' Config.', 10, 'alert')
@@ -977,6 +983,7 @@ function EZ:LoadGUI()
 	
 	EZ:CreateCategoryList({
 		Name = 'configs',
+		Title = 'Config',
 		Icon = get_ez_asset('Elite Zone/Assets/configs.png'),
 		Size = UDim2.fromOffset(17, 10),
 		Position = UDim2.fromOffset(12, 16),
@@ -1073,8 +1080,8 @@ function EZ:LoadGUI()
 		Name = 'Reset current Config',
 		Function = function()
 		EZ.Save = function() end
-			if isfile('Elite Zone/configs/'..EZ.config..EZ.Place..'.txt') and delfile then
-				delfile('Elite Zone/configs/'..EZ.config..EZ.Place..'.txt')
+			if isfile(EZ.config_dir..EZ.config..'.txt') and delfile then
+				delfile(EZ.config_dir..EZ.config..'.txt')
 			end
 	
 			shared.EZreload = true
@@ -2266,6 +2273,7 @@ function EZ:Save(newConfig)
 	local guiData = {
 		Categories = {},
 		config = newConfig or self.config,
+		autoload = self.autoload,
 		v = 1
 	}
 
@@ -2288,8 +2296,8 @@ function EZ:Save(newConfig)
 		module:Save(mainData.Legit)
 	end
 
-	writefile('Elite Zone/configs/'..game.GameId..'.gui.txt', httpService:JSONEncode(guiData))
-	writefile('Elite Zone/configs/'..self.config..self.Place..'.txt', httpService:JSONEncode(mainData))
+	writefile(self.config_dir..'gui.txt', httpService:JSONEncode(guiData))
+	writefile(self.config_dir..self.config..'.txt', httpService:JSONEncode(mainData))
 end
 
 function EZ:SaveOptions(obj)
@@ -3071,7 +3079,7 @@ components = {
 		title.Name = 'Title'
 		title.Size = UDim2.new(1, -(props.Size.X.Offset > 20 and 44 or 36), 0, 20)
 		title.Position = UDim2.fromOffset(math.abs(title.Size.X.Offset), 12)
-		title.Text = props.Name
+		title.Text = props.Title or props.Name
 		title.TextColor3 = uipallet.Text
 		title.TextSize = 13
 		title.TextXAlignment = Enum.TextXAlignment.Left
@@ -3212,8 +3220,12 @@ components = {
 							Config.Bind:Destroy()
 							table.remove(self.List, index)
 		
-							if isfile('Elite Zone/configs/'..value..EZ.Place..'.txt') and delfile then
-								delfile('Elite Zone/configs/'..value..EZ.Place..'.txt')
+							if EZ.autoload == value then
+								EZ.autoload = nil
+							end
+		
+							if isfile(EZ.config_dir..value..'.txt') and delfile then
+								delfile(EZ.config_dir..value..'.txt')
 							end
 						end
 					else
@@ -3290,22 +3302,69 @@ components = {
 					name.Bind:SetParent(obj)
 					name.Enabled = name.Name == EZ.config
 		
+					if name.Name == EZ.autoload then
+						label.TextColor3 = props.Color
+						dots.ImageColor3 = props.Color
+					end
+		
+					local menu = Instance.new('Frame')
+					menu.BackgroundColor3 = color.Dark(uipallet.Main, 0.02)
+					menu.Position = UDim2.new(1, -104, 0, 30)
+					menu.Size = UDim2.fromOffset(104, 56)
+					menu.Visible = false
+					menu.ZIndex = 6
+					menu.Parent = obj
+					addCorner(menu)
+		
+					local function menu_button(text, callback)
+						local button = Instance.new('TextButton')
+						button.AutoButtonColor = false
+						button.BackgroundTransparency = 1
+						button.FontFace = uipallet.Font
+						button.Size = UDim2.new(1, 0, 0, 28)
+						button.Text = text
+						button.TextColor3 = color.Dark(uipallet.Text, 0.16)
+						button.TextSize = 13
+						button.ZIndex = 6
+						button.Parent = menu
+						button.MouseEnter:Connect(function()
+							button.TextColor3 = uipallet.Text
+						end)
+						button.MouseLeave:Connect(function()
+							button.TextColor3 = color.Dark(uipallet.Text, 0.16)
+						end)
+						button.MouseButton1Click:Connect(function()
+							menu.Visible = false
+							callback()
+						end)
+					end
+		
+					Instance.new('UIListLayout').Parent = menu
+		
+					menu_button('Delete', function()
+						component:ChangeValue(name.Name)
+					end)
+		
+					menu_button('Set as Autoload', function()
+						EZ.autoload = EZ.autoload ~= name.Name and name.Name or nil
+						EZ:Save()
+						component:ChangeValue()
+					end)
+		
 					dotsbutton.MouseButton1Click:Connect(function()
-						if not name.Enabled then
-							component:ChangeValue(name.Name)
-						end
+						menu.Visible = not menu.Visible
 					end)
 		
 					dotsbutton.MouseEnter:Connect(function()
-						if not name.Enabled then
-							dots.ImageColor3 = uipallet.Text
-						end
+						dots.ImageColor3 = uipallet.Text
 					end)
 		
 					dotsbutton.MouseLeave:Connect(function()
-						if not name.Enabled then
-							dots.ImageColor3 = color.Light(uipallet.Main, 0.37)
-						end
+						dots.ImageColor3 = name.Name == EZ.autoload and props.Color or color.Light(uipallet.Main, 0.37)
+					end)
+		
+					menu.MouseLeave:Connect(function()
+						menu.Visible = false
 					end)
 		
 		
@@ -6595,7 +6654,7 @@ components = {
 			versionlabel.Position = UDim2.new(0, 0, 1, -16)
 			versionlabel.Size = UDim2.new(1, 0, 0, 16)
 			versionlabel.Text = 'Elite Zone '..EZ.Version..' '..(
-				isfile('Elite Zone/configs/commit.txt') and readfile('Elite Zone/configs/commit.txt'):sub(1, 6) or ''
+				isfile('Elite Zone/Config/commit.txt') and readfile('Elite Zone/Config/commit.txt'):sub(1, 6) or ''
 			)..' '
 			versionlabel.TextColor3 = color.Dark(uipallet.Text, 0.43)
 			versionlabel.TextSize = 10

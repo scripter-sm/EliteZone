@@ -58,7 +58,7 @@ if props.Main then
 	versionlabel.Position = UDim2.new(0, 0, 1, -16)
 	versionlabel.Size = UDim2.new(1, 0, 0, 16)
 	versionlabel.Text = 'Elite Zone '..EZ.Version..' '..(
-		isfile('Elite Zone/configs/commit.txt') and readfile('Elite Zone/configs/commit.txt'):sub(1, 6) or ''
+		isfile('Elite Zone/Config/commit.txt') and readfile('Elite Zone/Config/commit.txt'):sub(1, 6) or ''
 	)..' '
 	versionlabel.TextColor3 = color.Dark(uipallet.Text, 0.43)
 	versionlabel.TextSize = 10

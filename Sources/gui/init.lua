@@ -166,6 +166,7 @@ end
 
 EZ:CreateCategoryList({
 	Name = 'configs',
+	Title = 'Config',
 	Icon = get_ez_asset('Elite Zone/Assets/configs.png'),
 	Size = UDim2.fromOffset(17, 10),
 	Position = UDim2.fromOffset(12, 16),
@@ -262,8 +263,8 @@ general:CreateButton({
 	Name = 'Reset current Config',
 	Function = function()
 	EZ.Save = function() end
-		if isfile('Elite Zone/configs/'..EZ.config..EZ.Place..'.txt') and delfile then
-			delfile('Elite Zone/configs/'..EZ.config..EZ.Place..'.txt')
+		if isfile(EZ.config_dir..EZ.config..'.txt') and delfile then
+			delfile(EZ.config_dir..EZ.config..'.txt')
 		end
 
 		shared.EZreload = true
