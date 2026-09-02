@@ -128,12 +128,19 @@ local weapon_pool = {
 	'Spear', 'Daggers', 'Knife', 'Fists', 'Grenade', 'Molotov', 'Riot Shield'
 }
 local local_player = cloneref(game:GetService('Players')).LocalPlayer
+local set_identity = setthreadidentity or setidentity
+
+local function elevate()
+	if set_identity then
+		pcall(set_identity, 2)
+	end
+end
 
 local rivals
 local function rivals_libs()
 	if rivals == nil then
 		rivals = false
-		setthreadidentity(2)
+		elevate()
 		pcall(function()
 			local storage = cloneref(game:GetService('ReplicatedStorage'))
 			rivals = {
@@ -227,7 +234,7 @@ end
 local function update_rivals(player)
 	local libs = rivals_libs()
 	if not libs then return end
-	setthreadidentity(2)
+	elevate()
 
 	local now = tick()
 	local delta = math.min(now - (targetinfo.rivals_time or now), 0.1)
