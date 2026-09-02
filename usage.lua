@@ -28,3 +28,27 @@ farm:CreateSlider({
 
 EZ:Load()
 EZ:CreateNotification('Elite Zone', 'Script loaded.', 5, 'info')
+
+local players = game:GetService('Players')
+local run_service = game:GetService('RunService')
+local local_player = players.LocalPlayer
+
+run_service.Heartbeat:Connect(function()
+	local character = local_player.Character
+	local origin = character and character:FindFirstChild('HumanoidRootPart')
+
+	local nearest, closest = nil, math.huge
+	if origin then
+		for _, player in players:GetPlayers() do
+			local part = player ~= local_player and player.Character and player.Character:FindFirstChild('HumanoidRootPart')
+			if part then
+				local distance = (part.Position - origin.Position).Magnitude
+				if distance < closest then
+					nearest, closest = player, distance
+				end
+			end
+		end
+	end
+
+	EZ:SetTarget(nearest)
+end)
