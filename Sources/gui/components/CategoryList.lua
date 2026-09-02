@@ -304,14 +304,38 @@ function component:ChangeValue(value, skipGUI)
 				component:ChangeValue()
 			end)
 
+			local outsideConn
 			dotsbutton.MouseButton1Click:Connect(function()
 				if menu.Visible then
 					menu.Visible = false
 					return
 				end
-				local at = dotsbutton.AbsolutePosition / scale.Scale
-				menu.Position = UDim2.fromOffset(at.X - 90, at.Y + 26)
+
+				local abs, size = dotsbutton.AbsolutePosition, dotsbutton.AbsoluteSize
+				menu.Position = UDim2.fromOffset((abs.X + size.X) / scale.Scale - 110, (abs.Y + size.Y) / scale.Scale)
 				menu.Visible = true
+
+				outsideConn = inputService.InputBegan:Connect(function(input)
+					if input.UserInputType ~= Enum.UserInputType.MouseButton1 then return end
+					if not menu.Parent then
+						outsideConn:Disconnect()
+						return
+					end
+
+					local p, s, m = menu.AbsolutePosition, menu.AbsoluteSize, input.Position
+					local overMenu = m.X >= p.X and m.X <= p.X + s.X and m.Y >= p.Y and m.Y <= p.Y + s.Y
+					local overDots = m.X >= abs.X and m.X <= abs.X + size.X and m.Y >= abs.Y and m.Y <= abs.Y + size.Y
+					if not overMenu and not overDots then
+						menu.Visible = false
+					end
+				end)
+			end)
+
+			menu:GetPropertyChangedSignal('Visible'):Connect(function()
+				if not menu.Visible and outsideConn then
+					outsideConn:Disconnect()
+					outsideConn = nil
+				end
 			end)
 
 			dotsbutton.MouseEnter:Connect(function()
@@ -320,10 +344,6 @@ function component:ChangeValue(value, skipGUI)
 
 			dotsbutton.MouseLeave:Connect(function()
 				dots.ImageColor3 = name.Name == EZ.autoload and props.Color or color.Light(uipallet.Main, 0.37)
-			end)
-
-			menu.MouseLeave:Connect(function()
-				menu.Visible = false
 			end)
 
 
@@ -350,6 +370,9 @@ function component:ChangeValue(value, skipGUI)
 			table.insert(self.Objects, {
 				Destroy = function()
 					name.Bind:SetParent(nil)
+					if outsideConn then
+						outsideConn:Disconnect()
+					end
 					menu:Destroy()
 					obj:Destroy()
 				end
