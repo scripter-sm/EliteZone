@@ -2030,6 +2030,14 @@ function EZ:LoadGUI()
 			weapon_icons[i] = icon
 		end
 		
+		-- placeholder glyphs are tinted to sit quietly in the slot; real weapon renders are full-color and near-fill
+		local function set_weapon_icon(i, image, is_real)
+			local icon = weapon_icons[i]
+			icon.Image = image
+			icon.ImageColor3 = is_real and Color3.new(1, 1, 1) or color.Light(uipallet.Main, 0.6)
+			icon.Size = is_real and UDim2.fromScale(0.92, 0.92) or UDim2.fromScale(0.7, 0.7)
+		end
+		
 		local divider = Instance.new('Frame')
 		divider.BackgroundColor3 = color.Light(uipallet.Main, 0.14)
 		divider.BackgroundTransparency = 0.3
@@ -2137,7 +2145,7 @@ function EZ:LoadGUI()
 					setthreadidentity(8)
 				end
 		
-				weapon_icons[i].Image = image
+				set_weapon_icon(i, image, image ~= '')
 			end
 		end
 		
@@ -2201,7 +2209,7 @@ function EZ:LoadGUI()
 					targetinfo.device = pick(device_pool)
 					targetinfo.streak = math.random(0, 30)
 					for i = 1, 4 do
-						weapon_icons[i].Image = preview_icons[i]
+						set_weapon_icon(i, preview_icons[i], false)
 					end
 		
 					Name.Text = DisplayName.Enabled and subject.DisplayName or subject.Name
