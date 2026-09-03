@@ -2008,7 +2008,7 @@ function EZ:LoadGUI()
 		local weapon_icons = {}
 		for i = 1, 4 do
 			local slot = Instance.new('Frame')
-			slot.BackgroundColor3 = color.Dark(uipallet.Main, 0.15)
+			slot.BackgroundColor3 = color.Light(uipallet.Main, 0.08)
 			slot.BorderSizePixel = 0
 			slot.ClipsDescendants = true
 			slot.LayoutOrder = i
