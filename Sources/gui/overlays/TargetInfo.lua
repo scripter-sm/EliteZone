@@ -185,26 +185,33 @@ weapon_layout.Padding = UDim.new(0, 8)
 weapon_layout.Parent = weapon_row
 local weapon_icons = {}
 for i = 1, 4 do
+	-- slot bg acts as the border ring; inner frame is the content area, one layer below the icon
 	local slot = Instance.new('Frame')
-	slot.BackgroundColor3 = color.Dark(uipallet.Main, 0.15)
+	slot.BackgroundColor3 = color.Light(uipallet.Main, 0.2)
+	slot.BackgroundTransparency = 0.45
 	slot.BorderSizePixel = 0
 	slot.ClipsDescendants = true
 	slot.LayoutOrder = i
 	slot.Size = UDim2.fromOffset(44, 44)
 	slot.Parent = weapon_row
 	addCorner(slot, UDim.new(0, 6))
-	local border = Instance.new('UIStroke')
-	border.Color = color.Light(uipallet.Main, 0.2)
-	border.Transparency = 0.45
-	border.Parent = slot
+	local inner = Instance.new('Frame')
+	inner.BackgroundColor3 = color.Dark(uipallet.Main, 0.15)
+	inner.BorderSizePixel = 0
+	inner.Position = UDim2.fromOffset(1, 1)
+	inner.Size = UDim2.new(1, -2, 1, -2)
+	inner.ZIndex = 1
+	inner.Parent = slot
+	addCorner(inner, UDim.new(0, 5))
 	local icon = Instance.new('ImageLabel')
 	icon.AnchorPoint = Vector2.new(0.5, 0.5)
 	icon.BackgroundTransparency = 1
-	icon.Position = UDim2.fromScale(0.5, 0.35)
+	icon.Position = UDim2.fromScale(0.5, 0.5)
 	icon.Size = UDim2.fromScale(0.7, 0.7)
 	icon.Image = preview_icons[i]
 	icon.ImageColor3 = color.Light(uipallet.Main, 0.6)
 	icon.ScaleType = Enum.ScaleType.Fit
+	icon.ZIndex = 2
 	icon.Parent = slot
 	weapon_icons[i] = icon
 end
