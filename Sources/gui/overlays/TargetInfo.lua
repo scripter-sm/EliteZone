@@ -201,7 +201,7 @@ for i = 1, 4 do
 	icon.AnchorPoint = Vector2.new(0.5, 0.5)
 	icon.BackgroundTransparency = 1
 	icon.Position = UDim2.fromScale(0.5, 0.5)
-	icon.Size = UDim2.fromScale(1.5, 1.5)
+	icon.Size = UDim2.fromScale(0.7, 0.7)
 	icon.Image = preview_icons[i]
 	icon.ImageColor3 = color.Light(uipallet.Main, 0.6)
 	icon.ScaleType = Enum.ScaleType.Fit
@@ -214,7 +214,7 @@ local function set_weapon_icon(i, image, is_real)
 	local icon = weapon_icons[i]
 	icon.Image = image
 	icon.ImageColor3 = is_real and Color3.new(1, 1, 1) or color.Light(uipallet.Main, 0.6)
-	icon.Size = is_real and UDim2.fromScale(1.9, 1.9) or UDim2.fromScale(1.5, 1.5)
+	icon.Size = is_real and UDim2.fromScale(2.3, 2.3) or UDim2.fromScale(0.7, 0.7)
 end
 
 local divider = Instance.new('Frame')
