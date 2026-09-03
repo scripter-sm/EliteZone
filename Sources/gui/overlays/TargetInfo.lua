@@ -82,7 +82,7 @@ end
 Name.Parent = Holder
 local HealthBKG = Instance.new('Frame')
 HealthBKG.Name = 'HealthBKG'
-HealthBKG.Size = UDim2.fromOffset(200, 12)
+HealthBKG.Size = UDim2.fromOffset(200, 9)
 HealthBKG.Position = UDim2.fromOffset(20, 56)
 HealthBKG.BackgroundColor3 = uipallet.Main
 HealthBKG.BorderSizePixel = 0
@@ -110,17 +110,16 @@ local HealthBlur = addBlur(HealthBKG)
 HealthBlur.Enabled = false
 local HealthText = Instance.new('TextLabel')
 HealthText.Name = 'HealthText'
-HealthText.AnchorPoint = Vector2.new(0.5, 0.5)
 HealthText.BackgroundTransparency = 1
-HealthText.Position = UDim2.fromScale(0.5, 0.5)
-HealthText.Size = UDim2.fromScale(1, 1)
+HealthText.Position = UDim2.fromOffset(20, 41)
+HealthText.Size = UDim2.fromOffset(200, 13)
 HealthText.FontFace = uipallet.FontSemiBold
 HealthText.Text = ''
-HealthText.TextColor3 = Color3.new(1, 1, 1)
-HealthText.TextSize = 9
-HealthText.TextStrokeTransparency = 0.4
-HealthText.ZIndex = 5
-HealthText.Parent = HealthBKG
+HealthText.TextColor3 = color.Light(uipallet.Text, 0.2)
+HealthText.TextSize = 11
+HealthText.TextXAlignment = Enum.TextXAlignment.Right
+HealthText.TextYAlignment = Enum.TextYAlignment.Bottom
+HealthText.Parent = Holder
 local Stroke = Instance.new('UIStroke')
 Stroke.Enabled = false
 Stroke.Color = Color3.fromHSV(0.44, 1, 1)
@@ -178,7 +177,6 @@ weapon_layout.FillDirection = Enum.FillDirection.Horizontal
 weapon_layout.Padding = UDim.new(0, 6)
 weapon_layout.Parent = weapon_row
 local weapon_icons = {}
-local weapon_borders = {}
 for i = 1, 4 do
 	local slot = Instance.new('Frame')
 	slot.BackgroundColor3 = color.Dark(uipallet.Main, 0.05)
@@ -188,10 +186,8 @@ for i = 1, 4 do
 	slot.Parent = weapon_row
 	addCorner(slot, UDim.new(0, 4))
 	local border = Instance.new('UIStroke')
-	border.Color = accent
-	border.Transparency = 0.5
+	border.Color = color.Light(uipallet.Main, 0.15)
 	border.Parent = slot
-	weapon_borders[i] = border
 	local icon = Instance.new('ImageLabel')
 	icon.AnchorPoint = Vector2.new(0.5, 0.5)
 	icon.BackgroundTransparency = 1
@@ -236,17 +232,17 @@ local function stat_cell(x, y, title)
 	value.Parent = rivals_box
 	return value
 end
-local level_value = stat_cell(8, 70, 'LEVEL')
-local rank_value = stat_cell(112, 70, 'RANK')
-local device_value = stat_cell(8, 100, 'DEVICE')
-local streak_value = stat_cell(112, 100, 'STREAK')
+local level_value = stat_cell(8, 70, 'level')
+local rank_value = stat_cell(112, 70, 'rank')
+local device_value = stat_cell(8, 100, 'device')
+local streak_value = stat_cell(112, 100, 'streak')
 
 local ratio_title = Instance.new('TextLabel')
 ratio_title.BackgroundTransparency = 1
 ratio_title.FontFace = uipallet.Font
 ratio_title.Position = UDim2.fromOffset(8, 132)
 ratio_title.Size = UDim2.fromOffset(120, 10)
-ratio_title.Text = 'DAMAGE RATIO'
+ratio_title.Text = 'damage ratio'
 ratio_title.TextColor3 = color.Light(uipallet.Text, 0.28)
 ratio_title.TextSize = 9
 ratio_title.TextXAlignment = Enum.TextXAlignment.Left
@@ -256,7 +252,7 @@ local ratio_value = ratio_title:Clone()
 ratio_value.FontFace = uipallet.FontSemiBold
 ratio_value.Position = UDim2.fromOffset(84, 131)
 ratio_value.Size = UDim2.fromOffset(128, 11)
-ratio_value.Text = '50% dealt'
+ratio_value.Text = '1.00 : 1'
 ratio_value.TextColor3 = accent
 ratio_value.TextSize = 11
 ratio_value.TextXAlignment = Enum.TextXAlignment.Right
@@ -368,20 +364,16 @@ local function update_rivals(player)
 	end
 
 	targetinfo.shown = (targetinfo.shown or targetinfo.ratio) + (targetinfo.ratio - (targetinfo.shown or targetinfo.ratio)) * math.min(delta * 4, 1)
-	local dealt = math.clamp(math.floor(targetinfo.shown * 100 + 0.5), 0, 100)
+	local shown = math.clamp(targetinfo.shown, 0.01, 0.99)
 
 	accent = Color3.fromHSV(EZ.GUIColor.Hue, EZ.GUIColor.Sat, EZ.GUIColor.Value)
 	level_value.Text, level_value.TextColor3 = tostring(level), accent
-	rank_value.Text, rank_value.TextColor3 = tostring(rank), accent
+	rank_value.Text, rank_value.TextColor3 = tostring(rank):lower(), accent
 	device_value.Text, device_value.TextColor3 = tostring(device), accent
 	streak_value.Text, streak_value.TextColor3 = tostring(streak), accent
-	ratio_value.Text, ratio_value.TextColor3 = dealt..'% dealt', accent
-	ratio_fill.Size = UDim2.fromScale(targetinfo.shown, 1)
+	ratio_value.Text, ratio_value.TextColor3 = string.format('%.2f : 1', shown / (1 - shown)), accent
+	ratio_fill.Size = UDim2.fromScale(shown, 1)
 	ratio_fill.BackgroundColor3 = accent
-
-	for i = 1, 4 do
-		weapon_borders[i].Color = accent
-	end
 end
 
 TargetInfoOverlay:CreateFont({
