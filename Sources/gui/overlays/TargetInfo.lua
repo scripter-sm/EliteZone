@@ -343,8 +343,6 @@ local function update_rivals(player)
 		streak = subject:GetAttribute('StatisticDuelsWinStreak') or 0
 
 		if fresh then
-			targetinfo.dealt, targetinfo.taken = 0, 0
-			targetinfo.last_hp, targetinfo.own_hp = nil, nil
 			targetinfo.weapon_time = 0
 		end
 
@@ -355,21 +353,18 @@ local function update_rivals(player)
 			show_weapons(fighter.Data and fighter.Data.LastPickedWeapons or {}, libs.items)
 		end
 
-		local hp = fighter and fighter:GetHealth()
+		local hp = fighter and fighter:GetHealth() or 0
+		local max_hp = fighter and fighter:GetMaxHealth() or 100
 		local own_fighter = libs.fighters:GetFighter(local_player)
-		local own = own_fighter and own_fighter:GetHealth()
+		local own = own_fighter and own_fighter:GetHealth() or 0
+		local own_max = own_fighter and own_fighter:GetMaxHealth() or 100
 		if EZ.ThreadFix then
 			setthreadidentity(8)
 		end
 
-		if hp and targetinfo.last_hp and hp < targetinfo.last_hp then
-			targetinfo.dealt += targetinfo.last_hp - hp
-		end
-		if own and targetinfo.own_hp and own < targetinfo.own_hp then
-			targetinfo.taken += targetinfo.own_hp - own
-		end
-		targetinfo.last_hp, targetinfo.own_hp = hp or targetinfo.last_hp, own or targetinfo.own_hp
-
+		-- ratio comes straight from missing hp on each side: their damage taken vs ours
+		targetinfo.dealt = math.max(max_hp - hp, 0)
+		targetinfo.taken = math.max(own_max - own, 0)
 		local total = targetinfo.dealt + targetinfo.taken
 		targetinfo.ratio = total > 0 and targetinfo.dealt / total or 0.5
 	else
@@ -391,16 +386,17 @@ local function update_rivals(player)
 		Health.Size = UDim2.fromScale(sweep, 1)
 		HealthText.Text = math.floor(sweep * 100)..' / 100'
 		targetinfo.ratio = 0.5 + 0.32 * math.sin(now * 0.45)
+		targetinfo.dealt = math.floor(targetinfo.ratio * 100 + 0.5)
+		targetinfo.taken = 100 - targetinfo.dealt
 	end
 
 	targetinfo.shown = (targetinfo.shown or targetinfo.ratio) + (targetinfo.ratio - (targetinfo.shown or targetinfo.ratio)) * math.min(delta * 4, 1)
-	local dealt = math.clamp(math.floor(targetinfo.shown * 100 + 0.5), 0, 100)
 
 	level_value.Text, level_value.TextColor3 = tostring(level), accent
 	rank_value.Text, rank_value.TextColor3 = tostring(rank):lower(), accent
 	device_value.Text, device_value.TextColor3 = tostring(device), accent
 	streak_value.Text, streak_value.TextColor3 = tostring(streak), accent
-	ratio_value.Text = dealt..' <font color="#5ad16b">▲</font>  '..(100 - dealt)..' <font color="#ff5a5a">▼</font>'
+	ratio_value.Text = math.floor(targetinfo.dealt + 0.5)..' <font color="#5ad16b">▲</font>  '..math.floor(targetinfo.taken + 0.5)..' <font color="#ff5a5a">▼</font>'
 	ratio_fill.Size = UDim2.fromScale(targetinfo.shown, 1)
 	ratio_taken.Size = UDim2.fromScale(1 - targetinfo.shown, 1)
 end
