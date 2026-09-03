@@ -8,7 +8,7 @@ local targetinfo = {
 }
 local TargetInfoOverlay
 local BackgroundTransparency = {
-	Value = 0.5,
+	Value = 0.1,
 	Object = {Visible = {}}
 }
 local BorderColor
@@ -38,7 +38,7 @@ Holder.Size = UDim2.fromOffset(240, 96)
 Holder.Position = UDim2.fromOffset(0, -6)
 Holder.ZIndex = 0
 Holder.BackgroundColor3 = color.Dark(uipallet.Main, 0.05)
-Holder.BackgroundTransparency = 0.5
+Holder.BackgroundTransparency = 0.1
 Holder.Parent = TargetInfoOverlay.Children
 local BlurHolder = addBlur(Holder, nil, true)
 BlurHolder.Visible = false
@@ -407,7 +407,7 @@ BackgroundTransparency = TargetInfoOverlay:CreateSlider({
 	Name = 'Transparency',
 	Min = 0,
 	Max = 1,
-	Default = 0.5,
+	Default = 0.1,
 	Decimal = 10,
 	Function = function(val)
 		Holder.BackgroundTransparency = val
