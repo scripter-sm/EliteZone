@@ -17,7 +17,7 @@ local CustomColor
 local DisplayName
 
 TargetInfoOverlay = EZ:CreateOverlay({
-	Name = 'Target Info',
+	Name = 'Target Hud',
 	Icon = get_ez_asset('Elite Zone/Assets/targetinfo.png'),
 	Size = UDim2.fromOffset(14, 14),
 	Position = UDim2.fromOffset(12, 14),
@@ -33,6 +33,8 @@ TargetInfoOverlay = EZ:CreateOverlay({
 
 local accent = Color3.fromHSV(EZ.GUIColor.Hue, EZ.GUIColor.Sat, EZ.GUIColor.Value)
 local font_regular, font_bold = {}, {}
+-- detached from the settings window so a real target still renders with the gui off / unpinned
+local window = TargetInfoOverlay.Object
 
 local Holder = Instance.new('Frame')
 Holder.Size = UDim2.fromOffset(240, 96)
@@ -40,7 +42,7 @@ Holder.Position = UDim2.fromOffset(0, -6)
 Holder.ZIndex = 0
 Holder.BackgroundColor3 = color.Dark(uipallet.Main, 0.05)
 Holder.BackgroundTransparency = 0.1
-Holder.Parent = TargetInfoOverlay.Children
+Holder.Parent = scaledgui
 local BlurHolder = addBlur(Holder, nil, true)
 BlurHolder.Visible = false
 BlurHolder.ZIndex = 0
@@ -493,7 +495,7 @@ function targetinfo:Update()
 
 	local tucked = clickgui.Visible
 	local is_rivals = EZ.game == 'Rivals'
-	Holder.Position = UDim2.fromOffset(0, tucked and -6 or 0)
+	Holder.Position = UDim2.fromOffset(window.Position.X.Offset, window.Position.Y.Offset + window.Size.Y.Offset + (tucked and -6 or 0))
 	Holder.Size = UDim2.fromOffset(240, (tucked and 96 or 90) + (is_rivals and rivals_extra_height or 0))
 	for _, part in rivals_parts do
 		part.Visible = is_rivals
