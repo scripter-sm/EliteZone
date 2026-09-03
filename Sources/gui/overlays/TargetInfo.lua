@@ -320,7 +320,11 @@ local function show_weapons(names, items)
 			setthreadidentity(8)
 		end
 
-		set_weapon_icon(i, image, image ~= '')
+		if image ~= '' then
+			set_weapon_icon(i, image, true)
+		else
+			set_weapon_icon(i, preview_icons[i], false)
+		end
 	end
 end
 
@@ -349,15 +353,20 @@ local function update_rivals(player)
 			targetinfo.dealt, targetinfo.taken = 0, 0
 			targetinfo.last_hp, targetinfo.own_hp = nil, nil
 			targetinfo.weapon_time = 0
+			targetinfo.weapon_seen = {}
 		end
 
-		if fighter and now - targetinfo.weapon_time > 0.5 then
+		-- GetEquippedItems only reports what's replicated so far (usually just the held item), so
+		-- the loadout is built up across polls instead of trusting any single read as the full set
+		if fighter and now - targetinfo.weapon_time > 0.3 then
 			targetinfo.weapon_time = now
-			local names = {}
+			local seen = targetinfo.weapon_seen
 			for item in fighter:GetEquippedItems() or {} do
-				names[#names + 1] = item.Name
+				if not table.find(seen, item.Name) and #seen < 4 then
+					seen[#seen + 1] = item.Name
+				end
 			end
-			show_weapons(names[1] and names or {'Assault Rifle', 'Handgun', 'Fists', 'Grenade'}, libs.items)
+			show_weapons(seen, libs.items)
 		end
 
 		local hp = fighter and fighter:GetHealth()
