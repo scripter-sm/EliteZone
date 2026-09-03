@@ -82,7 +82,7 @@ end
 Name.Parent = Holder
 local HealthBKG = Instance.new('Frame')
 HealthBKG.Name = 'HealthBKG'
-HealthBKG.Size = UDim2.fromOffset(200, 9)
+HealthBKG.Size = UDim2.fromOffset(200, 12)
 HealthBKG.Position = UDim2.fromOffset(20, 56)
 HealthBKG.BackgroundColor3 = uipallet.Main
 HealthBKG.BorderSizePixel = 0
@@ -108,12 +108,25 @@ Armor:GetPropertyChangedSignal('Size'):Connect(function()
 end)
 local HealthBlur = addBlur(HealthBKG)
 HealthBlur.Enabled = false
+local HealthText = Instance.new('TextLabel')
+HealthText.Name = 'HealthText'
+HealthText.AnchorPoint = Vector2.new(0.5, 0.5)
+HealthText.BackgroundTransparency = 1
+HealthText.Position = UDim2.fromScale(0.5, 0.5)
+HealthText.Size = UDim2.fromScale(1, 1)
+HealthText.FontFace = uipallet.FontSemiBold
+HealthText.Text = ''
+HealthText.TextColor3 = Color3.new(1, 1, 1)
+HealthText.TextSize = 9
+HealthText.TextStrokeTransparency = 0.4
+HealthText.ZIndex = 5
+HealthText.Parent = HealthBKG
 local Stroke = Instance.new('UIStroke')
 Stroke.Enabled = false
 Stroke.Color = Color3.fromHSV(0.44, 1, 1)
 Stroke.Parent = Holder
 
-local rivals_extra_height = 118
+local rivals_extra_height = 150
 local devices = {MouseKeyboard = 'computer', Touch = 'mobile', Gamepad = 'controller', VR = 'vr'}
 local device_pool = {'computer', 'mobile', 'controller', 'vr'}
 local ranks = {
@@ -127,10 +140,7 @@ local preview_icons = {
 }
 local local_player = cloneref(game:GetService('Players')).LocalPlayer
 
-local accent = '#4777b6'
-local function hl(v)
-	return '<font color="'..accent..'">'..v..'</font>'
-end
+local accent = Color3.fromHSV(EZ.GUIColor.Hue, EZ.GUIColor.Sat, EZ.GUIColor.Value)
 
 local rivals
 local function rivals_libs()
@@ -154,7 +164,7 @@ rivals_box.Name = 'Rivals'
 rivals_box.BackgroundColor3 = color.Dark(uipallet.Main, 0.05)
 rivals_box.BorderSizePixel = 0
 rivals_box.Position = UDim2.fromOffset(10, 74)
-rivals_box.Size = UDim2.fromOffset(220, 128)
+rivals_box.Size = UDim2.fromOffset(220, 160)
 rivals_box.Visible = false
 rivals_box.Parent = Holder
 addCorner(rivals_box)
@@ -168,6 +178,7 @@ weapon_layout.FillDirection = Enum.FillDirection.Horizontal
 weapon_layout.Padding = UDim.new(0, 6)
 weapon_layout.Parent = weapon_row
 local weapon_icons = {}
+local weapon_borders = {}
 for i = 1, 4 do
 	local slot = Instance.new('Frame')
 	slot.BackgroundColor3 = color.Dark(uipallet.Main, 0.05)
@@ -177,8 +188,10 @@ for i = 1, 4 do
 	slot.Parent = weapon_row
 	addCorner(slot, UDim.new(0, 4))
 	local border = Instance.new('UIStroke')
-	border.Color = color.Light(uipallet.Main, 0.15)
+	border.Color = accent
+	border.Transparency = 0.5
 	border.Parent = slot
+	weapon_borders[i] = border
 	local icon = Instance.new('ImageLabel')
 	icon.AnchorPoint = Vector2.new(0.5, 0.5)
 	icon.BackgroundTransparency = 1
@@ -191,26 +204,77 @@ for i = 1, 4 do
 	weapon_icons[i] = icon
 end
 
-local function line(x, y, width)
+local divider = Instance.new('Frame')
+divider.BackgroundColor3 = color.Light(uipallet.Main, 0.12)
+divider.BorderSizePixel = 0
+divider.Position = UDim2.fromOffset(8, 60)
+divider.Size = UDim2.fromOffset(204, 1)
+divider.Parent = rivals_box
+
+local function stat_cell(x, y, title)
 	local label = Instance.new('TextLabel')
 	label.BackgroundTransparency = 1
 	label.FontFace = uipallet.Font
 	label.Position = UDim2.fromOffset(x, y)
-	label.RichText = true
-	label.Size = UDim2.fromOffset(width, 14)
-	label.TextColor3 = color.Light(uipallet.Text, 0.3)
-	label.TextSize = 11
+	label.Size = UDim2.fromOffset(100, 10)
+	label.Text = title
+	label.TextColor3 = color.Light(uipallet.Text, 0.28)
+	label.TextSize = 9
 	label.TextXAlignment = Enum.TextXAlignment.Left
 	label.Parent = rivals_box
-	return label
+
+	local value = Instance.new('TextLabel')
+	value.BackgroundTransparency = 1
+	value.FontFace = uipallet.FontSemiBold
+	value.Position = UDim2.fromOffset(x, y + 11)
+	value.Size = UDim2.fromOffset(100, 15)
+	value.Text = '--'
+	value.TextColor3 = accent
+	value.TextSize = 13
+	value.TextTruncate = Enum.TextTruncate.AtEnd
+	value.TextXAlignment = Enum.TextXAlignment.Left
+	value.Parent = rivals_box
+	return value
 end
-local name_line = line(8, 56, 204)
-local stat_line = line(8, 76, 204)
-local health_line = line(8, 96, 204)
-local ratio_line = line(8, 114, 204)
-name_line.TextColor3 = Color3.new(1, 1, 1)
-name_line.TextSize = 13
-name_line.FontFace = uipallet.FontSemiBold
+local level_value = stat_cell(8, 70, 'LEVEL')
+local rank_value = stat_cell(112, 70, 'RANK')
+local device_value = stat_cell(8, 100, 'DEVICE')
+local streak_value = stat_cell(112, 100, 'STREAK')
+
+local ratio_title = Instance.new('TextLabel')
+ratio_title.BackgroundTransparency = 1
+ratio_title.FontFace = uipallet.Font
+ratio_title.Position = UDim2.fromOffset(8, 132)
+ratio_title.Size = UDim2.fromOffset(120, 10)
+ratio_title.Text = 'DAMAGE RATIO'
+ratio_title.TextColor3 = color.Light(uipallet.Text, 0.28)
+ratio_title.TextSize = 9
+ratio_title.TextXAlignment = Enum.TextXAlignment.Left
+ratio_title.Parent = rivals_box
+
+local ratio_value = ratio_title:Clone()
+ratio_value.FontFace = uipallet.FontSemiBold
+ratio_value.Position = UDim2.fromOffset(84, 131)
+ratio_value.Size = UDim2.fromOffset(128, 11)
+ratio_value.Text = '50% dealt'
+ratio_value.TextColor3 = accent
+ratio_value.TextSize = 11
+ratio_value.TextXAlignment = Enum.TextXAlignment.Right
+ratio_value.Parent = rivals_box
+
+local ratio_bg = Instance.new('Frame')
+ratio_bg.BackgroundColor3 = color.Dark(uipallet.Main, 0.05)
+ratio_bg.BorderSizePixel = 0
+ratio_bg.Position = UDim2.fromOffset(8, 147)
+ratio_bg.Size = UDim2.fromOffset(204, 4)
+ratio_bg.Parent = rivals_box
+addCorner(ratio_bg, UDim.new(1, 0))
+local ratio_fill = Instance.new('Frame')
+ratio_fill.BackgroundColor3 = accent
+ratio_fill.BorderSizePixel = 0
+ratio_fill.Size = UDim2.fromScale(0.5, 1)
+ratio_fill.Parent = ratio_bg
+addCorner(ratio_fill, UDim.new(1, 0))
 
 local function pick(list)
 	return list[math.random(#list)]
@@ -267,7 +331,6 @@ local function update_rivals(player)
 		local hp = fighter and fighter:GetHealth()
 		local own_fighter = libs.fighters:GetFighter(local_player)
 		local own = own_fighter and own_fighter:GetHealth()
-		local max = fighter and fighter:GetMaxHealth() or 100
 		if EZ.ThreadFix then
 			setthreadidentity(8)
 		end
@@ -282,7 +345,6 @@ local function update_rivals(player)
 
 		local total = targetinfo.dealt + targetinfo.taken
 		targetinfo.ratio = total > 0 and targetinfo.dealt / total or 0.5
-		health_line.Text = 'health  '..(hp and hl(math.floor(hp)..' / '..math.floor(max)) or hl('--'))
 	else
 		if fresh then
 			targetinfo.level = math.random(1, 50)
@@ -301,16 +363,25 @@ local function update_rivals(player)
 		local sweep = 0.5 - 0.5 * math.cos(now * 0.8)
 		Health.Size = UDim2.fromScale(sweep, 1)
 		Health.BackgroundColor3 = Color3.fromHSV(math.clamp(sweep / 2.5, 0, 1), 0.89, 0.75)
-		health_line.Text = 'health  '..hl(math.floor(sweep * 100)..' / 100')
+		HealthText.Text = math.floor(sweep * 100)..' / 100'
 		targetinfo.ratio = 0.5 + 0.32 * math.sin(now * 0.45)
 	end
 
 	targetinfo.shown = (targetinfo.shown or targetinfo.ratio) + (targetinfo.ratio - (targetinfo.shown or targetinfo.ratio)) * math.min(delta * 4, 1)
 	local dealt = math.clamp(math.floor(targetinfo.shown * 100 + 0.5), 0, 100)
 
-	name_line.Text = subject.Name
-	stat_line.Text = 'level '..hl(level)..'   '..hl(rank)..'   '..hl(device)..'   streak '..hl(streak)
-	ratio_line.Text = 'damage ratio  '..hl(dealt)..' <font color="#5ad16b">▲</font>  '..hl(100 - dealt)..' <font color="#ff5a5a">▼</font>'
+	accent = Color3.fromHSV(EZ.GUIColor.Hue, EZ.GUIColor.Sat, EZ.GUIColor.Value)
+	level_value.Text, level_value.TextColor3 = tostring(level), accent
+	rank_value.Text, rank_value.TextColor3 = tostring(rank), accent
+	device_value.Text, device_value.TextColor3 = tostring(device), accent
+	streak_value.Text, streak_value.TextColor3 = tostring(streak), accent
+	ratio_value.Text, ratio_value.TextColor3 = dealt..'% dealt', accent
+	ratio_fill.Size = UDim2.fromScale(targetinfo.shown, 1)
+	ratio_fill.BackgroundColor3 = accent
+
+	for i = 1, 4 do
+		weapon_borders[i].Color = accent
+	end
 end
 
 TargetInfoOverlay:CreateFont({
@@ -447,6 +518,7 @@ function targetinfo:Update()
 
 		if entity.Health ~= self.Health or entity.MaxHealth ~= self.MaxHealth then
 			local percent = math.max(entity.Health / entity.MaxHealth, 0)
+			HealthText.Text = math.floor(entity.Health)..' / '..math.floor(entity.MaxHealth)
 
 			tween:Tween(Health, TweenInfo.new(0.3), {
 				Size = UDim2.fromScale(math.min(percent, 1), 1), BackgroundColor3 = Color3.fromHSV(math.clamp(percent / 2.5, 0, 1), 0.89, 0.75)
