@@ -228,94 +228,6 @@ end
 getezasset = get_ez_asset
 
 
-do
-	local fonts_url = 'https://raw.githubusercontent.com/scripter-sm/EliteZone/main/Dependencies/fonts/'
-	local get_asset_fn = getcustomasset or getsynasset
-
-	ez_fonts = {
-		Burbank = {{'Burbank-Big-Condensed.otf', 400}},
-		Comfortaa = {{'Comfortaa-Regular.ttf', 400}},
-		Eurostile = {{'Eurostile-Extended.ttf', 400}},
-		['Hanken Grotesk'] = {{'Hanken-Grotesk-Semi-Bold.ttf', 400}},
-		Inter = {{'Inter-Medium.ttf', 400}, {'Inter-Semi-Bold.ttf', 600}},
-		['Light Modern'] = {{'Light-Modern.ttf', 400}},
-		Minecraftia = {{'Minecraftia-Regular.ttf', 400}},
-		Monocraft = {{'Monocraft.ttf', 400}, {'Monocraft-Bold.ttf', 700}},
-		['Open Sans Px'] = {{'Open-Sans-Px.ttf', 400}},
-		['Pixel Arial'] = {{'Pixel-Arial.ttf', 400}},
-		['Proggy Clean'] = {{'Proggy-Clean.ttf', 400}},
-		['Proggy Tiny'] = {{'Proggy-Tiny.ttf', 400}},
-		Rubik = {{'Rubik-Regular.ttf', 400}},
-		Silkscreen = {{'Silkscreen.ttf', 400}},
-		['Smallest Pixel'] = {{'Smallest-Pixel.ttf', 400}},
-		['Smallest Pixel 7'] = {{'Smallest-Pixel-7.ttf', 400}},
-		['Tahoma 8px'] = {{'Fs-Tahoma-8-Px.ttf', 400}},
-		['Tahoma Custom'] = {{'Tahoma.ttf', 400}, {'Tahoma-Bold.ttf', 700}},
-		['Tahoma Modern'] = {{'Tahoma-Modern.ttf', 400}, {'Tahoma-Modern-Bold.ttf', 700}},
-		['Verdana Custom'] = {{'Verdana-Font.ttf', 400}}
-	}
-
-	ez_font_names = {}
-	for name in ez_fonts do
-		ez_font_names[#ez_font_names + 1] = name
-	end
-	table.sort(ez_font_names)
-
-	local cache = {}
-
-	local function download(file)
-		local path = 'Elite Zone/Assets/'..file
-		if isfile(path) then
-			return path
-		end
-
-		local success, data = pcall(function()
-			return game:HttpGet(fonts_url..file, true)
-		end)
-
-		if not success or #data < 1024 then
-			return
-		end
-
-		writefile(path, data)
-		return path
-	end
-
-	-- builds a roblox font family file whose faces point at the downloaded ttf/otf assets
-	get_ez_font = get_asset_fn and function(name)
-		local cached = cache[name]
-		if cached ~= nil then
-			return cached or nil
-		end
-
-		local faces = ez_fonts[name]
-		if not faces then
-			return
-		end
-
-		local built = table.create(#faces)
-		for i, face in faces do
-			local file = download(face[1])
-			if not file then
-				cache[name] = false
-				return
-			end
-
-			built[i] = string.format('{"name":"%d","weight":%d,"style":"normal","assetId":"%s"}', face[2], face[2], get_asset_fn(file))
-		end
-
-		local path = 'Elite Zone/Assets/'..name:gsub(' ', '')..'.font'
-		writefile(path, '{"name":"'..name..'","faces":['..table.concat(built, ',')..']}')
-
-		local font = Font.new(get_asset_fn(path))
-		cache[name] = font
-		return font
-	end or function() end
-end
-
-getezfont = get_ez_font
-
-
 local function getfontbounds(text, size, font)
 	fontsize.Text = text
 	fontsize.Size = size
@@ -396,7 +308,6 @@ end
 EZ.Libraries = {
 	color = color,
 	getezasset = getezasset,
-	getezfont = getezfont,
 	getfontbounds = getfontbounds,
 	tween = tween,
 	uipallet = uipallet,
@@ -2132,10 +2043,10 @@ function EZ:LoadGUI()
 			label.BackgroundTransparency = 1
 			label.FontFace = uipallet.Font
 			label.Position = UDim2.fromOffset(x, y)
-			label.Size = UDim2.fromOffset(96, 12)
+			label.Size = UDim2.fromOffset(96, 10)
 			label.Text = title
 			label.TextColor3 = label_text
-			label.TextSize = 11
+			label.TextSize = 9
 			label.TextXAlignment = Enum.TextXAlignment.Left
 			label.Visible = false
 			label.Parent = Holder
@@ -2144,7 +2055,7 @@ function EZ:LoadGUI()
 			local value = Instance.new('TextLabel')
 			value.BackgroundTransparency = 1
 			value.FontFace = uipallet.FontSemiBold
-			value.Position = UDim2.fromOffset(x, y + 13)
+			value.Position = UDim2.fromOffset(x, y + 12)
 			value.Size = UDim2.fromOffset(96, 16)
 			value.Text = '--'
 			value.TextColor3 = value_color
@@ -2167,10 +2078,10 @@ function EZ:LoadGUI()
 		ratio_title.BackgroundTransparency = 1
 		ratio_title.FontFace = uipallet.Font
 		ratio_title.Position = UDim2.fromOffset(20, 212)
-		ratio_title.Size = UDim2.fromOffset(120, 12)
+		ratio_title.Size = UDim2.fromOffset(120, 10)
 		ratio_title.Text = 'damage ratio'
 		ratio_title.TextColor3 = label_text
-		ratio_title.TextSize = 11
+		ratio_title.TextSize = 9
 		ratio_title.TextXAlignment = Enum.TextXAlignment.Left
 		ratio_title.Visible = false
 		ratio_title.Parent = Holder
@@ -4842,10 +4753,6 @@ components = {
 			'Custom'
 		}
 		
-		for _, name in ez_font_names do
-			table.insert(fonts, name)
-		end
-		
 		for _, v in Enum.Font:GetEnumItems() do
 			if not table.find(fonts, v.Name) then
 				table.insert(fonts, v.Name)
@@ -4864,17 +4771,16 @@ components = {
 			List = fonts,
 			Function = function(val)
 				fontbox.Object.Visible = val == 'Custom' and fontdropdown.Object.Visible
-				if val == 'Custom' then
+				if val ~= 'Custom' then
+					component.Value = Font.fromEnum(Enum.Font[val])
+					props.Function(component.Value)
+				else
 					pcall(function()
 						component.Value = Font.fromId(tonumber(fontbox.Value))
 					end)
-				elseif ez_fonts[val] then
-					component.Value = get_ez_font(val) or uipallet.Font
-				else
-					component.Value = Font.fromEnum(Enum.Font[val])
-				end
 		
-				props.Function(component.Value)
+					props.Function(component.Value)
+				end
 			end,
 			Darker = props.Darker,
 			Visible = props.Visible
