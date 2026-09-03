@@ -2057,17 +2057,17 @@ function EZ:LoadGUI()
 			value.Parent = rivals_box
 			return value
 		end
-		local level_value = stat_cell(8, 70, '⭐ level')
-		local rank_value = stat_cell(112, 70, '🏆 rank')
-		local device_value = stat_cell(8, 100, '🎮 device')
-		local streak_value = stat_cell(112, 100, '🔥 streak')
+		local level_value = stat_cell(8, 70, 'level')
+		local rank_value = stat_cell(112, 70, 'rank')
+		local device_value = stat_cell(8, 100, 'device')
+		local streak_value = stat_cell(112, 100, 'streak')
 		
 		local ratio_title = Instance.new('TextLabel')
 		ratio_title.BackgroundTransparency = 1
 		ratio_title.FontFace = uipallet.Font
 		ratio_title.Position = UDim2.fromOffset(8, 132)
 		ratio_title.Size = UDim2.fromOffset(120, 10)
-		ratio_title.Text = '⚔️ damage ratio'
+		ratio_title.Text = 'damage ratio'
 		ratio_title.TextColor3 = color.Light(uipallet.Text, 0.28)
 		ratio_title.TextSize = 9
 		ratio_title.TextXAlignment = Enum.TextXAlignment.Left
@@ -2185,7 +2185,7 @@ function EZ:LoadGUI()
 				local sweep = 0.5 - 0.5 * math.cos(now * 0.8)
 				Health.Size = UDim2.fromScale(sweep, 1)
 				Health.BackgroundColor3 = Color3.fromHSV(math.clamp(sweep / 2.5, 0, 1), 0.89, 0.75)
-				HealthText.Text = '❤️ '..math.floor(sweep * 100)..' / 100'
+				HealthText.Text = math.floor(sweep * 100)..' / 100'
 				targetinfo.ratio = 0.5 + 0.32 * math.sin(now * 0.45)
 			end
 		
@@ -2336,7 +2336,7 @@ function EZ:LoadGUI()
 		
 				if entity.Health ~= self.Health or entity.MaxHealth ~= self.MaxHealth then
 					local percent = math.max(entity.Health / entity.MaxHealth, 0)
-					HealthText.Text = '❤️ '..math.floor(entity.Health)..' / '..math.floor(entity.MaxHealth)
+					HealthText.Text = math.floor(entity.Health)..' / '..math.floor(entity.MaxHealth)
 		
 					tween:Tween(Health, TweenInfo.new(0.3), {
 						Size = UDim2.fromScale(math.min(percent, 1), 1), BackgroundColor3 = Color3.fromHSV(math.clamp(percent / 2.5, 0, 1), 0.89, 0.75)
