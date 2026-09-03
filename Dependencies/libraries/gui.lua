@@ -1952,7 +1952,7 @@ function EZ:LoadGUI()
 		Stroke.Color = Color3.fromHSV(0.44, 1, 1)
 		Stroke.Parent = Holder
 		
-		local rivals_extra_height = 150
+		local rivals_extra_height = 160
 		local devices = {MouseKeyboard = 'computer', Touch = 'mobile', Gamepad = 'controller', VR = 'vr'}
 		local device_pool = {'computer', 'mobile', 'controller', 'vr'}
 		local ranks = {
@@ -1984,58 +1984,65 @@ function EZ:LoadGUI()
 		end
 		
 		local rivals_parts = {}
+		local damage_up = Color3.fromRGB(90, 209, 107)
+		local damage_down = Color3.fromRGB(255, 90, 90)
+		local stat_text = color.Light(uipallet.Text, 0.15)
+		local label_text = color.Light(uipallet.Text, 0.32)
+		
 		local weapon_row = Instance.new('Frame')
 		weapon_row.BackgroundTransparency = 1
-		weapon_row.Position = UDim2.fromOffset(18, 82)
-		weapon_row.Size = UDim2.fromOffset(204, 46)
+		weapon_row.Position = UDim2.fromOffset(20, 78)
+		weapon_row.Size = UDim2.fromOffset(200, 44)
 		weapon_row.Visible = false
 		weapon_row.Parent = Holder
 		rivals_parts[#rivals_parts + 1] = weapon_row
 		local weapon_layout = Instance.new('UIListLayout')
 		weapon_layout.FillDirection = Enum.FillDirection.Horizontal
-		weapon_layout.Padding = UDim.new(0, 6)
+		weapon_layout.Padding = UDim.new(0, 8)
 		weapon_layout.Parent = weapon_row
 		local weapon_icons = {}
 		for i = 1, 4 do
 			local slot = Instance.new('Frame')
-			slot.BackgroundColor3 = color.Dark(uipallet.Main, 0.05)
+			slot.BackgroundColor3 = color.Dark(uipallet.Main, 0.15)
 			slot.BorderSizePixel = 0
 			slot.LayoutOrder = i
-			slot.Size = UDim2.fromOffset(46, 46)
+			slot.Size = UDim2.fromOffset(44, 44)
 			slot.Parent = weapon_row
-			addCorner(slot, UDim.new(0, 4))
+			addCorner(slot, UDim.new(0, 6))
 			local border = Instance.new('UIStroke')
-			border.Color = color.Light(uipallet.Main, 0.15)
+			border.Color = color.Light(uipallet.Main, 0.2)
+			border.Transparency = 0.45
 			border.Parent = slot
 			local icon = Instance.new('ImageLabel')
 			icon.AnchorPoint = Vector2.new(0.5, 0.5)
 			icon.BackgroundTransparency = 1
 			icon.Position = UDim2.fromScale(0.5, 0.5)
-			icon.Size = UDim2.fromScale(0.75, 0.75)
+			icon.Size = UDim2.fromScale(0.7, 0.7)
 			icon.Image = preview_icons[i]
-			icon.ImageColor3 = color.Light(uipallet.Main, 0.55)
+			icon.ImageColor3 = color.Light(uipallet.Main, 0.6)
 			icon.ScaleType = Enum.ScaleType.Fit
 			icon.Parent = slot
 			weapon_icons[i] = icon
 		end
 		
 		local divider = Instance.new('Frame')
-		divider.BackgroundColor3 = color.Light(uipallet.Main, 0.12)
+		divider.BackgroundColor3 = color.Light(uipallet.Main, 0.14)
+		divider.BackgroundTransparency = 0.3
 		divider.BorderSizePixel = 0
-		divider.Position = UDim2.fromOffset(18, 134)
-		divider.Size = UDim2.fromOffset(204, 1)
+		divider.Position = UDim2.fromOffset(20, 134)
+		divider.Size = UDim2.fromOffset(200, 1)
 		divider.Visible = false
 		divider.Parent = Holder
 		rivals_parts[#rivals_parts + 1] = divider
 		
-		local function stat_cell(x, y, title)
+		local function stat_cell(x, y, title, value_color)
 			local label = Instance.new('TextLabel')
 			label.BackgroundTransparency = 1
 			label.FontFace = uipallet.Font
 			label.Position = UDim2.fromOffset(x, y)
-			label.Size = UDim2.fromOffset(100, 10)
+			label.Size = UDim2.fromOffset(96, 10)
 			label.Text = title
-			label.TextColor3 = color.Light(uipallet.Text, 0.28)
+			label.TextColor3 = label_text
 			label.TextSize = 9
 			label.TextXAlignment = Enum.TextXAlignment.Left
 			label.Visible = false
@@ -2044,11 +2051,11 @@ function EZ:LoadGUI()
 			local value = Instance.new('TextLabel')
 			value.BackgroundTransparency = 1
 			value.FontFace = uipallet.FontSemiBold
-			value.Position = UDim2.fromOffset(x, y + 11)
-			value.Size = UDim2.fromOffset(100, 15)
+			value.Position = UDim2.fromOffset(x, y + 12)
+			value.Size = UDim2.fromOffset(96, 16)
 			value.Text = '--'
-			value.TextColor3 = accent
-			value.TextSize = 13
+			value.TextColor3 = value_color
+			value.TextSize = 14
 			value.TextTruncate = Enum.TextTruncate.AtEnd
 			value.TextXAlignment = Enum.TextXAlignment.Left
 			value.Visible = false
@@ -2057,18 +2064,18 @@ function EZ:LoadGUI()
 			rivals_parts[#rivals_parts + 1] = value
 			return value
 		end
-		local level_value = stat_cell(18, 144, 'level')
-		local rank_value = stat_cell(122, 144, 'rank')
-		local device_value = stat_cell(18, 174, 'device')
-		local streak_value = stat_cell(122, 174, 'streak')
+		local level_value = stat_cell(20, 146, 'level', stat_text)
+		local rank_value = stat_cell(124, 146, 'rank', accent)
+		local device_value = stat_cell(20, 178, 'device', stat_text)
+		local streak_value = stat_cell(124, 178, 'streak', stat_text)
 		
 		local ratio_title = Instance.new('TextLabel')
 		ratio_title.BackgroundTransparency = 1
 		ratio_title.FontFace = uipallet.Font
-		ratio_title.Position = UDim2.fromOffset(18, 206)
+		ratio_title.Position = UDim2.fromOffset(20, 212)
 		ratio_title.Size = UDim2.fromOffset(120, 10)
 		ratio_title.Text = 'damage ratio'
-		ratio_title.TextColor3 = color.Light(uipallet.Text, 0.28)
+		ratio_title.TextColor3 = label_text
 		ratio_title.TextSize = 9
 		ratio_title.TextXAlignment = Enum.TextXAlignment.Left
 		ratio_title.Visible = false
@@ -2076,20 +2083,21 @@ function EZ:LoadGUI()
 		
 		local ratio_value = ratio_title:Clone()
 		ratio_value.FontFace = uipallet.FontSemiBold
-		ratio_value.Position = UDim2.fromOffset(94, 205)
+		ratio_value.Position = UDim2.fromOffset(80, 211)
 		ratio_value.RichText = true
-		ratio_value.Size = UDim2.fromOffset(128, 11)
-		ratio_value.Text = '50 ▲  50 ▼'
-		ratio_value.TextColor3 = color.Light(uipallet.Text, 0.3)
+		ratio_value.Size = UDim2.fromOffset(140, 12)
+		ratio_value.Text = '50 <font color="#5ad16b">▲</font>  50 <font color="#ff5a5a">▼</font>'
+		ratio_value.TextColor3 = stat_text
 		ratio_value.TextSize = 11
 		ratio_value.TextXAlignment = Enum.TextXAlignment.Right
 		ratio_value.Parent = Holder
 		
 		local ratio_bg = Instance.new('Frame')
-		ratio_bg.BackgroundColor3 = color.Dark(uipallet.Main, 0.05)
+		ratio_bg.BackgroundColor3 = color.Dark(uipallet.Main, 0.15)
 		ratio_bg.BorderSizePixel = 0
-		ratio_bg.Position = UDim2.fromOffset(18, 221)
-		ratio_bg.Size = UDim2.fromOffset(204, 4)
+		ratio_bg.ClipsDescendants = true
+		ratio_bg.Position = UDim2.fromOffset(20, 228)
+		ratio_bg.Size = UDim2.fromOffset(200, 5)
 		ratio_bg.Visible = false
 		ratio_bg.Parent = Holder
 		addCorner(ratio_bg, UDim.new(1, 0))
@@ -2097,11 +2105,16 @@ function EZ:LoadGUI()
 		rivals_parts[#rivals_parts + 1] = ratio_value
 		rivals_parts[#rivals_parts + 1] = ratio_bg
 		local ratio_fill = Instance.new('Frame')
-		ratio_fill.BackgroundColor3 = accent
+		ratio_fill.BackgroundColor3 = damage_up
 		ratio_fill.BorderSizePixel = 0
 		ratio_fill.Size = UDim2.fromScale(0.5, 1)
 		ratio_fill.Parent = ratio_bg
-		addCorner(ratio_fill, UDim.new(1, 0))
+		addCorner(ratio_fill, UDim.new(0, 2))
+		local ratio_taken = ratio_fill:Clone()
+		ratio_taken.AnchorPoint = Vector2.new(1, 0)
+		ratio_taken.BackgroundColor3 = damage_down
+		ratio_taken.Position = UDim2.fromScale(1, 0)
+		ratio_taken.Parent = ratio_bg
 		
 		local function pick(list)
 			return list[math.random(#list)]
@@ -2196,13 +2209,13 @@ function EZ:LoadGUI()
 			targetinfo.shown = (targetinfo.shown or targetinfo.ratio) + (targetinfo.ratio - (targetinfo.shown or targetinfo.ratio)) * math.min(delta * 4, 1)
 			local dealt = math.clamp(math.floor(targetinfo.shown * 100 + 0.5), 0, 100)
 		
-			level_value.Text, level_value.TextColor3 = tostring(level), accent
+			level_value.Text = tostring(level)
 			rank_value.Text, rank_value.TextColor3 = tostring(rank):lower(), accent
-			device_value.Text, device_value.TextColor3 = tostring(device), accent
-			streak_value.Text, streak_value.TextColor3 = tostring(streak), accent
+			device_value.Text = tostring(device)
+			streak_value.Text = tostring(streak)
 			ratio_value.Text = dealt..' <font color="#5ad16b">▲</font>  '..(100 - dealt)..' <font color="#ff5a5a">▼</font>'
 			ratio_fill.Size = UDim2.fromScale(targetinfo.shown, 1)
-			ratio_fill.BackgroundColor3 = accent
+			ratio_taken.Size = UDim2.fromScale(1 - targetinfo.shown, 1)
 		end
 		
 		TargetInfoOverlay:CreateFont({
