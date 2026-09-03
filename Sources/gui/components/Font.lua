@@ -3,6 +3,10 @@ local fonts = {
 	'Custom'
 }
 
+for _, name in ez_font_names do
+	table.insert(fonts, name)
+end
+
 for _, v in Enum.Font:GetEnumItems() do
 	if not table.find(fonts, v.Name) then
 		table.insert(fonts, v.Name)
@@ -21,16 +25,17 @@ fontdropdown = components.Dropdown({
 	List = fonts,
 	Function = function(val)
 		fontbox.Object.Visible = val == 'Custom' and fontdropdown.Object.Visible
-		if val ~= 'Custom' then
-			component.Value = Font.fromEnum(Enum.Font[val])
-			props.Function(component.Value)
-		else
+		if val == 'Custom' then
 			pcall(function()
 				component.Value = Font.fromId(tonumber(fontbox.Value))
 			end)
-
-			props.Function(component.Value)
+		elseif ez_fonts[val] then
+			component.Value = get_ez_font(val) or uipallet.Font
+		else
+			component.Value = Font.fromEnum(Enum.Font[val])
 		end
+
+		props.Function(component.Value)
 	end,
 	Darker = props.Darker,
 	Visible = props.Visible
