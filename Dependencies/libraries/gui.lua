@@ -2010,7 +2010,6 @@ function EZ:LoadGUI()
 		weapon_layout.Parent = weapon_row
 		local weapon_icons = {}
 		for i = 1, 4 do
-			-- slot bg acts as the border ring; inner frame is the content area, one layer below the icon
 			local slot = Instance.new('Frame')
 			slot.BackgroundColor3 = color.Light(uipallet.Main, 0.2)
 			slot.BackgroundTransparency = 0.45
