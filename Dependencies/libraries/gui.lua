@@ -1857,6 +1857,8 @@ function EZ:LoadGUI()
 		})
 		
 		local accent = Color3.fromHSV(EZ.GUIColor.Hue, EZ.GUIColor.Sat, EZ.GUIColor.Value)
+		local info_font = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.Medium)
+		local info_font_bold = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.Bold)
 		
 		local Holder = Instance.new('Frame')
 		Holder.Size = UDim2.fromOffset(240, 96)
@@ -1940,7 +1942,7 @@ function EZ:LoadGUI()
 		HealthText.BackgroundTransparency = 1
 		HealthText.Position = UDim2.fromOffset(20, 41)
 		HealthText.Size = UDim2.fromOffset(200, 13)
-		HealthText.FontFace = uipallet.FontSemiBold
+		HealthText.FontFace = info_font_bold
 		HealthText.Text = ''
 		HealthText.TextColor3 = color.Light(uipallet.Text, 0.2)
 		HealthText.TextSize = 11
@@ -2038,7 +2040,7 @@ function EZ:LoadGUI()
 		local function stat_cell(x, y, title, value_color)
 			local label = Instance.new('TextLabel')
 			label.BackgroundTransparency = 1
-			label.FontFace = uipallet.Font
+			label.FontFace = info_font
 			label.Position = UDim2.fromOffset(x, y)
 			label.Size = UDim2.fromOffset(96, 10)
 			label.Text = title
@@ -2050,7 +2052,7 @@ function EZ:LoadGUI()
 		
 			local value = Instance.new('TextLabel')
 			value.BackgroundTransparency = 1
-			value.FontFace = uipallet.FontSemiBold
+			value.FontFace = info_font_bold
 			value.Position = UDim2.fromOffset(x, y + 12)
 			value.Size = UDim2.fromOffset(96, 16)
 			value.Text = '--'
@@ -2064,14 +2066,14 @@ function EZ:LoadGUI()
 			rivals_parts[#rivals_parts + 1] = value
 			return value
 		end
-		local level_value = stat_cell(20, 146, 'level', stat_text)
+		local level_value = stat_cell(20, 146, 'level', accent)
 		local rank_value = stat_cell(124, 146, 'rank', accent)
-		local device_value = stat_cell(20, 178, 'device', stat_text)
-		local streak_value = stat_cell(124, 178, 'streak', stat_text)
+		local device_value = stat_cell(20, 178, 'device', accent)
+		local streak_value = stat_cell(124, 178, 'streak', accent)
 		
 		local ratio_title = Instance.new('TextLabel')
 		ratio_title.BackgroundTransparency = 1
-		ratio_title.FontFace = uipallet.Font
+		ratio_title.FontFace = info_font
 		ratio_title.Position = UDim2.fromOffset(20, 212)
 		ratio_title.Size = UDim2.fromOffset(120, 10)
 		ratio_title.Text = 'damage ratio'
@@ -2082,7 +2084,7 @@ function EZ:LoadGUI()
 		ratio_title.Parent = Holder
 		
 		local ratio_value = ratio_title:Clone()
-		ratio_value.FontFace = uipallet.FontSemiBold
+		ratio_value.FontFace = info_font_bold
 		ratio_value.Position = UDim2.fromOffset(80, 211)
 		ratio_value.RichText = true
 		ratio_value.Size = UDim2.fromOffset(140, 12)
@@ -2209,10 +2211,10 @@ function EZ:LoadGUI()
 			targetinfo.shown = (targetinfo.shown or targetinfo.ratio) + (targetinfo.ratio - (targetinfo.shown or targetinfo.ratio)) * math.min(delta * 4, 1)
 			local dealt = math.clamp(math.floor(targetinfo.shown * 100 + 0.5), 0, 100)
 		
-			level_value.Text = tostring(level)
+			level_value.Text, level_value.TextColor3 = tostring(level), accent
 			rank_value.Text, rank_value.TextColor3 = tostring(rank):lower(), accent
-			device_value.Text = tostring(device)
-			streak_value.Text = tostring(streak)
+			device_value.Text, device_value.TextColor3 = tostring(device), accent
+			streak_value.Text, streak_value.TextColor3 = tostring(streak), accent
 			ratio_value.Text = dealt..' <font color="#5ad16b">▲</font>  '..(100 - dealt)..' <font color="#ff5a5a">▼</font>'
 			ratio_fill.Size = UDim2.fromScale(targetinfo.shown, 1)
 			ratio_taken.Size = UDim2.fromScale(1 - targetinfo.shown, 1)
