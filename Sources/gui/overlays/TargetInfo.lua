@@ -15,6 +15,7 @@ local BorderColor
 local BKGColor
 local CustomColor
 local DisplayName
+local Holder
 
 TargetInfoOverlay = EZ:CreateOverlay({
 	Name = 'Target Hud',
@@ -27,6 +28,8 @@ TargetInfoOverlay = EZ:CreateOverlay({
 			TargetInfoOverlay:Clean(runService.RenderStepped:Connect(function()
 				targetinfo:Update()
 			end))
+		else
+			Holder.Visible = false
 		end
 	end
 })
@@ -36,7 +39,7 @@ local font_regular, font_bold = {}, {}
 -- detached from the settings window so a real target still renders with the gui off / unpinned
 local window = TargetInfoOverlay.Object
 
-local Holder = Instance.new('Frame')
+Holder = Instance.new('Frame')
 Holder.Size = UDim2.fromOffset(240, 96)
 Holder.Position = UDim2.fromOffset(0, -6)
 Holder.ZIndex = 0
