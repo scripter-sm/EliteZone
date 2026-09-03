@@ -1952,6 +1952,11 @@ function EZ:LoadGUI()
 		}
 		local local_player = cloneref(game:GetService('Players')).LocalPlayer
 		
+		local accent = '#4777b6'
+		local function hl(v)
+			return '<font color="'..accent..'">'..v..'</font>'
+		end
+		
 		local rivals
 		local function rivals_libs()
 			if rivals == nil then
@@ -1990,7 +1995,7 @@ function EZ:LoadGUI()
 		local weapon_icons = {}
 		for i = 1, 4 do
 			local slot = Instance.new('Frame')
-			slot.BackgroundColor3 = uipallet.Main
+			slot.BackgroundColor3 = color.Dark(uipallet.Main, 0.05)
 			slot.BorderSizePixel = 0
 			slot.LayoutOrder = i
 			slot.Size = UDim2.fromOffset(46, 46)
@@ -2005,6 +2010,7 @@ function EZ:LoadGUI()
 			icon.Position = UDim2.fromScale(0.5, 0.5)
 			icon.Size = UDim2.fromScale(0.75, 0.75)
 			icon.Image = preview_icons[i]
+			icon.ImageColor3 = color.Light(uipallet.Main, 0.55)
 			icon.ScaleType = Enum.ScaleType.Fit
 			icon.Parent = slot
 			weapon_icons[i] = icon
@@ -2023,11 +2029,13 @@ function EZ:LoadGUI()
 			label.Parent = rivals_box
 			return label
 		end
-		local name_line = line(8, 58, 204)
-		local stat_line = line(8, 75, 204)
-		local device_line = line(8, 92, 204)
-		local health_line = line(8, 109, 70)
-		local ratio_line = line(84, 109, 128)
+		local name_line = line(8, 56, 204)
+		local stat_line = line(8, 76, 204)
+		local health_line = line(8, 96, 204)
+		local ratio_line = line(8, 114, 204)
+		name_line.TextColor3 = Color3.new(1, 1, 1)
+		name_line.TextSize = 13
+		name_line.FontFace = uipallet.FontSemiBold
 		
 		local function pick(list)
 			return list[math.random(#list)]
@@ -2099,7 +2107,7 @@ function EZ:LoadGUI()
 		
 				local total = targetinfo.dealt + targetinfo.taken
 				targetinfo.ratio = total > 0 and targetinfo.dealt / total or 0.5
-				health_line.Text = hp and (math.floor(hp)..'/'..math.floor(max)) or '--'
+				health_line.Text = 'health  '..(hp and hl(math.floor(hp)..' / '..math.floor(max)) or hl('--'))
 			else
 				if fresh then
 					targetinfo.level = math.random(1, 50)
@@ -2118,17 +2126,16 @@ function EZ:LoadGUI()
 				local sweep = 0.5 - 0.5 * math.cos(now * 0.8)
 				Health.Size = UDim2.fromScale(sweep, 1)
 				Health.BackgroundColor3 = Color3.fromHSV(math.clamp(sweep / 2.5, 0, 1), 0.89, 0.75)
-				health_line.Text = math.floor(sweep * 100)..'/100'
+				health_line.Text = 'health  '..hl(math.floor(sweep * 100)..' / 100')
 				targetinfo.ratio = 0.5 + 0.32 * math.sin(now * 0.45)
 			end
 		
 			targetinfo.shown = (targetinfo.shown or targetinfo.ratio) + (targetinfo.ratio - (targetinfo.shown or targetinfo.ratio)) * math.min(delta * 4, 1)
 			local dealt = math.clamp(math.floor(targetinfo.shown * 100 + 0.5), 0, 100)
 		
-			name_line.Text = '@'..subject.Name
-			stat_line.Text = 'lvl '..level..'  ·  '..rank
-			device_line.Text = device..'  ·  streak '..streak
-			ratio_line.Text = dealt..' <font color="#5ad16b">▲</font>   '..(100 - dealt)..' <font color="#ff5a5a">▼</font>'
+			name_line.Text = subject.Name
+			stat_line.Text = 'level '..hl(level)..'   '..hl(rank)..'   '..hl(device)..'   streak '..hl(streak)
+			ratio_line.Text = 'damage ratio  '..hl(dealt)..' <font color="#5ad16b">▲</font>  '..hl(100 - dealt)..' <font color="#ff5a5a">▼</font>'
 		end
 		
 		TargetInfoOverlay:CreateFont({
