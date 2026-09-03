@@ -2010,6 +2010,7 @@ function EZ:LoadGUI()
 			local slot = Instance.new('Frame')
 			slot.BackgroundColor3 = color.Dark(uipallet.Main, 0.15)
 			slot.BorderSizePixel = 0
+			slot.ClipsDescendants = true
 			slot.LayoutOrder = i
 			slot.Size = UDim2.fromOffset(44, 44)
 			slot.Parent = weapon_row
@@ -2030,12 +2031,13 @@ function EZ:LoadGUI()
 			weapon_icons[i] = icon
 		end
 		
-		-- placeholder glyphs are tinted to sit quietly in the slot; real weapon renders are full-color and near-fill
+		-- placeholder glyphs sit quietly; real weapon renders bleed to the edges with a mild darken tint
+		local real_tint = Color3.fromRGB(190, 190, 190)
 		local function set_weapon_icon(i, image, is_real)
 			local icon = weapon_icons[i]
 			icon.Image = image
-			icon.ImageColor3 = is_real and Color3.new(1, 1, 1) or color.Light(uipallet.Main, 0.6)
-			icon.Size = is_real and UDim2.fromScale(0.92, 0.92) or UDim2.fromScale(0.7, 0.7)
+			icon.ImageColor3 = is_real and real_tint or color.Light(uipallet.Main, 0.6)
+			icon.Size = is_real and UDim2.fromScale(1.15, 1.15) or UDim2.fromScale(0.7, 0.7)
 		end
 		
 		local divider = Instance.new('Frame')
