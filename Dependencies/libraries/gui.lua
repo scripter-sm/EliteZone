@@ -1862,7 +1862,7 @@ function EZ:LoadGUI()
 		Holder.Size = UDim2.fromOffset(240, 96)
 		Holder.Position = UDim2.fromOffset(0, -6)
 		Holder.ZIndex = 0
-		Holder.BackgroundColor3 = color.Dark(uipallet.Main, 0.1)
+		Holder.BackgroundColor3 = color.Dark(uipallet.Main, 0.05)
 		Holder.BackgroundTransparency = 0.5
 		Holder.Parent = TargetInfoOverlay.Children
 		local BlurHolder = addBlur(Holder, nil, true)
@@ -1983,20 +1983,14 @@ function EZ:LoadGUI()
 			return rivals
 		end
 		
-		local rivals_box = Instance.new('Frame')
-		rivals_box.Name = 'Rivals'
-		rivals_box.BackgroundTransparency = 1
-		rivals_box.BorderSizePixel = 0
-		rivals_box.Position = UDim2.fromOffset(10, 74)
-		rivals_box.Size = UDim2.fromOffset(220, 160)
-		rivals_box.Visible = false
-		rivals_box.Parent = Holder
-		addCorner(rivals_box)
+		local rivals_parts = {}
 		local weapon_row = Instance.new('Frame')
 		weapon_row.BackgroundTransparency = 1
-		weapon_row.Position = UDim2.fromOffset(8, 8)
+		weapon_row.Position = UDim2.fromOffset(18, 82)
 		weapon_row.Size = UDim2.fromOffset(204, 46)
-		weapon_row.Parent = rivals_box
+		weapon_row.Visible = false
+		weapon_row.Parent = Holder
+		rivals_parts[#rivals_parts + 1] = weapon_row
 		local weapon_layout = Instance.new('UIListLayout')
 		weapon_layout.FillDirection = Enum.FillDirection.Horizontal
 		weapon_layout.Padding = UDim.new(0, 6)
@@ -2028,9 +2022,11 @@ function EZ:LoadGUI()
 		local divider = Instance.new('Frame')
 		divider.BackgroundColor3 = color.Light(uipallet.Main, 0.12)
 		divider.BorderSizePixel = 0
-		divider.Position = UDim2.fromOffset(8, 60)
+		divider.Position = UDim2.fromOffset(18, 134)
 		divider.Size = UDim2.fromOffset(204, 1)
-		divider.Parent = rivals_box
+		divider.Visible = false
+		divider.Parent = Holder
+		rivals_parts[#rivals_parts + 1] = divider
 		
 		local function stat_cell(x, y, title)
 			local label = Instance.new('TextLabel')
@@ -2042,7 +2038,8 @@ function EZ:LoadGUI()
 			label.TextColor3 = color.Light(uipallet.Text, 0.28)
 			label.TextSize = 9
 			label.TextXAlignment = Enum.TextXAlignment.Left
-			label.Parent = rivals_box
+			label.Visible = false
+			label.Parent = Holder
 		
 			local value = Instance.new('TextLabel')
 			value.BackgroundTransparency = 1
@@ -2054,43 +2051,51 @@ function EZ:LoadGUI()
 			value.TextSize = 13
 			value.TextTruncate = Enum.TextTruncate.AtEnd
 			value.TextXAlignment = Enum.TextXAlignment.Left
-			value.Parent = rivals_box
+			value.Visible = false
+			value.Parent = Holder
+			rivals_parts[#rivals_parts + 1] = label
+			rivals_parts[#rivals_parts + 1] = value
 			return value
 		end
-		local level_value = stat_cell(8, 70, 'level')
-		local rank_value = stat_cell(112, 70, 'rank')
-		local device_value = stat_cell(8, 100, 'device')
-		local streak_value = stat_cell(112, 100, 'streak')
+		local level_value = stat_cell(18, 144, 'level')
+		local rank_value = stat_cell(122, 144, 'rank')
+		local device_value = stat_cell(18, 174, 'device')
+		local streak_value = stat_cell(122, 174, 'streak')
 		
 		local ratio_title = Instance.new('TextLabel')
 		ratio_title.BackgroundTransparency = 1
 		ratio_title.FontFace = uipallet.Font
-		ratio_title.Position = UDim2.fromOffset(8, 132)
+		ratio_title.Position = UDim2.fromOffset(18, 206)
 		ratio_title.Size = UDim2.fromOffset(120, 10)
 		ratio_title.Text = 'damage ratio'
 		ratio_title.TextColor3 = color.Light(uipallet.Text, 0.28)
 		ratio_title.TextSize = 9
 		ratio_title.TextXAlignment = Enum.TextXAlignment.Left
-		ratio_title.Parent = rivals_box
+		ratio_title.Visible = false
+		ratio_title.Parent = Holder
 		
 		local ratio_value = ratio_title:Clone()
 		ratio_value.FontFace = uipallet.FontSemiBold
-		ratio_value.Position = UDim2.fromOffset(84, 131)
+		ratio_value.Position = UDim2.fromOffset(94, 205)
 		ratio_value.RichText = true
 		ratio_value.Size = UDim2.fromOffset(128, 11)
 		ratio_value.Text = '50 ▲  50 ▼'
 		ratio_value.TextColor3 = color.Light(uipallet.Text, 0.3)
 		ratio_value.TextSize = 11
 		ratio_value.TextXAlignment = Enum.TextXAlignment.Right
-		ratio_value.Parent = rivals_box
+		ratio_value.Parent = Holder
 		
 		local ratio_bg = Instance.new('Frame')
 		ratio_bg.BackgroundColor3 = color.Dark(uipallet.Main, 0.05)
 		ratio_bg.BorderSizePixel = 0
-		ratio_bg.Position = UDim2.fromOffset(8, 147)
+		ratio_bg.Position = UDim2.fromOffset(18, 221)
 		ratio_bg.Size = UDim2.fromOffset(204, 4)
-		ratio_bg.Parent = rivals_box
+		ratio_bg.Visible = false
+		ratio_bg.Parent = Holder
 		addCorner(ratio_bg, UDim.new(1, 0))
+		rivals_parts[#rivals_parts + 1] = ratio_title
+		rivals_parts[#rivals_parts + 1] = ratio_value
+		rivals_parts[#rivals_parts + 1] = ratio_bg
 		local ratio_fill = Instance.new('Frame')
 		ratio_fill.BackgroundColor3 = accent
 		ratio_fill.BorderSizePixel = 0
@@ -2243,7 +2248,7 @@ function EZ:LoadGUI()
 					Headshot.BackgroundColor3 = Color3.fromHSV(BKGColor.Hue, BKGColor.Sat, math.max(BKGColor.Value - 0.1, 0.075))
 					HealthBKG.BackgroundColor3 = Headshot.BackgroundColor3
 				else
-					Holder.BackgroundColor3 = color.Dark(uipallet.Main, 0.1)
+					Holder.BackgroundColor3 = color.Dark(uipallet.Main, 0.05)
 					Headshot.BackgroundColor3 = uipallet.Main
 					HealthBKG.BackgroundColor3 = uipallet.Main
 				end
@@ -2289,7 +2294,9 @@ function EZ:LoadGUI()
 			local is_rivals = EZ.game == 'Rivals'
 			Holder.Position = UDim2.fromOffset(0, tucked and -6 or 0)
 			Holder.Size = UDim2.fromOffset(240, (tucked and 96 or 90) + (is_rivals and rivals_extra_height or 0))
-			rivals_box.Visible = is_rivals or false
+			for _, part in rivals_parts do
+				part.Visible = is_rivals
+			end
 		
 			local cloned = table.clone(self.Targets)
 			for index, expire in cloned do
