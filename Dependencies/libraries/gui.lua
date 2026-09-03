@@ -2178,20 +2178,13 @@ function EZ:LoadGUI()
 					targetinfo.dealt, targetinfo.taken = 0, 0
 					targetinfo.last_hp, targetinfo.own_hp = nil, nil
 					targetinfo.weapon_time = 0
-					targetinfo.weapon_seen = {}
 				end
 		
-				-- GetEquippedItems only reports what's replicated so far (usually just the held item), so
-				-- the loadout is built up across polls instead of trusting any single read as the full set
+				-- fighter.Data.LastPickedWeapons is a stable ordered array of the full loadout, replicated
+				-- to every client the moment weapons are picked, so no polling accumulation is needed
 				if fighter and now - targetinfo.weapon_time > 0.3 then
 					targetinfo.weapon_time = now
-					local seen = targetinfo.weapon_seen
-					for item in fighter:GetEquippedItems() or {} do
-						if not table.find(seen, item.Name) and #seen < 4 then
-							seen[#seen + 1] = item.Name
-						end
-					end
-					show_weapons(seen, libs.items)
+					show_weapons(fighter.Data and fighter.Data.LastPickedWeapons or {}, libs.items)
 				end
 		
 				local hp = fighter and fighter:GetHealth()
