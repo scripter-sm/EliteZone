@@ -186,7 +186,7 @@ weapon_layout.Parent = weapon_row
 local weapon_icons = {}
 for i = 1, 4 do
 	local slot = Instance.new('Frame')
-	slot.BackgroundColor3 = color.Light(uipallet.Main, 0.08)
+	slot.BackgroundColor3 = color.Dark(uipallet.Main, 0.15)
 	slot.BorderSizePixel = 0
 	slot.ClipsDescendants = true
 	slot.LayoutOrder = i
@@ -209,8 +209,12 @@ for i = 1, 4 do
 	weapon_icons[i] = icon
 end
 
-local function set_weapon_icon(i, image)
-	weapon_icons[i].Image = image
+-- real weapon renders get full colors + a bigger fill; placeholder glyphs stay muted and smaller
+local function set_weapon_icon(i, image, is_real)
+	local icon = weapon_icons[i]
+	icon.Image = image
+	icon.ImageColor3 = is_real and Color3.new(1, 1, 1) or color.Light(uipallet.Main, 0.6)
+	icon.Size = is_real and UDim2.fromScale(1.9, 1.9) or UDim2.fromScale(1.5, 1.5)
 end
 
 local divider = Instance.new('Frame')
@@ -320,7 +324,11 @@ local function show_weapons(names, items)
 			setthreadidentity(8)
 		end
 
-		set_weapon_icon(i, image ~= '' and image or preview_icons[i])
+		if image ~= '' then
+			set_weapon_icon(i, image, true)
+		else
+			set_weapon_icon(i, preview_icons[i], false)
+		end
 	end
 end
 
@@ -377,7 +385,7 @@ local function update_rivals(player)
 			targetinfo.device = pick(device_pool)
 			targetinfo.streak = math.random(0, 30)
 			for i = 1, 4 do
-				set_weapon_icon(i, preview_icons[i])
+				set_weapon_icon(i, preview_icons[i], false)
 			end
 
 			Name.Text = DisplayName.Enabled and subject.DisplayName or subject.Name
