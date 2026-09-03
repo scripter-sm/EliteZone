@@ -32,8 +32,7 @@ TargetInfoOverlay = EZ:CreateOverlay({
 })
 
 local accent = Color3.fromHSV(EZ.GUIColor.Hue, EZ.GUIColor.Sat, EZ.GUIColor.Value)
-local info_font = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.Medium)
-local info_font_bold = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.Bold)
+local font_regular, font_bold = {}, {}
 
 local Holder = Instance.new('Frame')
 Holder.Size = UDim2.fromOffset(240, 96)
@@ -84,6 +83,7 @@ for _, prop in {'Size', 'Text', 'FontFace'} do
 	end)
 end
 Name.Parent = Holder
+font_regular[#font_regular + 1] = Name
 local HealthBKG = Instance.new('Frame')
 HealthBKG.Name = 'HealthBKG'
 HealthBKG.Size = UDim2.fromOffset(200, 9)
@@ -117,7 +117,8 @@ HealthText.Name = 'HealthText'
 HealthText.BackgroundTransparency = 1
 HealthText.Position = UDim2.fromOffset(20, 41)
 HealthText.Size = UDim2.fromOffset(200, 13)
-HealthText.FontFace = info_font_bold
+HealthText.FontFace = uipallet.FontSemiBold
+font_bold[#font_bold + 1] = HealthText
 HealthText.Text = ''
 HealthText.TextColor3 = color.Light(uipallet.Text, 0.2)
 HealthText.TextSize = 11
@@ -215,7 +216,7 @@ rivals_parts[#rivals_parts + 1] = divider
 local function stat_cell(x, y, title, value_color)
 	local label = Instance.new('TextLabel')
 	label.BackgroundTransparency = 1
-	label.FontFace = info_font
+	label.FontFace = uipallet.Font
 	label.Position = UDim2.fromOffset(x, y)
 	label.Size = UDim2.fromOffset(96, 10)
 	label.Text = title
@@ -224,10 +225,11 @@ local function stat_cell(x, y, title, value_color)
 	label.TextXAlignment = Enum.TextXAlignment.Left
 	label.Visible = false
 	label.Parent = Holder
+	font_regular[#font_regular + 1] = label
 
 	local value = Instance.new('TextLabel')
 	value.BackgroundTransparency = 1
-	value.FontFace = info_font_bold
+	value.FontFace = uipallet.FontSemiBold
 	value.Position = UDim2.fromOffset(x, y + 12)
 	value.Size = UDim2.fromOffset(96, 16)
 	value.Text = '--'
@@ -237,6 +239,7 @@ local function stat_cell(x, y, title, value_color)
 	value.TextXAlignment = Enum.TextXAlignment.Left
 	value.Visible = false
 	value.Parent = Holder
+	font_bold[#font_bold + 1] = value
 	rivals_parts[#rivals_parts + 1] = label
 	rivals_parts[#rivals_parts + 1] = value
 	return value
@@ -248,7 +251,7 @@ local streak_value = stat_cell(124, 178, 'streak', accent)
 
 local ratio_title = Instance.new('TextLabel')
 ratio_title.BackgroundTransparency = 1
-ratio_title.FontFace = info_font
+ratio_title.FontFace = uipallet.Font
 ratio_title.Position = UDim2.fromOffset(20, 212)
 ratio_title.Size = UDim2.fromOffset(120, 10)
 ratio_title.Text = 'damage ratio'
@@ -259,7 +262,7 @@ ratio_title.Visible = false
 ratio_title.Parent = Holder
 
 local ratio_value = ratio_title:Clone()
-ratio_value.FontFace = info_font_bold
+ratio_value.FontFace = uipallet.FontSemiBold
 ratio_value.Position = UDim2.fromOffset(80, 211)
 ratio_value.RichText = true
 ratio_value.Size = UDim2.fromOffset(140, 12)
@@ -268,6 +271,8 @@ ratio_value.TextColor3 = stat_text
 ratio_value.TextSize = 11
 ratio_value.TextXAlignment = Enum.TextXAlignment.Right
 ratio_value.Parent = Holder
+font_regular[#font_regular + 1] = ratio_title
+font_bold[#font_bold + 1] = ratio_value
 
 local ratio_bg = Instance.new('Frame')
 ratio_bg.BackgroundColor3 = color.Dark(uipallet.Main, 0.15)
@@ -399,7 +404,13 @@ TargetInfoOverlay:CreateFont({
 	Name = 'Font',
 	Default = 'Arial',
 	Function = function(val)
-		Name.FontFace = val
+		local bold = Font.new(val.Family, Enum.FontWeight.SemiBold)
+		for _, obj in font_regular do
+			obj.FontFace = val
+		end
+		for _, obj in font_bold do
+			obj.FontFace = bold
+		end
 	end
 })
 DisplayName = TargetInfoOverlay:CreateToggle({
