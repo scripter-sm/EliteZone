@@ -183,7 +183,7 @@ weapon_layout.Parent = weapon_row
 local weapon_icons = {}
 for i = 1, 4 do
 	local slot = Instance.new('Frame')
-	slot.BackgroundColor3 = color.Dark(uipallet.Main, 0.15)
+	slot.BackgroundColor3 = color.Light(uipallet.Main, 0.25)
 	slot.BorderSizePixel = 0
 	slot.ClipsDescendants = true
 	slot.LayoutOrder = i
@@ -206,13 +206,12 @@ for i = 1, 4 do
 	weapon_icons[i] = icon
 end
 
--- placeholder glyphs sit quietly; real weapon renders bleed to the edges with a mild darken tint
-local real_tint = Color3.fromRGB(190, 190, 190)
+-- real weapon renders keep their true colors and overflow the slot for a full bleed look
 local function set_weapon_icon(i, image, is_real)
 	local icon = weapon_icons[i]
 	icon.Image = image
-	icon.ImageColor3 = is_real and real_tint or color.Light(uipallet.Main, 0.6)
-	icon.Size = is_real and UDim2.fromScale(1.15, 1.15) or UDim2.fromScale(0.7, 0.7)
+	icon.ImageColor3 = is_real and Color3.new(1, 1, 1) or color.Light(uipallet.Main, 0.6)
+	icon.Size = is_real and UDim2.fromScale(1.35, 1.35) or UDim2.fromScale(0.7, 0.7)
 end
 
 local divider = Instance.new('Frame')
