@@ -1856,6 +1856,8 @@ function EZ:LoadGUI()
 			end
 		})
 		
+		local accent = Color3.fromHSV(EZ.GUIColor.Hue, EZ.GUIColor.Sat, EZ.GUIColor.Value)
+		
 		local Holder = Instance.new('Frame')
 		Holder.Size = UDim2.fromOffset(240, 96)
 		Holder.Position = UDim2.fromOffset(0, -6)
@@ -1916,7 +1918,7 @@ function EZ:LoadGUI()
 		local Health = HealthBKG:Clone()
 		Health.Size = UDim2.fromScale(0.8, 1)
 		Health.Position = UDim2.new()
-		Health.BackgroundColor3 = Color3.fromHSV(1 / 2.5, 0.89, 0.75)
+		Health.BackgroundColor3 = accent
 		Health.Parent = HealthBKG
 		Health:GetPropertyChangedSignal('Size'):Connect(function()
 			Health.Visible = Health.Size.X.Scale > 0.01
@@ -1964,8 +1966,6 @@ function EZ:LoadGUI()
 		}
 		local local_player = cloneref(game:GetService('Players')).LocalPlayer
 		
-		local accent = Color3.fromHSV(EZ.GUIColor.Hue, EZ.GUIColor.Sat, EZ.GUIColor.Value)
-		
 		local rivals
 		local function rivals_libs()
 			if rivals == nil then
@@ -1985,7 +1985,7 @@ function EZ:LoadGUI()
 		
 		local rivals_box = Instance.new('Frame')
 		rivals_box.Name = 'Rivals'
-		rivals_box.BackgroundColor3 = color.Dark(uipallet.Main, 0.05)
+		rivals_box.BackgroundTransparency = 1
 		rivals_box.BorderSizePixel = 0
 		rivals_box.Position = UDim2.fromOffset(10, 74)
 		rivals_box.Size = UDim2.fromOffset(220, 160)
@@ -2184,7 +2184,6 @@ function EZ:LoadGUI()
 		
 				local sweep = 0.5 - 0.5 * math.cos(now * 0.8)
 				Health.Size = UDim2.fromScale(sweep, 1)
-				Health.BackgroundColor3 = Color3.fromHSV(math.clamp(sweep / 2.5, 0, 1), 0.89, 0.75)
 				HealthText.Text = math.floor(sweep * 100)..' / 100'
 				targetinfo.ratio = 0.5 + 0.32 * math.sin(now * 0.45)
 			end
@@ -2192,7 +2191,6 @@ function EZ:LoadGUI()
 			targetinfo.shown = (targetinfo.shown or targetinfo.ratio) + (targetinfo.ratio - (targetinfo.shown or targetinfo.ratio)) * math.min(delta * 4, 1)
 			local dealt = math.clamp(math.floor(targetinfo.shown * 100 + 0.5), 0, 100)
 		
-			accent = Color3.fromHSV(EZ.GUIColor.Hue, EZ.GUIColor.Sat, EZ.GUIColor.Value)
 			level_value.Text, level_value.TextColor3 = tostring(level), accent
 			rank_value.Text, rank_value.TextColor3 = tostring(rank):lower(), accent
 			device_value.Text, device_value.TextColor3 = tostring(device), accent
@@ -2284,6 +2282,9 @@ function EZ:LoadGUI()
 			local entitylib = EZ.Libraries
 			if not entitylib then return end
 		
+			accent = Color3.fromHSV(EZ.GUIColor.Hue, EZ.GUIColor.Sat, EZ.GUIColor.Value)
+			Health.BackgroundColor3 = accent
+		
 			local tucked = clickgui.Visible
 			local is_rivals = EZ.game == 'Rivals'
 			Holder.Position = UDim2.fromOffset(0, tucked and -6 or 0)
@@ -2339,7 +2340,7 @@ function EZ:LoadGUI()
 					HealthText.Text = math.floor(entity.Health)..' / '..math.floor(entity.MaxHealth)
 		
 					tween:Tween(Health, TweenInfo.new(0.3), {
-						Size = UDim2.fromScale(math.min(percent, 1), 1), BackgroundColor3 = Color3.fromHSV(math.clamp(percent / 2.5, 0, 1), 0.89, 0.75)
+						Size = UDim2.fromScale(math.min(percent, 1), 1)
 					})
 		
 					tween:Tween(Armor, TweenInfo.new(0.3), {
