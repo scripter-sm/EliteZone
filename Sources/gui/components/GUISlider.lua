@@ -105,9 +105,16 @@ svmap.BorderSizePixel = 0
 svmap.Position = UDim2.fromOffset(10, 45)
 svmap.Size = UDim2.fromOffset(180, 130)
 svmap.ZIndex = 7
-svmap.Image = 'rbxassetid://4155801252'
+svmap.ClipsDescendants = true
 svmap.Parent = picker
 addCorner(svmap)
+local svgradient = Instance.new('ImageLabel')
+svgradient.BackgroundTransparency = 1
+svgradient.Image = 'rbxassetid://4155801252'
+svgradient.Position = UDim2.fromOffset(-1, -1)
+svgradient.Size = UDim2.new(1, 2, 1, 2)
+svgradient.ZIndex = 7
+svgradient.Parent = svmap
 local svcursor = Instance.new('Frame')
 svcursor.AnchorPoint = Vector2.new(0.5, 0.5)
 svcursor.BackgroundColor3 = Color3.fromHSV(component.Hue, component.Sat, component.Value)
