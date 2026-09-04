@@ -304,25 +304,40 @@ local ratio_bg = Instance.new('Frame')
 ratio_bg.BackgroundColor3 = color.Dark(uipallet.Main, 0.15)
 ratio_bg.BorderSizePixel = 0
 ratio_bg.ClipsDescendants = true
-ratio_bg.Position = UDim2.fromOffset(20, 228)
-ratio_bg.Size = UDim2.fromOffset(200, 5)
+ratio_bg.Position = UDim2.fromOffset(20, 227)
+ratio_bg.Size = UDim2.fromOffset(200, 7)
 ratio_bg.Visible = false
 ratio_bg.Parent = Holder
 addCorner(ratio_bg, UDim.new(1, 0))
 rivals_parts[#rivals_parts + 1] = ratio_title
 rivals_parts[#rivals_parts + 1] = ratio_value
 rivals_parts[#rivals_parts + 1] = ratio_bg
+-- one bar: green underneath the full width, red laid over it from the right, so the two colours
+-- divide at a single flush edge instead of being two shapes that have to meet
 local ratio_fill = Instance.new('Frame')
 ratio_fill.BackgroundColor3 = damage_up
 ratio_fill.BorderSizePixel = 0
-ratio_fill.Size = UDim2.fromScale(0.5, 1)
+ratio_fill.Size = UDim2.fromScale(1, 1)
 ratio_fill.Parent = ratio_bg
-addCorner(ratio_fill, UDim.new(0, 2))
+local shade = Instance.new('UIGradient')
+shade.Color = ColorSequence.new(Color3.fromRGB(255, 255, 255), Color3.fromRGB(188, 188, 188))
+shade.Rotation = 90
+shade.Parent = ratio_fill
 local ratio_taken = ratio_fill:Clone()
 ratio_taken.AnchorPoint = Vector2.new(1, 0)
 ratio_taken.BackgroundColor3 = damage_down
 ratio_taken.Position = UDim2.fromScale(1, 0)
+ratio_taken.Size = UDim2.fromScale(0.5, 1)
+ratio_taken.ZIndex = 2
 ratio_taken.Parent = ratio_bg
+local ratio_seam = Instance.new('Frame')
+ratio_seam.AnchorPoint = Vector2.new(0.5, 0)
+ratio_seam.BackgroundColor3 = color.Dark(uipallet.Main, 0.15)
+ratio_seam.BorderSizePixel = 0
+ratio_seam.Position = UDim2.fromScale(0.5, 0)
+ratio_seam.Size = UDim2.new(0, 2, 1, 0)
+ratio_seam.ZIndex = 3
+ratio_seam.Parent = ratio_bg
 
 local function pick(list)
 	return list[math.random(#list)]
@@ -425,8 +440,8 @@ local function update_rivals(player)
 	device_value.Text, device_value.TextColor3 = tostring(device), accent
 	streak_value.Text, streak_value.TextColor3 = tostring(streak), accent
 	ratio_value.Text = math.floor(targetinfo.dealt + 0.5)..' <font color="#5ad16b">▲</font>  '..math.floor(targetinfo.taken + 0.5)..' <font color="#ff5a5a">▼</font>'
-	ratio_fill.Size = UDim2.fromScale(targetinfo.shown, 1)
 	ratio_taken.Size = UDim2.fromScale(1 - targetinfo.shown, 1)
+	ratio_seam.Position = UDim2.fromScale(targetinfo.shown, 0)
 end
 
 TargetInfoOverlay:CreateFont({
