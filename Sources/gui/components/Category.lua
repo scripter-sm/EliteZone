@@ -1,3 +1,10 @@
+local bundledIcon = props.Icon and EZ.CategoryIcons[props.Icon]
+if bundledIcon then
+	props.Icon = get_ez_asset(bundledIcon.Asset)
+	props.Size = props.Size or bundledIcon.Size
+end
+props.Size = props.Size or UDim2.fromOffset(14, 14)
+
 local component = {
 	Expanded = false,
 	Name = props.Name,
@@ -242,6 +249,7 @@ component.Button = EZ.Categories.Main:CreateGUIButton({
 	Name = props.Name,
 	Icon = props.Icon,
 	Size = props.Size,
+	LayoutOrder = props.LayoutOrder or getTableSize(EZ.Categories),
 	Window = window
 })
 

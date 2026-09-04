@@ -237,6 +237,34 @@ end
 
 getezasset = get_ez_asset
 
+-- icons a script can pick from by name, sized to the artwork
+EZ.CategoryIcons = {
+	combat = {Asset = 'Elite Zone/Assets/combat.png', Size = UDim2.fromOffset(13, 14)},
+	blatant = {Asset = 'Elite Zone/Assets/blatant.png', Size = UDim2.fromOffset(14, 14)},
+	render = {Asset = 'Elite Zone/Assets/render.png', Size = UDim2.fromOffset(15, 14)},
+	utility = {Asset = 'Elite Zone/Assets/utility.png', Size = UDim2.fromOffset(15, 14)},
+	world = {Asset = 'Elite Zone/Assets/world.png', Size = UDim2.fromOffset(14, 14)},
+	inventory = {Asset = 'Elite Zone/Assets/inventory.png', Size = UDim2.fromOffset(15, 14)},
+	aim = {Asset = 'Elite Zone/Assets/aim.png', Size = UDim2.fromOffset(18, 12)},
+	friends = {Asset = 'Elite Zone/Assets/friends.png', Size = UDim2.fromOffset(17, 16)},
+	players = {Asset = 'Elite Zone/Assets/players.png', Size = UDim2.fromOffset(16, 16)},
+	npcs = {Asset = 'Elite Zone/Assets/npcs.png', Size = UDim2.fromOffset(12, 16)},
+	radar = {Asset = 'Elite Zone/Assets/radar.png', Size = UDim2.fromOffset(14, 14)},
+	range = {Asset = 'Elite Zone/Assets/range.png', Size = UDim2.fromOffset(9, 16)},
+	targetinfo = {Asset = 'Elite Zone/Assets/targetinfo.png', Size = UDim2.fromOffset(14, 14)},
+	textgui = {Asset = 'Elite Zone/Assets/textgui.png', Size = UDim2.fromOffset(16, 12)},
+	notification = {Asset = 'Elite Zone/Assets/notification.png', Size = UDim2.fromOffset(15, 15)},
+	search = {Asset = 'Elite Zone/Assets/search.png', Size = UDim2.fromOffset(14, 14)},
+	settings = {Asset = 'Elite Zone/Assets/settings.png', Size = UDim2.fromOffset(14, 14)},
+	configs = {Asset = 'Elite Zone/Assets/configs.png', Size = UDim2.fromOffset(17, 10)},
+	pin = {Asset = 'Elite Zone/Assets/pin.png', Size = UDim2.fromOffset(14, 14)},
+	spotify = {Asset = 'Elite Zone/Assets/spotify.png', Size = UDim2.fromOffset(16, 16)},
+	overlays = {Asset = 'Elite Zone/Assets/overlays.png', Size = UDim2.fromOffset(14, 14)},
+	theme = {Asset = 'Elite Zone/Assets/theme.png', Size = UDim2.fromOffset(26, 12)},
+	add = {Asset = 'Elite Zone/Assets/add.png', Size = UDim2.fromOffset(16, 16)},
+	edit = {Asset = 'Elite Zone/Assets/edit.png', Size = UDim2.fromOffset(10, 10)}
+}
+
 
 local function getfontbounds(text, size, font)
 	fontsize.Text = text
@@ -899,42 +927,15 @@ function EZ:LoadGUI()
 	scaledgui.Size = UDim2.fromScale(1 / scale.Scale, 1 / scale.Scale)
 	components.GUI({})
 	
-	EZ:CreateCategory({
-		Name = 'Combat',
-		Icon = get_ez_asset('Elite Zone/Assets/combat.png'),
-		Size = UDim2.fromOffset(13, 14)
-	})
-	EZ:CreateCategory({
-		Name = 'Blatant',
-		Icon = get_ez_asset('Elite Zone/Assets/blatant.png'),
-		Size = UDim2.fromOffset(14, 14)
-	})
-	EZ:CreateCategory({
-		Name = 'Render',
-		Icon = get_ez_asset('Elite Zone/Assets/render.png'),
-		Size = UDim2.fromOffset(15, 14)
-	})
-	EZ:CreateCategory({
-		Name = 'Utility',
-		Icon = get_ez_asset('Elite Zone/Assets/utility.png'),
-		Size = UDim2.fromOffset(15, 14)
-	})
-	EZ:CreateCategory({
-		Name = 'World',
-		Icon = get_ez_asset('Elite Zone/Assets/world.png'),
-		Size = UDim2.fromOffset(14, 14)
-	})
-	EZ:CreateCategory({
-		Name = 'Inventory',
-		Icon = get_ez_asset('Elite Zone/Assets/inventory.png'),
-		Size = UDim2.fromOffset(15, 14)
-	})
+	-- the misc block always sits under whatever categories the script creates
 	EZ.Categories.Main:CreateDivider({
-		Text = 'misc'
+		Text = 'misc',
+		LayoutOrder = 999
 	})
 	
 	EZ:CreateCategoryList({
 		Name = 'configs',
+		LayoutOrder = 1000,
 		Title = 'Configs',
 		Icon = get_ez_asset('Elite Zone/Assets/configs.png'),
 		Size = UDim2.fromOffset(17, 10),
@@ -3163,6 +3164,13 @@ components = {
 		
 	end,
 	Category = function(props, children, api)
+		local bundledIcon = props.Icon and EZ.CategoryIcons[props.Icon]
+		if bundledIcon then
+			props.Icon = get_ez_asset(bundledIcon.Asset)
+			props.Size = props.Size or bundledIcon.Size
+		end
+		props.Size = props.Size or UDim2.fromOffset(14, 14)
+		
 		local component = {
 			Expanded = false,
 			Name = props.Name,
@@ -3407,6 +3415,7 @@ components = {
 			Name = props.Name,
 			Icon = props.Icon,
 			Size = props.Size,
+			LayoutOrder = props.LayoutOrder or getTableSize(EZ.Categories),
 			Window = window
 		})
 		
@@ -4110,6 +4119,7 @@ components = {
 			Title = props.Title,
 			Icon = props.CategoryIcon,
 			Size = props.CategorySize,
+			LayoutOrder = props.LayoutOrder or getTableSize(EZ.Categories),
 			Window = window
 		})
 		
@@ -4597,6 +4607,7 @@ components = {
 		divider.Size = UDim2.new(1, 0, 0, 1)
 		divider.BackgroundColor3 = color.Light(uipallet.Main, 0.02)
 		divider.BorderSizePixel = 0
+		divider.LayoutOrder = props and props.LayoutOrder or 0
 		divider.Parent = children
 		
 		if props and props.Text then
@@ -4608,6 +4619,7 @@ components = {
 			label.TextColor3 = color.Dark(uipallet.Text, 0.43)
 			label.TextSize = 9
 			label.FontFace = uipallet.Font
+			label.LayoutOrder = props.LayoutOrder or 0
 			label.Parent = children
 			divider.BackgroundTransparency = 1
 		
@@ -5017,6 +5029,7 @@ components = {
 		button.BackgroundColor3 = uipallet.Main
 		button.BorderSizePixel = 0
 		button.FontFace = uipallet.Font
+		button.LayoutOrder = props.LayoutOrder or component.Index
 		button.Name = props.Name
 		button.Size = UDim2.fromOffset(220, 40)
 		button.Text = (props.Icon and string.rep(' ', 39) or props.Window and string.rep(' ', 17) or string.rep(' ', 10))..(props.Title or props.Name)
@@ -6674,6 +6687,7 @@ components = {
 		bar.Size = UDim2.fromOffset(220, 36)
 		bar.BackgroundColor3 = uipallet.Main
 		bar.BorderSizePixel = 0
+		bar.LayoutOrder = props and props.LayoutOrder or 1001
 		bar.Parent = children
 		components.Divider(nil, bar)
 		local button = Instance.new('ImageButton')

@@ -72,42 +72,15 @@ scale.Parent = scaledgui
 scaledgui.Size = UDim2.fromScale(1 / scale.Scale, 1 / scale.Scale)
 components.GUI({})
 
-EZ:CreateCategory({
-	Name = 'Combat',
-	Icon = get_ez_asset('Elite Zone/Assets/combat.png'),
-	Size = UDim2.fromOffset(13, 14)
-})
-EZ:CreateCategory({
-	Name = 'Blatant',
-	Icon = get_ez_asset('Elite Zone/Assets/blatant.png'),
-	Size = UDim2.fromOffset(14, 14)
-})
-EZ:CreateCategory({
-	Name = 'Render',
-	Icon = get_ez_asset('Elite Zone/Assets/render.png'),
-	Size = UDim2.fromOffset(15, 14)
-})
-EZ:CreateCategory({
-	Name = 'Utility',
-	Icon = get_ez_asset('Elite Zone/Assets/utility.png'),
-	Size = UDim2.fromOffset(15, 14)
-})
-EZ:CreateCategory({
-	Name = 'World',
-	Icon = get_ez_asset('Elite Zone/Assets/world.png'),
-	Size = UDim2.fromOffset(14, 14)
-})
-EZ:CreateCategory({
-	Name = 'Inventory',
-	Icon = get_ez_asset('Elite Zone/Assets/inventory.png'),
-	Size = UDim2.fromOffset(15, 14)
-})
+-- the misc block always sits under whatever categories the script creates
 EZ.Categories.Main:CreateDivider({
-	Text = 'misc'
+	Text = 'misc',
+	LayoutOrder = 999
 })
 
 EZ:CreateCategoryList({
 	Name = 'configs',
+	LayoutOrder = 1000,
 	Title = 'Configs',
 	Icon = get_ez_asset('Elite Zone/Assets/configs.png'),
 	Size = UDim2.fromOffset(17, 10),

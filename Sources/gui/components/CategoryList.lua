@@ -691,6 +691,7 @@ component.Button = EZ.Categories.Main:CreateGUIButton({
 	Title = props.Title,
 	Icon = props.CategoryIcon,
 	Size = props.CategorySize,
+	LayoutOrder = props.LayoutOrder or getTableSize(EZ.Categories),
 	Window = window
 })
 

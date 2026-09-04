@@ -9,6 +9,7 @@ button.AutoButtonColor = false
 button.BackgroundColor3 = uipallet.Main
 button.BorderSizePixel = 0
 button.FontFace = uipallet.Font
+button.LayoutOrder = props.LayoutOrder or component.Index
 button.Name = props.Name
 button.Size = UDim2.fromOffset(220, 40)
 button.Text = (props.Icon and string.rep(' ', 39) or props.Window and string.rep(' ', 17) or string.rep(' ', 10))..(props.Title or props.Name)

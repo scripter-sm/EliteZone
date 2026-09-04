@@ -8,6 +8,7 @@ bar.Name = 'Overlays'
 bar.Size = UDim2.fromOffset(220, 36)
 bar.BackgroundColor3 = uipallet.Main
 bar.BorderSizePixel = 0
+bar.LayoutOrder = props and props.LayoutOrder or 1001
 bar.Parent = children
 components.Divider(nil, bar)
 local button = Instance.new('ImageButton')
