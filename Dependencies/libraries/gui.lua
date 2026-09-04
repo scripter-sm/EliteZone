@@ -1,3 +1,4 @@
+-- This file was compiled by Elite Zone's Compiler. [v3.8]
 local EZ = {}
 EZ.ActiveBinds = {}
 EZ.Categories = {}
