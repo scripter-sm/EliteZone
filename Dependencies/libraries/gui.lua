@@ -4183,13 +4183,21 @@ components = {
 		ring4.Parent = rainbow
 		props.Function = props.Function or function() end
 		
-		local hexY = hasAlpha and 192 or 172
+		local hexY = hasAlpha and 200 or 182
+		-- a full screen catcher behind the window: any click that is not on the picker closes it
+		local backdrop = Instance.new('TextButton')
+		backdrop.BackgroundTransparency = 1
+		backdrop.Size = UDim2.fromScale(1, 1)
+		backdrop.Text = ''
+		backdrop.Visible = false
+		backdrop.ZIndex = 5
+		backdrop.Parent = clickgui
 		local picker = Instance.new('TextButton')
 		picker.AutoButtonColor = false
 		picker.BackgroundColor3 = uipallet.Main
 		picker.BorderSizePixel = 0
 		picker.Position = UDim2.fromOffset(456, 139)
-		picker.Size = UDim2.fromOffset(200, hexY + 32)
+		picker.Size = UDim2.fromOffset(220, hexY + 36)
 		picker.Text = ''
 		picker.Visible = false
 		picker.ZIndex = 6
@@ -4197,7 +4205,6 @@ components = {
 		component.Window = picker
 		addBlur(picker)
 		addCorner(picker)
-		addDragHandler(picker)
 		local pickerstroke = Instance.new('UIStroke')
 		pickerstroke.Color = color.Light(uipallet.Main, 0.4)
 		pickerstroke.Transparency = 0.6
@@ -4216,23 +4223,22 @@ components = {
 		local close = addCloseButton(picker)
 		close.ZIndex = 7
 		
-		-- the map starts below 40px so the window drag handler only picks it up by the title strip
 		local svmap = Instance.new('ImageButton')
 		svmap.AutoButtonColor = false
 		svmap.BackgroundColor3 = Color3.fromHSV(component.Hue, 1, 1)
 		svmap.BorderSizePixel = 0
-		svmap.Position = UDim2.fromOffset(10, 42)
-		svmap.Size = UDim2.fromOffset(158, 120)
+		svmap.Position = UDim2.fromOffset(12, 42)
+		svmap.Size = UDim2.fromOffset(176, 130)
 		svmap.ZIndex = 7
 		svmap.Parent = picker
-		addCorner(svmap, UDim.new(0, 4))
+		addCorner(svmap, UDim.new(0, 6))
 		local satlayer = Instance.new('Frame')
 		satlayer.BackgroundColor3 = Color3.new(1, 1, 1)
 		satlayer.BorderSizePixel = 0
 		satlayer.Size = UDim2.fromScale(1, 1)
 		satlayer.ZIndex = 8
 		satlayer.Parent = svmap
-		addCorner(satlayer, UDim.new(0, 4))
+		addCorner(satlayer, UDim.new(0, 6))
 		local satgradient = Instance.new('UIGradient')
 		satgradient.Transparency = NumberSequence.new(0, 1)
 		satgradient.Parent = satlayer
@@ -4242,7 +4248,7 @@ components = {
 		viblayer.Size = UDim2.fromScale(1, 1)
 		viblayer.ZIndex = 9
 		viblayer.Parent = svmap
-		addCorner(viblayer, UDim.new(0, 4))
+		addCorner(viblayer, UDim.new(0, 6))
 		local vibgradient = Instance.new('UIGradient')
 		vibgradient.Rotation = 90
 		vibgradient.Transparency = NumberSequence.new(1, 0)
@@ -4265,11 +4271,11 @@ components = {
 		huebar.AutoButtonColor = false
 		huebar.BackgroundColor3 = Color3.new(1, 1, 1)
 		huebar.BorderSizePixel = 0
-		huebar.Position = UDim2.fromOffset(178, 42)
-		huebar.Size = UDim2.fromOffset(12, 120)
+		huebar.Position = UDim2.fromOffset(196, 42)
+		huebar.Size = UDim2.fromOffset(12, 130)
 		huebar.ZIndex = 7
 		huebar.Parent = picker
-		addCorner(huebar, UDim.new(0, 4))
+		addCorner(huebar, UDim.new(1, 0))
 		local rainbowTable = {}
 		for i = 0, 1, 0.1 do
 			table.insert(rainbowTable, ColorSequenceKeypoint.new(i, Color3.fromHSV(i, 1, 1)))
@@ -4294,8 +4300,8 @@ components = {
 			alphabar.AutoButtonColor = false
 			alphabar.BackgroundColor3 = Color3.new(1, 1, 1)
 			alphabar.BorderSizePixel = 0
-			alphabar.Position = UDim2.fromOffset(10, 172)
-			alphabar.Size = UDim2.fromOffset(180, 10)
+			alphabar.Position = UDim2.fromOffset(12, 182)
+			alphabar.Size = UDim2.fromOffset(196, 10)
 			alphabar.ZIndex = 7
 			alphabar.Parent = picker
 			addCorner(alphabar, UDim.new(1, 0))
@@ -4316,11 +4322,11 @@ components = {
 		local swatch = Instance.new('Frame')
 		swatch.BackgroundColor3 = Color3.fromHSV(component.Hue, component.Sat, component.Value)
 		swatch.BorderSizePixel = 0
-		swatch.Position = UDim2.fromOffset(10, hexY)
-		swatch.Size = UDim2.fromOffset(22, 22)
+		swatch.Position = UDim2.fromOffset(12, hexY)
+		swatch.Size = UDim2.fromOffset(24, 24)
 		swatch.ZIndex = 7
 		swatch.Parent = picker
-		addCorner(swatch, UDim.new(0, 4))
+		addCorner(swatch, UDim.new(0, 6))
 		local swatchstroke = Instance.new('UIStroke')
 		swatchstroke.Color = color.Light(uipallet.Main, 0.4)
 		swatchstroke.Transparency = 0.5
@@ -4330,14 +4336,14 @@ components = {
 		hexbox.BorderSizePixel = 0
 		hexbox.ClearTextOnFocus = false
 		hexbox.FontFace = uipallet.Font
-		hexbox.Position = UDim2.fromOffset(38, hexY)
-		hexbox.Size = UDim2.fromOffset(152, 22)
+		hexbox.Position = UDim2.fromOffset(44, hexY)
+		hexbox.Size = UDim2.fromOffset(164, 24)
 		hexbox.Text = ''
 		hexbox.TextColor3 = uipallet.Text
 		hexbox.TextSize = 11
 		hexbox.ZIndex = 7
 		hexbox.Parent = picker
-		addCorner(hexbox, UDim.new(0, 4))
+		addCorner(hexbox, UDim.new(0, 6))
 		local hexpadding = Instance.new('UIPadding')
 		hexpadding.PaddingLeft = UDim.new(0, 8)
 		hexpadding.Parent = hexbox
@@ -4469,6 +4475,7 @@ components = {
 		
 		preview.MouseButton1Click:Connect(function()
 			picker.Visible = not picker.Visible
+			backdrop.Visible = picker.Visible
 			if not picker.Visible then return end
 		
 			-- absolute positions are real screen pixels, so divide back out of the ui scale to land in
@@ -4489,6 +4496,14 @@ components = {
 		
 		close.MouseButton1Click:Connect(function()
 			picker.Visible = false
+		end)
+		
+		backdrop.MouseButton1Click:Connect(function()
+			picker.Visible = false
+		end)
+		
+		picker:GetPropertyChangedSignal('Visible'):Connect(function()
+			backdrop.Visible = picker.Visible
 		end)
 		
 		hexbox.FocusLost:Connect(function(enter)
@@ -5100,12 +5115,20 @@ components = {
 		ring4.Parent = rainbow
 		props.Function = props.Function or function() end
 		
+		-- a full screen catcher behind the window: any click that is not on the picker closes it
+		local backdrop = Instance.new('TextButton')
+		backdrop.BackgroundTransparency = 1
+		backdrop.Size = UDim2.fromScale(1, 1)
+		backdrop.Text = ''
+		backdrop.Visible = false
+		backdrop.ZIndex = 5
+		backdrop.Parent = clickgui
 		local picker = Instance.new('TextButton')
 		picker.AutoButtonColor = false
 		picker.BackgroundColor3 = uipallet.Main
 		picker.BorderSizePixel = 0
 		picker.Position = UDim2.fromOffset(456, 139)
-		picker.Size = UDim2.fromOffset(200, 204)
+		picker.Size = UDim2.fromOffset(220, 218)
 		picker.Text = ''
 		picker.Visible = false
 		picker.ZIndex = 6
@@ -5113,7 +5136,6 @@ components = {
 		component.Window = picker
 		addBlur(picker)
 		addCorner(picker)
-		addDragHandler(picker)
 		local pickerstroke = Instance.new('UIStroke')
 		pickerstroke.Color = color.Light(uipallet.Main, 0.4)
 		pickerstroke.Transparency = 0.6
@@ -5132,23 +5154,22 @@ components = {
 		local close = addCloseButton(picker)
 		close.ZIndex = 7
 		
-		-- the map starts below 40px so the window drag handler only picks it up by the title strip
 		local svmap = Instance.new('ImageButton')
 		svmap.AutoButtonColor = false
 		svmap.BackgroundColor3 = Color3.fromHSV(component.Hue, 1, 1)
 		svmap.BorderSizePixel = 0
-		svmap.Position = UDim2.fromOffset(10, 42)
-		svmap.Size = UDim2.fromOffset(158, 120)
+		svmap.Position = UDim2.fromOffset(12, 42)
+		svmap.Size = UDim2.fromOffset(176, 130)
 		svmap.ZIndex = 7
 		svmap.Parent = picker
-		addCorner(svmap, UDim.new(0, 4))
+		addCorner(svmap, UDim.new(0, 6))
 		local satlayer = Instance.new('Frame')
 		satlayer.BackgroundColor3 = Color3.new(1, 1, 1)
 		satlayer.BorderSizePixel = 0
 		satlayer.Size = UDim2.fromScale(1, 1)
 		satlayer.ZIndex = 8
 		satlayer.Parent = svmap
-		addCorner(satlayer, UDim.new(0, 4))
+		addCorner(satlayer, UDim.new(0, 6))
 		local satgradient = Instance.new('UIGradient')
 		satgradient.Transparency = NumberSequence.new(0, 1)
 		satgradient.Parent = satlayer
@@ -5158,7 +5179,7 @@ components = {
 		viblayer.Size = UDim2.fromScale(1, 1)
 		viblayer.ZIndex = 9
 		viblayer.Parent = svmap
-		addCorner(viblayer, UDim.new(0, 4))
+		addCorner(viblayer, UDim.new(0, 6))
 		local vibgradient = Instance.new('UIGradient')
 		vibgradient.Rotation = 90
 		vibgradient.Transparency = NumberSequence.new(1, 0)
@@ -5181,11 +5202,11 @@ components = {
 		huebar.AutoButtonColor = false
 		huebar.BackgroundColor3 = Color3.new(1, 1, 1)
 		huebar.BorderSizePixel = 0
-		huebar.Position = UDim2.fromOffset(178, 42)
-		huebar.Size = UDim2.fromOffset(12, 120)
+		huebar.Position = UDim2.fromOffset(196, 42)
+		huebar.Size = UDim2.fromOffset(12, 130)
 		huebar.ZIndex = 7
 		huebar.Parent = picker
-		addCorner(huebar, UDim.new(0, 4))
+		addCorner(huebar, UDim.new(1, 0))
 		local rainbowTable = {}
 		for i = 0, 1, 0.1 do
 			table.insert(rainbowTable, ColorSequenceKeypoint.new(i, Color3.fromHSV(i, 1, 1)))
@@ -5207,11 +5228,11 @@ components = {
 		local swatch = Instance.new('Frame')
 		swatch.BackgroundColor3 = Color3.fromHSV(component.Hue, component.Sat, component.Value)
 		swatch.BorderSizePixel = 0
-		swatch.Position = UDim2.fromOffset(10, 172)
-		swatch.Size = UDim2.fromOffset(22, 22)
+		swatch.Position = UDim2.fromOffset(12, 182)
+		swatch.Size = UDim2.fromOffset(24, 24)
 		swatch.ZIndex = 7
 		swatch.Parent = picker
-		addCorner(swatch, UDim.new(0, 4))
+		addCorner(swatch, UDim.new(0, 6))
 		local swatchstroke = Instance.new('UIStroke')
 		swatchstroke.Color = color.Light(uipallet.Main, 0.4)
 		swatchstroke.Transparency = 0.5
@@ -5221,14 +5242,14 @@ components = {
 		hexbox.BorderSizePixel = 0
 		hexbox.ClearTextOnFocus = false
 		hexbox.FontFace = uipallet.Font
-		hexbox.Position = UDim2.fromOffset(38, 172)
-		hexbox.Size = UDim2.fromOffset(152, 22)
+		hexbox.Position = UDim2.fromOffset(44, 182)
+		hexbox.Size = UDim2.fromOffset(164, 24)
 		hexbox.Text = ''
 		hexbox.TextColor3 = uipallet.Text
 		hexbox.TextSize = 11
 		hexbox.ZIndex = 7
 		hexbox.Parent = picker
-		addCorner(hexbox, UDim.new(0, 4))
+		addCorner(hexbox, UDim.new(0, 6))
 		local hexpadding = Instance.new('UIPadding')
 		hexpadding.PaddingLeft = UDim.new(0, 8)
 		hexpadding.Parent = hexbox
@@ -5355,6 +5376,7 @@ components = {
 		
 		preview.MouseButton1Click:Connect(function()
 			picker.Visible = not picker.Visible
+			backdrop.Visible = picker.Visible
 			if not picker.Visible then return end
 		
 			-- absolute positions are real screen pixels, so divide back out of the ui scale to land in
@@ -5375,6 +5397,14 @@ components = {
 		
 		close.MouseButton1Click:Connect(function()
 			picker.Visible = false
+		end)
+		
+		backdrop.MouseButton1Click:Connect(function()
+			picker.Visible = false
+		end)
+		
+		picker:GetPropertyChangedSignal('Visible'):Connect(function()
+			backdrop.Visible = picker.Visible
 		end)
 		
 		hexbox.FocusLost:Connect(function(enter)
