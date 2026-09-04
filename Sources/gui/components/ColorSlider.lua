@@ -182,7 +182,7 @@ local function addPicker(index, info)
 	huebar.Size = UDim2.fromOffset(12, 130)
 	huebar.ZIndex = 7
 	huebar.Parent = picker
-	addCorner(huebar, UDim.new(1, 0))
+	addCorner(huebar, UDim.new(0, 3))
 	local huegradient = Instance.new('UIGradient')
 	huegradient.Color = ColorSequence.new(hueKeypoints)
 	huegradient.Rotation = 90

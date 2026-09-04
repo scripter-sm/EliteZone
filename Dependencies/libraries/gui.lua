@@ -4314,7 +4314,7 @@ components = {
 			huebar.Size = UDim2.fromOffset(12, 130)
 			huebar.ZIndex = 7
 			huebar.Parent = picker
-			addCorner(huebar, UDim.new(1, 0))
+			addCorner(huebar, UDim.new(0, 3))
 			local huegradient = Instance.new('UIGradient')
 			huegradient.Color = ColorSequence.new(hueKeypoints)
 			huegradient.Rotation = 90
@@ -5249,7 +5249,7 @@ components = {
 		huebar.Size = UDim2.fromOffset(12, 130)
 		huebar.ZIndex = 7
 		huebar.Parent = picker
-		addCorner(huebar, UDim.new(1, 0))
+		addCorner(huebar, UDim.new(0, 3))
 		local rainbowTable = {}
 		for i = 0, 1, 0.1 do
 			table.insert(rainbowTable, ColorSequenceKeypoint.new(i, Color3.fromHSV(i, 1, 1)))
