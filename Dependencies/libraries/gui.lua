@@ -934,64 +934,6 @@ function EZ:LoadGUI()
 		Text = 'misc'
 	})
 	
-	do
-		local friends
-		local friendscolor = {
-			Hue = 1,
-			Sat = 1,
-			Value = 1
-		}
-	
-		friends = EZ:CreateCategoryList({
-			Name = 'Friends',
-			Icon = get_ez_asset('Elite Zone/Assets/friends.png'),
-			Size = UDim2.fromOffset(17, 16),
-			Placeholder = 'Roblox username',
-			Color = Color3.fromRGB(5, 134, 105),
-			Function = function()
-				friends.Update:Fire()
-				friends.ColorUpdate:Fire(friendscolor.Hue, friendscolor.Sat, friendscolor.Value)
-			end
-		})
-		friends.Update = Instance.new('BindableEvent')
-		friends.ColorUpdate = Instance.new('BindableEvent')
-		friends:CreateToggle({
-			Name = 'Recolor visuals',
-			Darker = true,
-			Default = true,
-			Function = function()
-				friends.Update:Fire()
-				friends.ColorUpdate:Fire(friendscolor.Hue, friendscolor.Sat, friendscolor.Value)
-			end
-		})
-		friendscolor = friends:CreateColorSlider({
-			Name = 'Friends color',
-			Darker = true,
-			Function = function(hue, sat, val)
-				for _, v in friends.Object.Children:GetChildren() do
-					local dot = v:FindFirstChild('Dot')
-					if dot and dot.BackgroundColor3 ~= color.Light(uipallet.Main, 0.37) then
-						dot.BackgroundColor3 = Color3.fromHSV(hue, sat, val)
-						dot.Dot.BackgroundColor3 = dot.BackgroundColor3
-					end
-				end
-	
-				friends.ColorUpdate:Fire(hue, sat, val)
-			end
-		})
-		friends:CreateToggle({
-			Name = 'Use friends',
-			Darker = true,
-			Default = true,
-			Function = function()
-				friends.Update:Fire()
-				friends.ColorUpdate:Fire(friendscolor.Hue, friendscolor.Sat, friendscolor.Value)
-			end
-		})
-		EZ:Clean(friends.Update)
-		EZ:Clean(friends.ColorUpdate)
-	end
-	
 	EZ:CreateCategoryList({
 		Name = 'configs',
 		Title = 'Configs',
@@ -1001,19 +943,6 @@ function EZ:LoadGUI()
 		Placeholder = 'Type name',
 		configs = true
 	})
-	
-	local targets
-	targets = EZ:CreateCategoryList({
-		Name = 'Targets',
-		Icon = get_ez_asset('Elite Zone/Assets/friends.png'),
-		Size = UDim2.fromOffset(17, 16),
-		Placeholder = 'Roblox username',
-		Function = function()
-			targets.Update:Fire()
-		end
-	})
-	targets.Update = Instance.new('BindableEvent')
-	EZ:Clean(targets.Update)
 	
 	components.LegitWindow()
 	EZ.SearchBar = components.SearchBar()
@@ -1250,7 +1179,6 @@ function EZ:LoadGUI()
 				UtilityCategory = 5,
 				WorldCategory = 6,
 				InventoryCategory = 7,
-				FriendsCategory = 8,
 				configsCategory = 9
 			}
 	
@@ -2732,28 +2660,6 @@ function EZ:SetAutoload(name)
 	data[self.game] = name
 	writefile('Elite Zone/Cache/__autoload.dat', httpService:JSONEncode(data))
 	self.autoload = name
-end
-
-function EZ:GetTargets()
-	return self.Categories.Targets.ListEnabled
-end
-
-function EZ:IsTarget(name)
-	return table.find(self.Categories.Targets.ListEnabled, name) ~= nil
-end
-
-function EZ:AddTarget(name)
-	local targets = self.Categories.Targets
-	if not table.find(targets.List, name) then
-		targets:ChangeValue(name)
-	end
-end
-
-function EZ:RemoveTarget(name)
-	local targets = self.Categories.Targets
-	if table.find(targets.List, name) then
-		targets:ChangeValue(name)
-	end
 end
 
 function EZ:SaveOptions(obj)
