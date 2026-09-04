@@ -4209,7 +4209,8 @@ components = {
 		windowtitle.TextXAlignment = Enum.TextXAlignment.Left
 		windowtitle.ZIndex = 7
 		windowtitle.Parent = picker
-		addCloseButton(picker)
+		local close = addCloseButton(picker)
+		close.ZIndex = 7
 		
 		-- the map starts below 40px so the window drag handler only picks it up by the title strip
 		local svmap = Instance.new('ImageButton')
@@ -4453,6 +4454,10 @@ components = {
 		
 		rainbow.MouseButton1Click:Connect(function()
 			component:Toggle()
+		end)
+		
+		close.MouseButton1Click:Connect(function()
+			picker.Visible = false
 		end)
 		
 		hexbox.FocusLost:Connect(function(enter)
