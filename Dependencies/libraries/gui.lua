@@ -17,7 +17,6 @@ EZ.Settings = {}
 EZ.SettingToggleNotifications = {}
 EZ.ThreadFix = setthreadidentity and true or false
 EZ.ToggleNotifications = {}
-EZ.Version = '1.0'
 EZ.Windows = {}
 
 local run = function(func)
@@ -7062,21 +7061,7 @@ components = {
 		listlayout.SortOrder = Enum.SortOrder.LayoutOrder
 		listlayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 		listlayout.Parent = settingschildren
-		if props.Main then
-			local versionlabel = Instance.new('TextLabel')
-			versionlabel.BackgroundTransparency = 1
-			versionlabel.FontFace = uipallet.Font
-			versionlabel.Name = 'Version'
-			versionlabel.Position = UDim2.new(0, 0, 1, -16)
-			versionlabel.Size = UDim2.new(1, 0, 0, 16)
-			versionlabel.Text = 'Elite Zone '..EZ.Version..' '..(
-				isfile('Elite Zone/Config/commit.txt') and readfile('Elite Zone/Config/commit.txt'):sub(1, 6) or ''
-			)..' '
-			versionlabel.TextColor3 = color.Dark(uipallet.Text, 0.43)
-			versionlabel.TextSize = 10
-			versionlabel.TextXAlignment = Enum.TextXAlignment.Right
-			versionlabel.Parent = pane
-		else
+		if not props.Main then
 			api:CreateGUIButton({
 				Name = props.Name,
 				Function = function()

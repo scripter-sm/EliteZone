@@ -16,7 +16,6 @@ EZ.Settings = {}
 EZ.SettingToggleNotifications = {}
 EZ.ThreadFix = setthreadidentity and true or false
 EZ.ToggleNotifications = {}
-EZ.Version = '1.0'
 EZ.Windows = {}
 
 local run = function(func)
