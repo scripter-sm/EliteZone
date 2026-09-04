@@ -143,23 +143,30 @@ local function addPicker(index, info)
 
 	local svmap = Instance.new('ImageButton')
 	svmap.AutoButtonColor = false
-	svmap.BackgroundColor3 = Color3.fromHSV(component.Hue, 1, 1)
+	svmap.BackgroundTransparency = 1
 	svmap.BorderSizePixel = 0
 	svmap.Position = UDim2.fromOffset(10, 45)
 	svmap.Size = UDim2.fromOffset(180, 130)
 	svmap.ZIndex = 7
-	svmap.ClipsDescendants = true
 	svmap.Parent = picker
 	addCorner(svmap)
 	-- the hue sits behind a partly transparent image, so overhang it and let the corner clip the
 	-- antialiased edge, otherwise the hue bleeds through the rounded corners
+	local huelayer = Instance.new('Frame')
+	huelayer.BackgroundColor3 = Color3.fromHSV(component.Hue, 1, 1)
+	huelayer.BorderSizePixel = 0
+	huelayer.Position = UDim2.fromOffset(1, 1)
+	huelayer.Size = UDim2.new(1, -2, 1, -2)
+	huelayer.ZIndex = 7
+	huelayer.Parent = svmap
+	addCorner(huelayer, UDim.new(0, 4))
 	local svgradient = Instance.new('ImageLabel')
 	svgradient.BackgroundTransparency = 1
 	svgradient.Image = 'rbxassetid://4155801252'
-	svgradient.Position = UDim2.fromOffset(-1, -1)
-	svgradient.Size = UDim2.new(1, 2, 1, 2)
-	svgradient.ZIndex = 7
+	svgradient.Size = UDim2.fromScale(1, 1)
+	svgradient.ZIndex = 8
 	svgradient.Parent = svmap
+	addCorner(svgradient)
 	local svcursor = Instance.new('Frame')
 	svcursor.AnchorPoint = Vector2.new(0.5, 0.5)
 	svcursor.BackgroundColor3 = Color3.fromHSV(component.Hue, component.Sat, component.Value)
@@ -335,7 +342,7 @@ local function addPicker(index, info)
 		-- the picker is the only thing the rest of these touch, so skip them while it is closed
 		if picker.Visible then
 			windowicon.ImageColor3 = shade
-			svmap.BackgroundColor3 = Color3.fromHSV(self.Hue, 1, 1)
+			huelayer.BackgroundColor3 = Color3.fromHSV(self.Hue, 1, 1)
 			svcursor.Position = UDim2.fromScale(self.Sat, 1 - self.Value)
 			svcursor.BackgroundColor3 = shade
 			huecursor.Position = UDim2.fromScale(0.5, self.Hue)
