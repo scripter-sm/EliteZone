@@ -350,7 +350,7 @@ local function update_rivals(player)
 	local delta = math.min(now - (targetinfo.rivals_time or now), 0.1)
 	targetinfo.rivals_time = now
 
-	local subject = player or local_player
+	local subject = player
 	local key = player and subject.UserId or 0
 	local fresh = targetinfo.rivals_key ~= key
 	targetinfo.rivals_key = key
@@ -398,9 +398,9 @@ local function update_rivals(player)
 				set_weapon_icon(i, preview_icons[i], false)
 			end
 
-			Name.Text = DisplayName.Enabled and subject.DisplayName or subject.Name
-			shown_userid = subject.UserId
-			Headshot.Image = 'rbxthumb://type=AvatarHeadShot&id='..shown_userid..'&w=420&h=420'
+			Name.Text = 'Roblox'
+			shown_userid = 1
+			Headshot.Image = 'rbxthumb://type=AvatarHeadShot&id=1&w=420&h=420'
 		end
 		level, rank, device, streak = targetinfo.level, targetinfo.rank, targetinfo.device, targetinfo.streak
 
@@ -408,11 +408,15 @@ local function update_rivals(player)
 		Health.Size = UDim2.fromScale(sweep, 1)
 		HealthText.Text = math.floor(sweep * 100)..' / 100'
 		targetinfo.ratio = 0.5 + 0.32 * math.sin(now * 0.45)
-		targetinfo.dealt = math.floor(targetinfo.ratio * 100 + 0.5)
-		targetinfo.taken = 100 - targetinfo.dealt
 	end
 
 	targetinfo.shown = (targetinfo.shown or targetinfo.ratio) + (targetinfo.ratio - (targetinfo.shown or targetinfo.ratio)) * math.min(delta * 4, 1)
+
+	-- real targets show actual missing hp, so only the preview counter rides the smoothed value
+	if not player then
+		targetinfo.dealt = targetinfo.shown * 100
+		targetinfo.taken = 100 - targetinfo.dealt
+	end
 
 	level_value.Text, level_value.TextColor3 = tostring(level), accent
 	rank_value.Text, rank_value.TextColor3 = tostring(rank):lower(), accent
