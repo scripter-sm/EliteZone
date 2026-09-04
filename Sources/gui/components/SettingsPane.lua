@@ -89,13 +89,18 @@ close.MouseButton1Click:Connect(function()
 	pane.Visible = false
 end)
 
-listlayout:GetPropertyChangedSignal('AbsoluteContentSize'):Connect(function()
+-- the window keeps growing after this pane is built, since categories come from the script, so
+-- track its size too or the pane stays short and the sidebar shows through underneath it
+local function resize()
 	if EZ.ThreadFix then
 		setthreadidentity(8)
 	end
 
 	pane.Size = UDim2.new(1, 0, 0, math.max(45 + listlayout.AbsoluteContentSize.Y, component.Parent.AbsoluteSize.Y) / scale.Scale)
-end)
+end
+
+listlayout:GetPropertyChangedSignal('AbsoluteContentSize'):Connect(resize)
+component.Parent:GetPropertyChangedSignal('AbsoluteSize'):Connect(resize)
 
 component.Object = pane
 EZ.Settings[props.Name] = component
