@@ -76,6 +76,10 @@ component.Window = picker
 addBlur(picker)
 addCorner(picker)
 addDragHandler(picker)
+local pickerstroke = Instance.new('UIStroke')
+pickerstroke.Color = color.Light(uipallet.Main, 0.4)
+pickerstroke.Transparency = 0.6
+pickerstroke.Parent = picker
 local windowtitle = Instance.new('TextLabel')
 windowtitle.BackgroundTransparency = 1
 windowtitle.FontFace = uipallet.Font
@@ -123,9 +127,10 @@ vibgradient.Transparency = NumberSequence.new(1, 0)
 vibgradient.Parent = viblayer
 local svcursor = Instance.new('Frame')
 svcursor.AnchorPoint = Vector2.new(0.5, 0.5)
-svcursor.BackgroundTransparency = 1
+svcursor.BackgroundColor3 = Color3.fromHSV(component.Hue, component.Sat, component.Value)
+svcursor.BorderSizePixel = 0
 svcursor.Position = UDim2.fromScale(component.Sat, 1 - component.Value)
-svcursor.Size = UDim2.fromOffset(10, 10)
+svcursor.Size = UDim2.fromOffset(12, 12)
 svcursor.ZIndex = 10
 svcursor.Parent = svmap
 addCorner(svcursor, UDim.new(1, 0))
@@ -186,19 +191,35 @@ if hasAlpha then
 	addCorner(alphacursor, UDim.new(1, 0))
 end
 
+local swatch = Instance.new('Frame')
+swatch.BackgroundColor3 = Color3.fromHSV(component.Hue, component.Sat, component.Value)
+swatch.BorderSizePixel = 0
+swatch.Position = UDim2.fromOffset(10, hexY)
+swatch.Size = UDim2.fromOffset(22, 22)
+swatch.ZIndex = 7
+swatch.Parent = picker
+addCorner(swatch, UDim.new(0, 4))
+local swatchstroke = Instance.new('UIStroke')
+swatchstroke.Color = color.Light(uipallet.Main, 0.4)
+swatchstroke.Transparency = 0.5
+swatchstroke.Parent = swatch
 local hexbox = Instance.new('TextBox')
 hexbox.BackgroundColor3 = color.Dark(uipallet.Main, 0.05)
 hexbox.BorderSizePixel = 0
 hexbox.ClearTextOnFocus = false
 hexbox.FontFace = uipallet.Font
-hexbox.Position = UDim2.fromOffset(10, hexY)
-hexbox.Size = UDim2.fromOffset(180, 22)
+hexbox.Position = UDim2.fromOffset(38, hexY)
+hexbox.Size = UDim2.fromOffset(152, 22)
 hexbox.Text = ''
 hexbox.TextColor3 = uipallet.Text
 hexbox.TextSize = 11
 hexbox.ZIndex = 7
 hexbox.Parent = picker
 addCorner(hexbox, UDim.new(0, 4))
+local hexpadding = Instance.new('UIPadding')
+hexpadding.PaddingLeft = UDim.new(0, 8)
+hexpadding.Parent = hexbox
+hexbox.TextXAlignment = Enum.TextXAlignment.Left
 
 -- every bar shares this: press to jump, hold to scrub, release to drop the connections
 local function addDrag(target, callback)
@@ -259,7 +280,9 @@ function component:SetValue(h, s, v, o)
 	if picker.Visible then
 		svmap.BackgroundColor3 = Color3.fromHSV(self.Hue, 1, 1)
 		svcursor.Position = UDim2.fromScale(self.Sat, 1 - self.Value)
+		svcursor.BackgroundColor3 = shade
 		huecursor.Position = UDim2.fromScale(0.5, self.Hue)
+		swatch.BackgroundColor3 = shade
 		hexbox.Text = '#'..shade:ToHex()
 
 		if hasAlpha then
@@ -324,10 +347,18 @@ end
 
 preview.MouseButton1Click:Connect(function()
 	picker.Visible = not picker.Visible
+	if not picker.Visible then return end
 
-	if picker.Visible then
-		component:SetValue()
-	end
+	-- absolute positions are real screen pixels, so divide back out of the ui scale to land in
+	-- clickgui's own offsets, then keep the whole window on screen
+	local room = clickgui.AbsoluteSize / scale.Scale
+	local origin = (colorslider.AbsolutePosition - clickgui.AbsolutePosition) / scale.Scale
+	picker.Position = UDim2.fromOffset(
+		math.clamp(origin.X + (colorslider.AbsoluteSize.X / scale.Scale) + 8, 8, math.max(room.X - picker.Size.X.Offset - 8, 8)),
+		math.clamp(origin.Y - 8, 8, math.max(room.Y - picker.Size.Y.Offset - 8, 8))
+	)
+
+	component:SetValue()
 end)
 
 rainbow.MouseButton1Click:Connect(function()
