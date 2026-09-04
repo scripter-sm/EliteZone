@@ -219,8 +219,18 @@ do
 		return true
 	end
 
+	-- components resolve their icons per instance, so the same path arrives hundreds of times a
+	-- load; without this every one re-reads the whole png off disk just to check the header
+	local resolved = {}
+
 	get_ez_asset = get_asset_fn and function(path)
-		return downloadFile(path) and get_asset_fn(path) or ezAssets[path] or ''
+		local id = resolved[path]
+		if not id then
+			id = downloadFile(path) and get_asset_fn(path) or ezAssets[path] or ''
+			resolved[path] = id
+		end
+
+		return id
 	end or function(path)
 		return ezAssets[path] or ''
 	end
