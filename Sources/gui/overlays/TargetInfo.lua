@@ -167,6 +167,9 @@ local function rivals_libs()
 end
 
 local rivals_parts = {}
+-- EZ.game is assigned by the loader script after this file runs, so resolve it on the first Update
+local is_rivals
+local shown_userid
 local damage_up = Color3.fromRGB(90, 209, 107)
 local damage_down = Color3.fromRGB(255, 90, 90)
 local stat_text = color.Light(uipallet.Text, 0.15)
@@ -395,7 +398,8 @@ local function update_rivals(player)
 			end
 
 			Name.Text = DisplayName.Enabled and subject.DisplayName or subject.Name
-			Headshot.Image = 'rbxthumb://type=AvatarHeadShot&id='..subject.UserId..'&w=420&h=420'
+			shown_userid = subject.UserId
+			Headshot.Image = 'rbxthumb://type=AvatarHeadShot&id='..shown_userid..'&w=420&h=420'
 		end
 		level, rank, device, streak = targetinfo.level, targetinfo.rank, targetinfo.device, targetinfo.streak
 
@@ -509,27 +513,26 @@ function targetinfo:Update()
 	accent = Color3.fromHSV(EZ.GUIColor.Hue, EZ.GUIColor.Sat, EZ.GUIColor.Value)
 	Health.BackgroundColor3 = accent
 
-	local tucked = clickgui.Visible
-	local is_rivals = EZ.game == 'Rivals'
-	Holder.Position = UDim2.fromOffset(window.Position.X.Offset, window.Position.Y.Offset + window.Size.Y.Offset + (tucked and -6 or 0))
-	Holder.Size = UDim2.fromOffset(240, (tucked and 96 or 90) + (is_rivals and rivals_extra_height or 0))
-	for _, part in rivals_parts do
-		part.Visible = is_rivals
-	end
-
-	local cloned = table.clone(self.Targets)
-	for index, expire in cloned do
-		if expire < tick() then
-			self.Targets[index] = nil
+	if is_rivals == nil then
+		is_rivals = EZ.game == 'Rivals'
+		for _, part in rivals_parts do
+			part.Visible = is_rivals
 		end
 	end
-	table.clear(cloned)
 
-	local entity, highest = nil, tick()
-	for index, level in self.Targets do
-		if level > highest then
+	local tucked = clickgui.Visible
+	Holder.Position = UDim2.fromOffset(window.Position.X.Offset, window.Position.Y.Offset + window.Size.Y.Offset + (tucked and -6 or 0))
+	Holder.Size = UDim2.fromOffset(240, (tucked and 96 or 90) + (is_rivals and rivals_extra_height or 0))
+
+	-- expire and pick the highest in one pass: clearing a key that already exists is safe mid-traversal
+	local now = tick()
+	local entity, highest = nil, now
+	for index, expire in self.Targets do
+		if expire < now then
+			self.Targets[index] = nil
+		elseif expire > highest then
 			entity = index
-			highest = level
+			highest = expire
 		end
 	end
 
@@ -553,8 +556,18 @@ function targetinfo:Update()
 			end
 		end
 
-		Name.Text = entity.Player and (DisplayName.Enabled and entity.Player.DisplayName or entity.Player.Name) or entity.Character and entity.Character.Name or Name.Text
-		Headshot.Image = 'rbxthumb://type=AvatarHeadShot&id='..(entity.Player and entity.Player.UserId or 1)..'&w=420&h=420'
+		-- compared by value, not by target identity: entity tables get recycled below, and the
+		-- displayname toggle has no callback of its own so the name has to stay live
+		local name = entity.Player and (DisplayName.Enabled and entity.Player.DisplayName or entity.Player.Name) or entity.Character and entity.Character.Name or Name.Text
+		if Name.Text ~= name then
+			Name.Text = name
+		end
+
+		local userid = entity.Player and entity.Player.UserId or 1
+		if shown_userid ~= userid then
+			shown_userid = userid
+			Headshot.Image = 'rbxthumb://type=AvatarHeadShot&id='..userid..'&w=420&h=420'
+		end
 
 		if not entity.Character then
 			entity.Health = entity.Health or 0
