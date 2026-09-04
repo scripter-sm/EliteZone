@@ -137,6 +137,8 @@ Stroke.Color = Color3.fromHSV(0.44, 1, 1)
 Stroke.Parent = Holder
 
 local rivals_extra_height = 160
+local rivals_max_health = 150
+local rivals_health_label = ' / '..rivals_max_health
 local devices = {MouseKeyboard = 'computer', Touch = 'mobile', Gamepad = 'controller', VR = 'vr'}
 local device_pool = {'computer', 'mobile', 'controller', 'vr'}
 local ranks = {
@@ -375,10 +377,10 @@ local function update_rivals(player)
 		end
 
 		local hp = fighter and fighter:GetHealth() or 0
-		local max_hp = fighter and fighter:GetMaxHealth() or 100
+		local max_hp = fighter and fighter:GetMaxHealth() or rivals_max_health
 		local own_fighter = libs.fighters:GetFighter(local_player)
 		local own = own_fighter and own_fighter:GetHealth() or 0
-		local own_max = own_fighter and own_fighter:GetMaxHealth() or 100
+		local own_max = own_fighter and own_fighter:GetMaxHealth() or rivals_max_health
 		if EZ.ThreadFix then
 			setthreadidentity(8)
 		end
@@ -406,7 +408,7 @@ local function update_rivals(player)
 
 		local sweep = 0.5 - 0.5 * math.cos(now * 0.8)
 		Health.Size = UDim2.fromScale(sweep, 1)
-		HealthText.Text = math.floor(sweep * 100)..' / 100'
+		HealthText.Text = math.floor(sweep * rivals_max_health)..rivals_health_label
 		targetinfo.ratio = 0.5 + 0.32 * math.sin(now * 0.45)
 	end
 
@@ -414,8 +416,8 @@ local function update_rivals(player)
 
 	-- real targets show actual missing hp, so only the preview counter rides the smoothed value
 	if not player then
-		targetinfo.dealt = targetinfo.shown * 100
-		targetinfo.taken = 100 - targetinfo.dealt
+		targetinfo.dealt = targetinfo.shown * rivals_max_health
+		targetinfo.taken = rivals_max_health - targetinfo.dealt
 	end
 
 	level_value.Text, level_value.TextColor3 = tostring(level), accent
