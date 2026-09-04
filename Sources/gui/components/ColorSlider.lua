@@ -71,12 +71,21 @@ local function addPicker(index, info)
 	preview.BackgroundTransparency = 1
 	preview.Image = get_ez_asset('Elite Zone/Assets/colorpreview.png')
 	preview.ImageColor3 = Color3.fromHSV(component.Hue, component.Sat, component.Value)
-	preview.ImageTransparency = 1 - component.Opacity
 	preview.Position = UDim2.new(1, -(22 + (count - index) * 20), 0, 10)
 	preview.Size = UDim2.fromOffset(12, 12)
 	preview.Parent = colorslider
 	-- with several dots on one row the name is the only thing telling them apart
 	addTooltip(preview, info.Tooltip or (count > 1 and info.Name or nil))
+	local previewchecker
+	if hasAlpha then
+		previewchecker = Instance.new('ImageLabel')
+		previewchecker.BackgroundTransparency = 1
+		previewchecker.Image = 'rbxassetid://12977615774'
+		previewchecker.ImageTransparency = component.Opacity
+		previewchecker.Size = UDim2.fromScale(1, 1)
+		previewchecker.Parent = preview
+		addCorner(previewchecker, UDim.new(0, 2))
+	end
 
 	-- a full screen catcher behind the window: any click that is not on the picker closes it
 	local backdrop = Instance.new('TextButton')
@@ -107,6 +116,17 @@ local function addPicker(index, info)
 	windowicon.Size = UDim2.fromOffset(14, 14)
 	windowicon.ZIndex = 7
 	windowicon.Parent = picker
+	local iconchecker
+	if hasAlpha then
+		iconchecker = Instance.new('ImageLabel')
+		iconchecker.BackgroundTransparency = 1
+		iconchecker.Image = 'rbxassetid://12977615774'
+		iconchecker.ImageTransparency = component.Opacity
+		iconchecker.Size = UDim2.fromScale(1, 1)
+		iconchecker.ZIndex = 8
+		iconchecker.Parent = windowicon
+		addCorner(iconchecker, UDim.new(0, 2))
+	end
 	local windowtitle = Instance.new('TextLabel')
 	windowtitle.BackgroundTransparency = 1
 	windowtitle.FontFace = uipallet.Font
@@ -307,7 +327,10 @@ local function addPicker(index, info)
 
 		local shade = Color3.fromHSV(self.Hue, self.Sat, self.Value)
 		preview.ImageColor3 = shade
-		preview.ImageTransparency = 1 - self.Opacity
+
+		if hasAlpha then
+			previewchecker.ImageTransparency = self.Opacity
+		end
 
 		-- the picker is the only thing the rest of these touch, so skip them while it is closed
 		if picker.Visible then
@@ -320,6 +343,7 @@ local function addPicker(index, info)
 			hexbox.Text = '#'..shade:ToHex()
 
 			if hasAlpha then
+				iconchecker.ImageTransparency = self.Opacity
 				alphabar.BackgroundColor3 = shade
 				alphacursor.Position = UDim2.fromScale(self.Opacity, 0.5)
 				swatchchecker.ImageTransparency = self.Opacity
