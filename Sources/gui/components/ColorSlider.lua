@@ -8,97 +8,13 @@ local component = {
 	Index = 0
 }
 
-local function createExtraSlider(name, gradientColor)
-	local colorslidercustom = Instance.new('TextButton')
-	colorslidercustom.AutoButtonColor = false
-	colorslidercustom.BackgroundColor3 = color.Dark(children.BackgroundColor3, props.Darker and 0.02 or 0)
-	colorslidercustom.BorderSizePixel = 0
-	colorslidercustom.Size = UDim2.new(1, 0, 0, 50)
-	colorslidercustom.Text = ''
-	colorslidercustom.Visible = false
-	colorslidercustom.Parent = children
-	local title = Instance.new('TextLabel')
-	title.BackgroundTransparency = 1
-	title.FontFace = uipallet.Font
-	title.Position = UDim2.fromOffset(10, 2)
-	title.Size = UDim2.fromOffset(60, 30)
-	title.Text = name
-	title.TextColor3 = color.Dark(uipallet.Text, 0.16)
-	title.TextSize = 11
-	title.TextXAlignment = Enum.TextXAlignment.Left
-	title.Parent = colorslidercustom
-	local holder = Instance.new('Frame')
-	holder.BackgroundColor3 = Color3.new(1, 1, 1)
-	holder.BorderSizePixel = 0
-	holder.Name = 'Holder'
-	holder.Position = UDim2.fromOffset(10, 37)
-	holder.Size = UDim2.new(1, -20, 0, 2)
-	holder.Parent = colorslidercustom
-	local uigradient = Instance.new('UIGradient')
-	uigradient.Color = gradientColor
-	uigradient.Parent = holder
-	local fill = Instance.new('Frame')
-	fill.BackgroundTransparency = 1
-	fill.Name = 'Fill'
-	fill.Size = UDim2.fromScale(math.clamp(name == 'Saturation' and component.Sat or name == 'Vibrance' and component.Value or component.Opacity, 0.04, 0.96), 1)
-	fill.Parent = holder
-	local knobholder = Instance.new('Frame')
-	knobholder.AnchorPoint = Vector2.new(0.5, 0.5)
-	knobholder.BackgroundColor3 = colorslidercustom.BackgroundColor3
-	knobholder.BorderSizePixel = 0
-	knobholder.Position = UDim2.fromScale(1, 0.5)
-	knobholder.Size = UDim2.fromOffset(24, 4)
-	knobholder.Parent = fill
-	local knob = Instance.new('Frame')
-	knob.AnchorPoint = Vector2.new(0.5, 0.5)
-	knob.BackgroundColor3 = uipallet.Text
-	knob.Position = UDim2.fromScale(0.5, 0.5)
-	knob.Size = UDim2.fromOffset(14, 14)
-	knob.Parent = knobholder
-	addCorner(knob, UDim.new(1, 0))
-
-	colorslidercustom.InputBegan:Connect(function(input)
-		if
-			(input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch)
-			and (input.Position.Y - colorslidercustom.AbsolutePosition.Y) > (20 * scale.Scale)
-		then
-			local releaseConnection
-			local moveConnection = inputService.InputChanged:Connect(function(newInput)
-				if newInput.UserInputType == (input.UserInputType == Enum.UserInputType.MouseButton1 and Enum.UserInputType.MouseMovement or Enum.UserInputType.Touch) then
-					local newValue = math.clamp((newInput.Position.X - holder.AbsolutePosition.X) / holder.AbsoluteSize.X, 0, 1)
-					component:SetValue(nil, name == 'Saturation' and newValue or nil, name == 'Vibrance' and newValue or nil, name == 'Opacity' and newValue or nil)
-				end
-			end)
-
-			releaseConnection = input.Changed:Connect(function()
-				if input.UserInputState == Enum.UserInputState.End then
-					moveConnection:Disconnect()
-					releaseConnection:Disconnect()
-				end
-			end)
-		end
-	end)
-
-	colorslidercustom.MouseEnter:Connect(function()
-		tween:Tween(knob, uipallet.Tween, {
-			Size = UDim2.fromOffset(16, 16)
-		})
-	end)
-
-	colorslidercustom.MouseLeave:Connect(function()
-		tween:Tween(knob, uipallet.Tween, {
-			Size = UDim2.fromOffset(14, 14)
-		})
-	end)
-
-	return colorslidercustom
-end
+local hasAlpha = props.Transparency == true
 
 local colorslider = Instance.new('TextButton')
 colorslider.AutoButtonColor = false
 colorslider.BackgroundColor3 = color.Dark(children.BackgroundColor3, props.Darker and 0.02 or 0)
 colorslider.BorderSizePixel = 0
-colorslider.Size = UDim2.new(1, 0, 0, 50)
+colorslider.Size = UDim2.new(1, 0, 0, 32)
 colorslider.Text = ''
 colorslider.Visible = props.Visible == nil or props.Visible
 colorslider.Parent = children
@@ -107,55 +23,13 @@ addTooltip(colorslider, props.Tooltip)
 local title = Instance.new('TextLabel')
 title.BackgroundTransparency = 1
 title.FontFace = uipallet.Font
-title.Position = UDim2.fromOffset(10, 2)
-title.Size = UDim2.fromOffset(60, 30)
+title.Position = UDim2.fromOffset(10, 0)
+title.Size = UDim2.new(1, -60, 0, 32)
 title.Text = props.Name
 title.TextColor3 = color.Dark(uipallet.Text, 0.16)
 title.TextSize = 11
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.Parent = colorslider
-local custombox = Instance.new('TextBox')
-custombox.BackgroundTransparency = 1
-custombox.FontFace = uipallet.Font
-custombox.Position = UDim2.new(1, -69, 0, 9)
-custombox.Size = UDim2.fromOffset(60, 15)
-custombox.Text = ''
-custombox.TextColor3 = color.Dark(uipallet.Text, 0.16)
-custombox.TextSize = 11
-custombox.TextXAlignment = Enum.TextXAlignment.Right
-custombox.Visible = false
-custombox.Parent = colorslider
-local holder = Instance.new('Frame')
-holder.BackgroundColor3 = Color3.new(1, 1, 1)
-holder.BorderSizePixel = 0
-holder.Position = UDim2.fromOffset(10, 39)
-holder.Size = UDim2.new(1, -20, 0, 2)
-holder.Parent = colorslider
-local rainbowTable = {}
-for i = 0, 1, 0.1 do
-	table.insert(rainbowTable, ColorSequenceKeypoint.new(i, Color3.fromHSV(i, 1, 1)))
-end
-local uigradient = Instance.new('UIGradient')
-uigradient.Color = ColorSequence.new(rainbowTable)
-uigradient.Parent = holder
-local fill = Instance.new('Frame')
-fill.BackgroundTransparency = 1
-fill.Size = UDim2.fromScale(math.clamp(component.Hue, 0.04, 0.96), 1)
-fill.Parent = holder
-local knobholder = Instance.new('Frame')
-knobholder.AnchorPoint = Vector2.new(0.5, 0.5)
-knobholder.BackgroundColor3 = colorslider.BackgroundColor3
-knobholder.BorderSizePixel = 0
-knobholder.Position = UDim2.fromScale(1, 0.5)
-knobholder.Size = UDim2.fromOffset(24, 4)
-knobholder.Parent = fill
-local knob = Instance.new('Frame')
-knob.AnchorPoint = Vector2.new(0.5, 0.5)
-knob.BackgroundColor3 = uipallet.Text
-knob.Position = UDim2.fromScale(0.5, 0.5)
-knob.Size = UDim2.fromOffset(14, 14)
-knob.Parent = knobholder
-addCorner(knob, UDim.new(1, 0))
 local preview = Instance.new('ImageButton')
 preview.BackgroundTransparency = 1
 preview.Image = get_ez_asset('Elite Zone/Assets/colorpreview.png')
@@ -164,19 +38,6 @@ preview.ImageTransparency = 1 - component.Opacity
 preview.Position = UDim2.new(1, -22, 0, 10)
 preview.Size = UDim2.fromOffset(12, 12)
 preview.Parent = colorslider
-local expand = Instance.new('TextButton')
-expand.BackgroundTransparency = 1
-expand.Position = UDim2.fromOffset(getfontbounds(title.Text, title.TextSize, title.FontFace).X + 11, 7)
-expand.Size = UDim2.fromOffset(17, 13)
-expand.Text = ''
-expand.Parent = colorslider
-local icon = Instance.new('ImageLabel')
-icon.BackgroundTransparency = 1
-icon.Image = get_ez_asset('Elite Zone/Assets/downexpandslider.png')
-icon.ImageColor3 = color.Dark(uipallet.Text, 0.43)
-icon.Position = UDim2.fromOffset(4, 4)
-icon.Size = UDim2.fromOffset(10, 5)
-icon.Parent = expand
 local rainbow = Instance.new('TextButton')
 rainbow.BackgroundTransparency = 1
 rainbow.Position = UDim2.new(1, -42, 0, 10)
@@ -200,20 +61,168 @@ ring4.Image = get_ez_asset('Elite Zone/Assets/rainbow_4.png')
 ring4.Parent = rainbow
 props.Function = props.Function or function() end
 
-local satSlider = createExtraSlider('Saturation', ColorSequence.new({
-	ColorSequenceKeypoint.new(0, Color3.fromHSV(0, 0, component.Value)),
-	ColorSequenceKeypoint.new(1, Color3.fromHSV(component.Hue, 1, component.Value))
-}))
+local hexY = hasAlpha and 192 or 172
+local picker = Instance.new('TextButton')
+picker.AutoButtonColor = false
+picker.BackgroundColor3 = uipallet.Main
+picker.BorderSizePixel = 0
+picker.Position = UDim2.fromOffset(456, 139)
+picker.Size = UDim2.fromOffset(200, hexY + 32)
+picker.Text = ''
+picker.Visible = false
+picker.ZIndex = 6
+picker.Parent = clickgui
+component.Window = picker
+addBlur(picker)
+addCorner(picker)
+addDragHandler(picker)
+local windowtitle = Instance.new('TextLabel')
+windowtitle.BackgroundTransparency = 1
+windowtitle.FontFace = uipallet.Font
+windowtitle.Position = UDim2.fromOffset(12, 9)
+windowtitle.Size = UDim2.new(1, -36, 0, 18)
+windowtitle.Text = props.Name
+windowtitle.TextColor3 = uipallet.Text
+windowtitle.TextSize = 13
+windowtitle.TextXAlignment = Enum.TextXAlignment.Left
+windowtitle.ZIndex = 7
+windowtitle.Parent = picker
+addCloseButton(picker)
 
-local vibSlider = createExtraSlider('Vibrance', ColorSequence.new({
-	ColorSequenceKeypoint.new(0, Color3.fromHSV(0, 0, 0)),
-	ColorSequenceKeypoint.new(1, Color3.fromHSV(component.Hue, component.Sat, 1))
-}))
+-- the map starts below 40px so the window drag handler only picks it up by the title strip
+local svmap = Instance.new('ImageButton')
+svmap.AutoButtonColor = false
+svmap.BackgroundColor3 = Color3.fromHSV(component.Hue, 1, 1)
+svmap.BorderSizePixel = 0
+svmap.Position = UDim2.fromOffset(10, 42)
+svmap.Size = UDim2.fromOffset(158, 120)
+svmap.ZIndex = 7
+svmap.Parent = picker
+addCorner(svmap, UDim.new(0, 4))
+local satlayer = Instance.new('Frame')
+satlayer.BackgroundColor3 = Color3.new(1, 1, 1)
+satlayer.BorderSizePixel = 0
+satlayer.Size = UDim2.fromScale(1, 1)
+satlayer.ZIndex = 8
+satlayer.Parent = svmap
+addCorner(satlayer, UDim.new(0, 4))
+local satgradient = Instance.new('UIGradient')
+satgradient.Transparency = NumberSequence.new(0, 1)
+satgradient.Parent = satlayer
+local viblayer = Instance.new('Frame')
+viblayer.BackgroundColor3 = Color3.new()
+viblayer.BorderSizePixel = 0
+viblayer.Size = UDim2.fromScale(1, 1)
+viblayer.ZIndex = 9
+viblayer.Parent = svmap
+addCorner(viblayer, UDim.new(0, 4))
+local vibgradient = Instance.new('UIGradient')
+vibgradient.Rotation = 90
+vibgradient.Transparency = NumberSequence.new(1, 0)
+vibgradient.Parent = viblayer
+local svcursor = Instance.new('Frame')
+svcursor.AnchorPoint = Vector2.new(0.5, 0.5)
+svcursor.BackgroundTransparency = 1
+svcursor.Position = UDim2.fromScale(component.Sat, 1 - component.Value)
+svcursor.Size = UDim2.fromOffset(10, 10)
+svcursor.ZIndex = 10
+svcursor.Parent = svmap
+addCorner(svcursor, UDim.new(1, 0))
+local svring = Instance.new('UIStroke')
+svring.Color = Color3.new(1, 1, 1)
+svring.Thickness = 2
+svring.Parent = svcursor
 
-local opSlider = createExtraSlider('Opacity', ColorSequence.new({
-	ColorSequenceKeypoint.new(0, color.Dark(uipallet.Main, 0.02)),
-	ColorSequenceKeypoint.new(1, Color3.fromHSV(component.Hue, component.Sat, component.Value))
-}))
+local huebar = Instance.new('ImageButton')
+huebar.AutoButtonColor = false
+huebar.BackgroundColor3 = Color3.new(1, 1, 1)
+huebar.BorderSizePixel = 0
+huebar.Position = UDim2.fromOffset(178, 42)
+huebar.Size = UDim2.fromOffset(12, 120)
+huebar.ZIndex = 7
+huebar.Parent = picker
+addCorner(huebar, UDim.new(0, 4))
+local rainbowTable = {}
+for i = 0, 1, 0.1 do
+	table.insert(rainbowTable, ColorSequenceKeypoint.new(i, Color3.fromHSV(i, 1, 1)))
+end
+local huegradient = Instance.new('UIGradient')
+huegradient.Color = ColorSequence.new(rainbowTable)
+huegradient.Rotation = 90
+huegradient.Parent = huebar
+local huecursor = Instance.new('Frame')
+huecursor.AnchorPoint = Vector2.new(0.5, 0.5)
+huecursor.BackgroundColor3 = Color3.new(1, 1, 1)
+huecursor.BorderSizePixel = 0
+huecursor.Position = UDim2.fromScale(0.5, component.Hue)
+huecursor.Size = UDim2.new(1, 4, 0, 3)
+huecursor.ZIndex = 8
+huecursor.Parent = huebar
+addCorner(huecursor, UDim.new(1, 0))
+
+local alphabar, alphagradient, alphacursor
+if hasAlpha then
+	alphabar = Instance.new('ImageButton')
+	alphabar.AutoButtonColor = false
+	alphabar.BackgroundColor3 = Color3.new(1, 1, 1)
+	alphabar.BorderSizePixel = 0
+	alphabar.Position = UDim2.fromOffset(10, 172)
+	alphabar.Size = UDim2.fromOffset(180, 10)
+	alphabar.ZIndex = 7
+	alphabar.Parent = picker
+	addCorner(alphabar, UDim.new(1, 0))
+	alphagradient = Instance.new('UIGradient')
+	alphagradient.Color = ColorSequence.new(color.Dark(uipallet.Main, 0.02), Color3.fromHSV(component.Hue, component.Sat, component.Value))
+	alphagradient.Parent = alphabar
+	alphacursor = Instance.new('Frame')
+	alphacursor.AnchorPoint = Vector2.new(0.5, 0.5)
+	alphacursor.BackgroundColor3 = Color3.new(1, 1, 1)
+	alphacursor.BorderSizePixel = 0
+	alphacursor.Position = UDim2.fromScale(component.Opacity, 0.5)
+	alphacursor.Size = UDim2.new(0, 3, 1, 4)
+	alphacursor.ZIndex = 8
+	alphacursor.Parent = alphabar
+	addCorner(alphacursor, UDim.new(1, 0))
+end
+
+local hexbox = Instance.new('TextBox')
+hexbox.BackgroundColor3 = color.Dark(uipallet.Main, 0.05)
+hexbox.BorderSizePixel = 0
+hexbox.ClearTextOnFocus = false
+hexbox.FontFace = uipallet.Font
+hexbox.Position = UDim2.fromOffset(10, hexY)
+hexbox.Size = UDim2.fromOffset(180, 22)
+hexbox.Text = ''
+hexbox.TextColor3 = uipallet.Text
+hexbox.TextSize = 11
+hexbox.ZIndex = 7
+hexbox.Parent = picker
+addCorner(hexbox, UDim.new(0, 4))
+
+-- every bar shares this: press to jump, hold to scrub, release to drop the connections
+local function addDrag(target, callback)
+	target.InputBegan:Connect(function(input)
+		if input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch then
+			return
+		end
+
+		callback(input.Position)
+
+		local releaseConnection
+		local moveConnection = inputService.InputChanged:Connect(function(newInput)
+			if newInput.UserInputType == (input.UserInputType == Enum.UserInputType.MouseButton1 and Enum.UserInputType.MouseMovement or Enum.UserInputType.Touch) then
+				callback(newInput.Position)
+			end
+		end)
+
+		releaseConnection = input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				moveConnection:Disconnect()
+				releaseConnection:Disconnect()
+			end
+		end)
+	end)
+end
 
 function component:Load(data)
 	if data.Rainbow ~= self.Rainbow then
@@ -240,48 +249,22 @@ function component:SetValue(h, s, v, o)
 	self.Sat = s or self.Sat
 	self.Value = v or self.Value
 	self.Opacity = o or self.Opacity
-	preview.ImageColor3 = Color3.fromHSV(self.Hue, self.Sat, self.Value)
+
+	local shade = Color3.fromHSV(self.Hue, self.Sat, self.Value)
+	preview.ImageColor3 = shade
 	preview.ImageTransparency = 1 - self.Opacity
 
-	satSlider.Holder.UIGradient.Color = ColorSequence.new({
-		ColorSequenceKeypoint.new(0, Color3.fromHSV(0, 0, self.Value)),
-		ColorSequenceKeypoint.new(1, Color3.fromHSV(self.Hue, 1, self.Value))
-	})
+	-- the picker is the only thing the rest of these touch, so skip them while it is closed
+	if picker.Visible then
+		svmap.BackgroundColor3 = Color3.fromHSV(self.Hue, 1, 1)
+		svcursor.Position = UDim2.fromScale(self.Sat, 1 - self.Value)
+		huecursor.Position = UDim2.fromScale(0.5, self.Hue)
+		hexbox.Text = '#'..shade:ToHex()
 
-	vibSlider.Holder.UIGradient.Color = ColorSequence.new({
-		ColorSequenceKeypoint.new(0, Color3.fromHSV(0, 0, 0)),
-		ColorSequenceKeypoint.new(1, Color3.fromHSV(self.Hue, self.Sat, 1))
-	})
-
-	opSlider.Holder.UIGradient.Color = ColorSequence.new({
-		ColorSequenceKeypoint.new(0, color.Dark(uipallet.Main, 0.02)),
-		ColorSequenceKeypoint.new(1, Color3.fromHSV(self.Hue, self.Sat, self.Value))
-	})
-
-	if self.Rainbow then
-		fill.Size = UDim2.fromScale(math.clamp(self.Hue, 0.04, 0.96), 1)
-	else
-		tween:Tween(fill, uipallet.Tween, {
-			Size = UDim2.fromScale(math.clamp(self.Hue, 0.04, 0.96), 1)
-		})
-	end
-
-	if s then
-		tween:Tween(satSlider.Holder.Fill, uipallet.Tween, {
-			Size = UDim2.fromScale(math.clamp(self.Sat, 0.04, 0.96), 1)
-		})
-	end
-
-	if v then
-		tween:Tween(vibSlider.Holder.Fill, uipallet.Tween, {
-			Size = UDim2.fromScale(math.clamp(self.Value, 0.04, 0.96), 1)
-		})
-	end
-
-	if o then
-		tween:Tween(opSlider.Holder.Fill, uipallet.Tween, {
-			Size = UDim2.fromScale(math.clamp(self.Opacity, 0.04, 0.96), 1)
-		})
+		if hasAlpha then
+			alphagradient.Color = ColorSequence.new(color.Dark(uipallet.Main, 0.02), shade)
+			alphacursor.Position = UDim2.fromScale(self.Opacity, 0.5)
+		end
 	end
 
 	props.Function(self.Hue, self.Sat, self.Value, self.Opacity)
@@ -320,99 +303,54 @@ function component:Toggle()
 	end
 end
 
+addDrag(svmap, function(position)
+	component:SetValue(
+		nil,
+		math.clamp((position.X - svmap.AbsolutePosition.X) / svmap.AbsoluteSize.X, 0, 1),
+		1 - math.clamp((position.Y - svmap.AbsolutePosition.Y) / svmap.AbsoluteSize.Y, 0, 1)
+	)
+end)
+
+addDrag(huebar, function(position)
+	component:SetValue(math.clamp((position.Y - huebar.AbsolutePosition.Y) / huebar.AbsoluteSize.Y, 0, 1))
+end)
+
+if hasAlpha then
+	addDrag(alphabar, function(position)
+		component:SetValue(nil, nil, nil, math.clamp((position.X - alphabar.AbsolutePosition.X) / alphabar.AbsoluteSize.X, 0, 1))
+	end)
+end
+
 preview.MouseButton1Click:Connect(function()
-	preview.Visible = false
-	custombox.Visible = true
-	custombox:CaptureFocus()
+	picker.Visible = not picker.Visible
 
-	local text = Color3.fromHSV(component.Hue, component.Sat, component.Value)
-	custombox.Text = math.round(text.R * 255)..', '..math.round(text.G * 255)..', '..math.round(text.B * 255)
-end)
-
-local doubleClick = os.clock()
-colorslider.InputBegan:Connect(function(input)
-	if
-		(input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch)
-		and (input.Position.Y - colorslider.AbsolutePosition.Y) > (20 * scale.Scale)
-	then
-		local releaseConnection
-		local moveConnection = inputService.InputChanged:Connect(function(newInput)
-			if newInput.UserInputType == (input.UserInputType == Enum.UserInputType.MouseButton1 and Enum.UserInputType.MouseMovement or Enum.UserInputType.Touch) then
-				component:SetValue(math.clamp((newInput.Position.X - holder.AbsolutePosition.X) / holder.AbsoluteSize.X, 0, 1))
-			end
-		end)
-
-		releaseConnection = input.Changed:Connect(function()
-			if input.UserInputState == Enum.UserInputState.End then
-				moveConnection:Disconnect()
-				releaseConnection:Disconnect()
-			end
-		end)
-
-		if doubleClick > os.clock() then
-			component:Toggle()
-		else
-			component:SetValue(math.clamp((input.Position.X - holder.AbsolutePosition.X) / holder.AbsoluteSize.X, 0, 1))
-		end
-
-		doubleClick = os.clock() + 0.3
+	if picker.Visible then
+		component:SetValue()
 	end
-end)
-
-colorslider.MouseEnter:Connect(function()
-	tween:Tween(knob, uipallet.Tween, {
-		Size = UDim2.fromOffset(16, 16)
-	})
-end)
-
-colorslider.MouseLeave:Connect(function()
-	tween:Tween(knob, uipallet.Tween, {
-		Size = UDim2.fromOffset(14, 14)
-	})
-end)
-
-colorslider:GetPropertyChangedSignal('Visible'):Connect(function()
-	satSlider.Visible = icon.Rotation == 180 and colorslider.Visible
-	vibSlider.Visible = satSlider.Visible
-	opSlider.Visible = satSlider.Visible
-end)
-
-expand.MouseEnter:Connect(function()
-	icon.ImageColor3 = color.Dark(uipallet.Text, 0.16)
-end)
-
-expand.MouseLeave:Connect(function()
-	icon.ImageColor3 = color.Dark(uipallet.Text, 0.43)
-end)
-
-expand.MouseButton1Click:Connect(function()
-	satSlider.Visible = not satSlider.Visible
-	vibSlider.Visible = satSlider.Visible
-	opSlider.Visible = satSlider.Visible
-	icon.Rotation = satSlider.Visible and 180 or 0
 end)
 
 rainbow.MouseButton1Click:Connect(function()
 	component:Toggle()
 end)
 
-custombox.FocusLost:Connect(function(enter)
-	preview.Visible = true
-	custombox.Visible = false
+hexbox.FocusLost:Connect(function(enter)
+	local success, parsed = enter and pcall(Color3.fromHex, hexbox.Text)
 
-	if enter then
-		local success, parsed = pcall(function()
-			local commas = custombox.Text:split(',')
-			return tonumber(commas[1]) and Color3.fromRGB(tonumber(commas[1]), tonumber(commas[2]), tonumber(commas[3])) or Color3.fromHex(valuebox.Text)
-		end)
+	if not success or not parsed then
+		hexbox.Text = '#'..Color3.fromHSV(component.Hue, component.Sat, component.Value):ToHex()
+		return
+	end
 
-		if success then
-			if component.Rainbow then
-				component:Toggle()
-			end
+	if component.Rainbow then
+		component:Toggle()
+	end
 
-			component:SetValue(parsed:ToHSV())
-		end
+	component:SetValue(parsed:ToHSV())
+end)
+
+colorslider:GetPropertyChangedSignal('Visible'):Connect(function()
+	if not colorslider.Visible then
+		picker.Visible = false
 	end
 end)
 
