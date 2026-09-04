@@ -2008,10 +2008,10 @@ function EZ:LoadGUI()
 			label.BackgroundTransparency = 1
 			label.FontFace = uipallet.Font
 			label.Position = UDim2.fromOffset(x, y)
-			label.Size = UDim2.fromOffset(96, 10)
+			label.Size = UDim2.fromOffset(96, 12)
 			label.Text = title
 			label.TextColor3 = label_text
-			label.TextSize = 9
+			label.TextSize = 11
 			label.TextXAlignment = Enum.TextXAlignment.Left
 			label.Visible = false
 			label.Parent = Holder
@@ -2043,10 +2043,10 @@ function EZ:LoadGUI()
 		ratio_title.BackgroundTransparency = 1
 		ratio_title.FontFace = uipallet.Font
 		ratio_title.Position = UDim2.fromOffset(20, 212)
-		ratio_title.Size = UDim2.fromOffset(120, 10)
+		ratio_title.Size = UDim2.fromOffset(120, 12)
 		ratio_title.Text = 'damage ratio'
 		ratio_title.TextColor3 = label_text
-		ratio_title.TextSize = 9
+		ratio_title.TextSize = 11
 		ratio_title.TextXAlignment = Enum.TextXAlignment.Left
 		ratio_title.Visible = false
 		ratio_title.Parent = Holder
