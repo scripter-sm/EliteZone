@@ -45,6 +45,7 @@ Holder.Position = UDim2.fromOffset(0, -6)
 Holder.ZIndex = 0
 Holder.BackgroundColor3 = color.Dark(uipallet.Main, 0.05)
 Holder.BackgroundTransparency = 0.1
+Holder.Visible = false
 Holder.Parent = scaledgui
 local BlurHolder = addBlur(Holder, nil, true)
 BlurHolder.Visible = false

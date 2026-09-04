@@ -1871,6 +1871,7 @@ function EZ:LoadGUI()
 		Holder.ZIndex = 0
 		Holder.BackgroundColor3 = color.Dark(uipallet.Main, 0.05)
 		Holder.BackgroundTransparency = 0.1
+		Holder.Visible = false
 		Holder.Parent = scaledgui
 		local BlurHolder = addBlur(Holder, nil, true)
 		BlurHolder.Visible = false
