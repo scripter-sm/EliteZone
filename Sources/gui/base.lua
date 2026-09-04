@@ -444,7 +444,7 @@ function EZ:Load(skipgui, config)
 	if not isfolder(self.config_dir) then
 		makefolder(self.config_dir)
 	end
-	self.autoload = (loadJson('Elite Zone/Cache/__autoload.dat') or {})[self.game]
+	self.autoload = (loadJson('Elite Zone/Cache/autoload.dat') or {})[self.game]
 
 	local guiData = {Categories = {}}
 	local oldConfig = self.config
@@ -657,7 +657,7 @@ function EZ:SavePositions()
 		return
 	end
 
-	local all = loadJson('Elite Zone/Cache/__position.dat') or {}
+	local all = loadJson('Elite Zone/Cache/position.dat') or {}
 	local positions = {}
 	for name, category in self.Categories do
 		if category.Object and category.Type ~= 'Overlay' then
@@ -669,11 +669,11 @@ function EZ:SavePositions()
 	end
 
 	all[self.game] = positions
-	writefile('Elite Zone/Cache/__position.dat', httpService:JSONEncode(all))
+	writefile('Elite Zone/Cache/position.dat', httpService:JSONEncode(all))
 end
 
 function EZ:LoadPositions()
-	local positions = (loadJson('Elite Zone/Cache/__position.dat') or {})[self.game]
+	local positions = (loadJson('Elite Zone/Cache/position.dat') or {})[self.game]
 	if not positions then
 		return
 	end
@@ -687,9 +687,9 @@ function EZ:LoadPositions()
 end
 
 function EZ:SetAutoload(name)
-	local data = loadJson('Elite Zone/Cache/__autoload.dat') or {}
+	local data = loadJson('Elite Zone/Cache/autoload.dat') or {}
 	data[self.game] = name
-	writefile('Elite Zone/Cache/__autoload.dat', httpService:JSONEncode(data))
+	writefile('Elite Zone/Cache/autoload.dat', httpService:JSONEncode(data))
 	self.autoload = name
 end
 
