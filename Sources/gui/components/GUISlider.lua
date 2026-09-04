@@ -101,29 +101,9 @@ svmap.BorderSizePixel = 0
 svmap.Position = UDim2.fromOffset(12, 42)
 svmap.Size = UDim2.fromOffset(176, 130)
 svmap.ZIndex = 7
+svmap.Image = 'rbxassetid://4155801252'
 svmap.Parent = picker
 addCorner(svmap, UDim.new(0, 6))
-local satlayer = Instance.new('Frame')
-satlayer.BackgroundColor3 = Color3.new(1, 1, 1)
-satlayer.BorderSizePixel = 0
-satlayer.Size = UDim2.fromScale(1, 1)
-satlayer.ZIndex = 8
-satlayer.Parent = svmap
-addCorner(satlayer, UDim.new(0, 6))
-local satgradient = Instance.new('UIGradient')
-satgradient.Transparency = NumberSequence.new(0, 1)
-satgradient.Parent = satlayer
-local viblayer = Instance.new('Frame')
-viblayer.BackgroundColor3 = Color3.new()
-viblayer.BorderSizePixel = 0
-viblayer.Size = UDim2.fromScale(1, 1)
-viblayer.ZIndex = 9
-viblayer.Parent = svmap
-addCorner(viblayer, UDim.new(0, 6))
-local vibgradient = Instance.new('UIGradient')
-vibgradient.Rotation = 90
-vibgradient.Transparency = NumberSequence.new(1, 0)
-vibgradient.Parent = viblayer
 local svcursor = Instance.new('Frame')
 svcursor.AnchorPoint = Vector2.new(0.5, 0.5)
 svcursor.BackgroundColor3 = Color3.fromHSV(component.Hue, component.Sat, component.Value)

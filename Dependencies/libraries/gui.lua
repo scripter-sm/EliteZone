@@ -4230,29 +4230,9 @@ components = {
 		svmap.Position = UDim2.fromOffset(12, 42)
 		svmap.Size = UDim2.fromOffset(176, 130)
 		svmap.ZIndex = 7
+		svmap.Image = 'rbxassetid://4155801252'
 		svmap.Parent = picker
 		addCorner(svmap, UDim.new(0, 6))
-		local satlayer = Instance.new('Frame')
-		satlayer.BackgroundColor3 = Color3.new(1, 1, 1)
-		satlayer.BorderSizePixel = 0
-		satlayer.Size = UDim2.fromScale(1, 1)
-		satlayer.ZIndex = 8
-		satlayer.Parent = svmap
-		addCorner(satlayer, UDim.new(0, 6))
-		local satgradient = Instance.new('UIGradient')
-		satgradient.Transparency = NumberSequence.new(0, 1)
-		satgradient.Parent = satlayer
-		local viblayer = Instance.new('Frame')
-		viblayer.BackgroundColor3 = Color3.new()
-		viblayer.BorderSizePixel = 0
-		viblayer.Size = UDim2.fromScale(1, 1)
-		viblayer.ZIndex = 9
-		viblayer.Parent = svmap
-		addCorner(viblayer, UDim.new(0, 6))
-		local vibgradient = Instance.new('UIGradient')
-		vibgradient.Rotation = 90
-		vibgradient.Transparency = NumberSequence.new(1, 0)
-		vibgradient.Parent = viblayer
 		local svcursor = Instance.new('Frame')
 		svcursor.AnchorPoint = Vector2.new(0.5, 0.5)
 		svcursor.BackgroundColor3 = Color3.fromHSV(component.Hue, component.Sat, component.Value)
@@ -4294,20 +4274,18 @@ components = {
 		huecursor.Parent = huebar
 		addCorner(huecursor, UDim.new(1, 0))
 		
-		local alphabar, alphagradient, alphacursor
+		local alphabar, alphacursor
 		if hasAlpha then
 			alphabar = Instance.new('ImageButton')
 			alphabar.AutoButtonColor = false
-			alphabar.BackgroundColor3 = Color3.new(1, 1, 1)
+			alphabar.BackgroundColor3 = Color3.fromHSV(component.Hue, component.Sat, component.Value)
 			alphabar.BorderSizePixel = 0
+			alphabar.Image = 'rbxassetid://12978095818'
 			alphabar.Position = UDim2.fromOffset(12, 182)
 			alphabar.Size = UDim2.fromOffset(196, 10)
 			alphabar.ZIndex = 7
 			alphabar.Parent = picker
 			addCorner(alphabar, UDim.new(1, 0))
-			alphagradient = Instance.new('UIGradient')
-			alphagradient.Color = ColorSequence.new(color.Dark(uipallet.Main, 0.02), Color3.fromHSV(component.Hue, component.Sat, component.Value))
-			alphagradient.Parent = alphabar
 			alphacursor = Instance.new('Frame')
 			alphacursor.AnchorPoint = Vector2.new(0.5, 0.5)
 			alphacursor.BackgroundColor3 = Color3.new(1, 1, 1)
@@ -4331,6 +4309,17 @@ components = {
 		swatchstroke.Color = color.Light(uipallet.Main, 0.4)
 		swatchstroke.Transparency = 0.5
 		swatchstroke.Parent = swatch
+		local swatchchecker
+		if hasAlpha then
+			swatchchecker = Instance.new('ImageLabel')
+			swatchchecker.BackgroundTransparency = 1
+			swatchchecker.Image = 'rbxassetid://12977615774'
+			swatchchecker.ImageTransparency = component.Opacity
+			swatchchecker.Size = UDim2.fromScale(1, 1)
+			swatchchecker.ZIndex = 8
+			swatchchecker.Parent = swatch
+			addCorner(swatchchecker, UDim.new(0, 6))
+		end
 		local hexbox = Instance.new('TextBox')
 		hexbox.BackgroundColor3 = color.Dark(uipallet.Main, 0.05)
 		hexbox.BorderSizePixel = 0
@@ -4414,8 +4403,9 @@ components = {
 				hexbox.Text = '#'..shade:ToHex()
 		
 				if hasAlpha then
-					alphagradient.Color = ColorSequence.new(color.Dark(uipallet.Main, 0.02), shade)
+					alphabar.BackgroundColor3 = shade
 					alphacursor.Position = UDim2.fromScale(self.Opacity, 0.5)
+					swatchchecker.ImageTransparency = self.Opacity
 				end
 			end
 		
@@ -5161,29 +5151,9 @@ components = {
 		svmap.Position = UDim2.fromOffset(12, 42)
 		svmap.Size = UDim2.fromOffset(176, 130)
 		svmap.ZIndex = 7
+		svmap.Image = 'rbxassetid://4155801252'
 		svmap.Parent = picker
 		addCorner(svmap, UDim.new(0, 6))
-		local satlayer = Instance.new('Frame')
-		satlayer.BackgroundColor3 = Color3.new(1, 1, 1)
-		satlayer.BorderSizePixel = 0
-		satlayer.Size = UDim2.fromScale(1, 1)
-		satlayer.ZIndex = 8
-		satlayer.Parent = svmap
-		addCorner(satlayer, UDim.new(0, 6))
-		local satgradient = Instance.new('UIGradient')
-		satgradient.Transparency = NumberSequence.new(0, 1)
-		satgradient.Parent = satlayer
-		local viblayer = Instance.new('Frame')
-		viblayer.BackgroundColor3 = Color3.new()
-		viblayer.BorderSizePixel = 0
-		viblayer.Size = UDim2.fromScale(1, 1)
-		viblayer.ZIndex = 9
-		viblayer.Parent = svmap
-		addCorner(viblayer, UDim.new(0, 6))
-		local vibgradient = Instance.new('UIGradient')
-		vibgradient.Rotation = 90
-		vibgradient.Transparency = NumberSequence.new(1, 0)
-		vibgradient.Parent = viblayer
 		local svcursor = Instance.new('Frame')
 		svcursor.AnchorPoint = Vector2.new(0.5, 0.5)
 		svcursor.BackgroundColor3 = Color3.fromHSV(component.Hue, component.Sat, component.Value)
