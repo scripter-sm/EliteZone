@@ -3,6 +3,7 @@ const path = require('path');
 
 const gui_path = path.join(__dirname, '..', 'Sources', 'gui');
 const output_path = path.join(__dirname, '..', 'Dependencies', 'libraries', 'gui.lua');
+const version_path = path.join(__dirname, '..', 'Dependencies', 'version.dat');
 
 function removeBOM(str) {
     if (str.charCodeAt(0) === 0xFEFF) {
@@ -86,6 +87,10 @@ function compile() {
     base_data = base_data.replace('--Init', () => init_data);
     
     base_data = removeBOM(base_data);
+
+    const version = JSON.parse(removeBOM(fs.readFileSync(version_path, {encoding: 'utf8'}))).version;
+    base_data = `-- This file was compiled by Elite Zone's Compiler. [${version}]\n` + base_data;
+
     fs.writeFileSync(output_path, base_data, 'utf8');
     console.log('Compiled GUI to gui.lua');
 }
