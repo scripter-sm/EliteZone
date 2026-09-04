@@ -32,27 +32,6 @@ preview.ImageColor3 = Color3.fromHSV(component.Hue, component.Sat, component.Val
 preview.Position = UDim2.new(1, -22, 0, 10)
 preview.Size = UDim2.fromOffset(12, 12)
 preview.Parent = slider
-local rainbow = Instance.new('TextButton')
-rainbow.BackgroundTransparency = 1
-rainbow.Position = UDim2.new(1, -42, 0, 10)
-rainbow.Size = UDim2.fromOffset(12, 12)
-rainbow.Text = ''
-rainbow.Parent = slider
-local ring1 = Instance.new('ImageLabel')
-ring1.BackgroundTransparency = 1
-ring1.Image = get_ez_asset('Elite Zone/Assets/rainbow_1.png')
-ring1.ImageColor3 = color.Light(uipallet.Main, 0.37)
-ring1.Size = UDim2.fromOffset(12, 12)
-ring1.Parent = rainbow
-local ring2 = Instance.fromExisting(ring1)
-ring2.Image = get_ez_asset('Elite Zone/Assets/rainbow_2.png')
-ring2.Parent = rainbow
-local ring3 = Instance.fromExisting(ring1)
-ring3.Image = get_ez_asset('Elite Zone/Assets/rainbow_3.png')
-ring3.Parent = rainbow
-local ring4 = Instance.fromExisting(ring1)
-ring4.Image = get_ez_asset('Elite Zone/Assets/rainbow_4.png')
-ring4.Parent = rainbow
 props.Function = props.Function or function() end
 
 -- a full screen catcher behind the window: any click that is not on the picker closes it
@@ -176,7 +155,7 @@ local hexholder = Instance.new('Frame')
 hexholder.BackgroundColor3 = color.Light(uipallet.Main, 0.02)
 hexholder.BorderSizePixel = 0
 hexholder.Position = UDim2.fromOffset(42, 185)
-hexholder.Size = UDim2.fromOffset(168, 24)
+hexholder.Size = UDim2.fromOffset(148, 24)
 hexholder.ZIndex = 7
 hexholder.Parent = picker
 addCorner(hexholder)
@@ -200,6 +179,29 @@ hexbox.TextSize = 13
 hexbox.TextXAlignment = Enum.TextXAlignment.Left
 hexbox.ZIndex = 8
 hexbox.Parent = hexholder
+local rainbow = Instance.new('TextButton')
+rainbow.BackgroundTransparency = 1
+rainbow.Position = UDim2.fromOffset(198, 185 + 6)
+rainbow.Size = UDim2.fromOffset(12, 12)
+rainbow.Text = ''
+rainbow.ZIndex = 7
+rainbow.Parent = picker
+local ring1 = Instance.new('ImageLabel')
+ring1.BackgroundTransparency = 1
+ring1.Image = get_ez_asset('Elite Zone/Assets/rainbow_1.png')
+ring1.ImageColor3 = color.Light(uipallet.Main, 0.37)
+ring1.Size = UDim2.fromOffset(12, 12)
+ring1.ZIndex = 7
+ring1.Parent = rainbow
+local ring2 = Instance.fromExisting(ring1)
+ring2.Image = get_ez_asset('Elite Zone/Assets/rainbow_2.png')
+ring2.Parent = rainbow
+local ring3 = Instance.fromExisting(ring1)
+ring3.Image = get_ez_asset('Elite Zone/Assets/rainbow_3.png')
+ring3.Parent = rainbow
+local ring4 = Instance.fromExisting(ring1)
+ring4.Image = get_ez_asset('Elite Zone/Assets/rainbow_4.png')
+ring4.Parent = rainbow
 
 local rainbowthread
 
