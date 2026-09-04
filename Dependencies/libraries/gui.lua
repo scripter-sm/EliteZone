@@ -1939,7 +1939,11 @@ function EZ:LoadGUI()
 		local shown_userid
 		local damage_up = Color3.fromRGB(90, 209, 107)
 		local damage_down = Color3.fromRGB(255, 90, 90)
-		local stat_text = color.Light(uipallet.Text, 0.15)
+		-- the segments each inset by this so the track shows through and marks the split point
+		local ratio_gap = 2
+		local ratio_dealt_prefix = '<font color="#5ad16b">'
+		local ratio_split = '</font>  <font color="#ff5a5a">'
+		local ratio_taken_suffix = '</font>'
 		local label_text = color.Light(uipallet.Text, 0.32)
 		
 		local weapon_row = Instance.new('Frame')
@@ -2042,8 +2046,8 @@ function EZ:LoadGUI()
 		local ratio_title = Instance.new('TextLabel')
 		ratio_title.BackgroundTransparency = 1
 		ratio_title.FontFace = uipallet.Font
-		ratio_title.Position = UDim2.fromOffset(20, 212)
-		ratio_title.Size = UDim2.fromOffset(120, 10)
+		ratio_title.Position = UDim2.fromOffset(20, 210)
+		ratio_title.Size = UDim2.fromOffset(90, 10)
 		ratio_title.Text = 'damage ratio'
 		ratio_title.TextColor3 = label_text
 		ratio_title.TextSize = 9
@@ -2053,11 +2057,11 @@ function EZ:LoadGUI()
 		
 		local ratio_value = ratio_title:Clone()
 		ratio_value.FontFace = uipallet.FontSemiBold
-		ratio_value.Position = UDim2.fromOffset(80, 211)
+		ratio_value.Position = UDim2.fromOffset(110, 208)
 		ratio_value.RichText = true
-		ratio_value.Size = UDim2.fromOffset(140, 12)
-		ratio_value.Text = '50 <font color="#5ad16b">▲</font>  50 <font color="#ff5a5a">▼</font>'
-		ratio_value.TextColor3 = stat_text
+		ratio_value.Size = UDim2.fromOffset(110, 12)
+		ratio_value.Text = ratio_dealt_prefix..'50'..ratio_split..'50'..ratio_taken_suffix
+		ratio_value.TextColor3 = label_text
 		ratio_value.TextSize = 11
 		ratio_value.TextXAlignment = Enum.TextXAlignment.Right
 		ratio_value.Parent = Holder
@@ -2068,8 +2072,8 @@ function EZ:LoadGUI()
 		ratio_bg.BackgroundColor3 = color.Dark(uipallet.Main, 0.15)
 		ratio_bg.BorderSizePixel = 0
 		ratio_bg.ClipsDescendants = true
-		ratio_bg.Position = UDim2.fromOffset(20, 228)
-		ratio_bg.Size = UDim2.fromOffset(200, 5)
+		ratio_bg.Position = UDim2.fromOffset(20, 226)
+		ratio_bg.Size = UDim2.fromOffset(200, 8)
 		ratio_bg.Visible = false
 		ratio_bg.Parent = Holder
 		addCorner(ratio_bg, UDim.new(1, 0))
@@ -2079,9 +2083,9 @@ function EZ:LoadGUI()
 		local ratio_fill = Instance.new('Frame')
 		ratio_fill.BackgroundColor3 = damage_up
 		ratio_fill.BorderSizePixel = 0
-		ratio_fill.Size = UDim2.fromScale(0.5, 1)
+		ratio_fill.Size = UDim2.new(0.5, -ratio_gap, 1, 0)
 		ratio_fill.Parent = ratio_bg
-		addCorner(ratio_fill, UDim.new(0, 2))
+		addCorner(ratio_fill, UDim.new(1, 0))
 		local ratio_taken = ratio_fill:Clone()
 		ratio_taken.AnchorPoint = Vector2.new(1, 0)
 		ratio_taken.BackgroundColor3 = damage_down
@@ -2188,9 +2192,9 @@ function EZ:LoadGUI()
 			rank_value.Text, rank_value.TextColor3 = tostring(rank):lower(), accent
 			device_value.Text, device_value.TextColor3 = tostring(device), accent
 			streak_value.Text, streak_value.TextColor3 = tostring(streak), accent
-			ratio_value.Text = math.floor(targetinfo.dealt + 0.5)..' <font color="#5ad16b">▲</font>  '..math.floor(targetinfo.taken + 0.5)..' <font color="#ff5a5a">▼</font>'
-			ratio_fill.Size = UDim2.fromScale(targetinfo.shown, 1)
-			ratio_taken.Size = UDim2.fromScale(1 - targetinfo.shown, 1)
+			ratio_value.Text = ratio_dealt_prefix..math.floor(targetinfo.dealt + 0.5)..ratio_split..math.floor(targetinfo.taken + 0.5)..ratio_taken_suffix
+			ratio_fill.Size = UDim2.new(targetinfo.shown, -ratio_gap, 1, 0)
+			ratio_taken.Size = UDim2.new(1 - targetinfo.shown, -ratio_gap, 1, 0)
 		end
 		
 		TargetInfoOverlay:CreateFont({
