@@ -175,11 +175,10 @@ local is_rivals
 local shown_userid
 local damage_up = Color3.fromRGB(90, 209, 107)
 local damage_down = Color3.fromRGB(255, 90, 90)
--- the segments each inset by this so the track shows through and marks the split point
-local ratio_gap = 2
-local ratio_dealt_prefix = '<font color="#5ad16b">'
-local ratio_split = '</font>  <font color="#ff5a5a">'
-local ratio_taken_suffix = '</font>'
+-- taken first then dealt, so each number sits on the side its colour grows toward
+local ratio_prefix = '<font color="#ff5a5a">'
+local ratio_split = '</font>  <font color="#5ad16b">'
+local ratio_suffix = '</font>'
 local label_text = color.Light(uipallet.Text, 0.32)
 
 local weapon_row = Instance.new('Frame')
@@ -296,7 +295,7 @@ ratio_value.FontFace = uipallet.FontSemiBold
 ratio_value.Position = UDim2.fromOffset(110, 208)
 ratio_value.RichText = true
 ratio_value.Size = UDim2.fromOffset(110, 12)
-ratio_value.Text = ratio_dealt_prefix..'50'..ratio_split..'50'..ratio_taken_suffix
+ratio_value.Text = ratio_prefix..'50'..ratio_split..'50'..ratio_suffix
 ratio_value.TextColor3 = label_text
 ratio_value.TextSize = 11
 ratio_value.TextXAlignment = Enum.TextXAlignment.Right
@@ -308,25 +307,35 @@ local ratio_bg = Instance.new('Frame')
 ratio_bg.BackgroundColor3 = color.Dark(uipallet.Main, 0.15)
 ratio_bg.BorderSizePixel = 0
 ratio_bg.ClipsDescendants = true
-ratio_bg.Position = UDim2.fromOffset(20, 226)
-ratio_bg.Size = UDim2.fromOffset(200, 8)
+ratio_bg.Position = UDim2.fromOffset(20, 224)
+ratio_bg.Size = UDim2.fromOffset(200, 10)
 ratio_bg.Visible = false
 ratio_bg.Parent = Holder
 addCorner(ratio_bg, UDim.new(1, 0))
 rivals_parts[#rivals_parts + 1] = ratio_title
 rivals_parts[#rivals_parts + 1] = ratio_value
 rivals_parts[#rivals_parts + 1] = ratio_bg
-local ratio_fill = Instance.new('Frame')
-ratio_fill.BackgroundColor3 = damage_up
-ratio_fill.BorderSizePixel = 0
-ratio_fill.Size = UDim2.new(0.5, -ratio_gap, 1, 0)
-ratio_fill.Parent = ratio_bg
-addCorner(ratio_fill, UDim.new(1, 0))
-local ratio_taken = ratio_fill:Clone()
-ratio_taken.AnchorPoint = Vector2.new(1, 0)
-ratio_taken.BackgroundColor3 = damage_down
-ratio_taken.Position = UDim2.fromScale(1, 0)
-ratio_taken.Parent = ratio_bg
+-- both grow out of the same centre pivot, so only the side that is ahead is ever drawn
+local ratio_up = Instance.new('Frame')
+ratio_up.BackgroundColor3 = damage_up
+ratio_up.BorderSizePixel = 0
+ratio_up.Position = UDim2.fromScale(0.5, 0)
+ratio_up.Size = UDim2.fromScale(0, 1)
+ratio_up.Parent = ratio_bg
+addCorner(ratio_up, UDim.new(1, 0))
+local ratio_down = ratio_up:Clone()
+ratio_down.AnchorPoint = Vector2.new(1, 0)
+ratio_down.BackgroundColor3 = damage_down
+ratio_down.Parent = ratio_bg
+local ratio_pivot = Instance.new('Frame')
+ratio_pivot.AnchorPoint = Vector2.new(0.5, 0)
+ratio_pivot.BackgroundColor3 = color.Light(uipallet.Main, 0.55)
+ratio_pivot.BackgroundTransparency = 0.3
+ratio_pivot.BorderSizePixel = 0
+ratio_pivot.Position = UDim2.fromScale(0.5, 0)
+ratio_pivot.Size = UDim2.new(0, 2, 1, 0)
+ratio_pivot.ZIndex = 3
+ratio_pivot.Parent = ratio_bg
 
 local function pick(list)
 	return list[math.random(#list)]
@@ -428,9 +437,10 @@ local function update_rivals(player)
 	rank_value.Text, rank_value.TextColor3 = tostring(rank):lower(), accent
 	device_value.Text, device_value.TextColor3 = tostring(device), accent
 	streak_value.Text, streak_value.TextColor3 = tostring(streak), accent
-	ratio_value.Text = ratio_dealt_prefix..math.floor(targetinfo.dealt + 0.5)..ratio_split..math.floor(targetinfo.taken + 0.5)..ratio_taken_suffix
-	ratio_fill.Size = UDim2.new(targetinfo.shown, -ratio_gap, 1, 0)
-	ratio_taken.Size = UDim2.new(1 - targetinfo.shown, -ratio_gap, 1, 0)
+	ratio_value.Text = ratio_prefix..math.floor(targetinfo.taken + 0.5)..ratio_split..math.floor(targetinfo.dealt + 0.5)..ratio_suffix
+	local advantage = targetinfo.shown - 0.5
+	ratio_up.Size = UDim2.fromScale(math.max(advantage, 0), 1)
+	ratio_down.Size = UDim2.fromScale(math.max(-advantage, 0), 1)
 end
 
 TargetInfoOverlay:CreateFont({
