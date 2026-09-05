@@ -886,7 +886,7 @@ function EZ:LoadGUI()
 	scarcitybanner.FontFace = uipallet.Font
 	scarcitybanner.Position = UDim2.fromScale(0, 0.97)
 	scarcitybanner.Size = UDim2.fromScale(1, 0.02)
-	scarcitybanner.Text = 'The discord link has been fixed, click the discord icon to join.'
+	scarcitybanner.Text = 'Made by Scripter.sm'
 	scarcitybanner.TextColor3 = Color3.new(1, 1, 1)
 	scarcitybanner.TextScaled = true
 	scarcitybanner.TextStrokeTransparency = 0.5
