@@ -169,14 +169,6 @@ general:CreateButton({
 	Tooltip = 'Removes EZ from the current game'
 })
 
-general:CreateButton({
-	Name = 'Reinject',
-	Function = function()
-		shared.EZreload = true
-	end,
-	Tooltip = 'Reloads EZ for debugging purposes'
-})
-
 local modules = EZ.Categories.Main.Settings:CreateSettingsPane({Name = 'Modules'})
 modules:CreateToggle({
 	Name = 'Teams by server',
