@@ -1,0 +1,35 @@
+Elite Zone License
+
+Copyright (c) 2026 Elite Zone
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of the contents of this repository and associated files (the "Software"), to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+Portions of the Software may contain code derived from third-party projects,
+including the MIT-licensed Linoria library. Such portions remain subject to
+their respective licenses, and nothing in this license overrides or restricts
+the rights granted by those licenses.
+
+The contents loaded through `Loader.lua`, including protected, obfuscated, or
+otherwise inaccessible source code, are excluded from the permissions granted
+above. Such contents may be used as intended by Elite Zone, but may not be
+deobfuscated, decrypted, extracted, reverse engineered for the purpose of
+recovering source code, redistributed, republished, or otherwise made
+available in source or substantially equivalent form.
+
+This license does not apply to `old-library.bak`. `old-library.bak` is a fork
+of the MIT-licensed Linoria library and remains subject to the original
+Linoria MIT License.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+ELITE ZONE OR ITS COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+IN THE SOFTWARE.
