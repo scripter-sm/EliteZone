@@ -886,7 +886,7 @@ function EZ:LoadGUI()
 	scarcitybanner.FontFace = uipallet.Font
 	scarcitybanner.Position = UDim2.fromScale(0, 0.97)
 	scarcitybanner.Size = UDim2.fromScale(1, 0.02)
-	scarcitybanner.Text = 'Made by Scripter.sm'
+	scarcitybanner.Text = 'made by scripter.sm'
 	scarcitybanner.TextColor3 = Color3.new(1, 1, 1)
 	scarcitybanner.TextScaled = true
 	scarcitybanner.TextStrokeTransparency = 0.5
@@ -4844,7 +4844,7 @@ components = {
 		title.AnchorPoint = Vector2.new(0, 0.5)
 		title.AutomaticSize = Enum.AutomaticSize.X
 		title.BackgroundTransparency = 1
-		title.FontFace = Font.new(uipallet.Font.Family, Enum.FontWeight.Bold)
+		title.FontFace = uipallet.FontSemiBold
 		title.Name = 'Title'
 		title.Position = UDim2.fromOffset(46, 21)
 		title.Size = UDim2.fromOffset(0, 20)
