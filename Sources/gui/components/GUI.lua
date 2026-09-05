@@ -16,19 +16,19 @@ addCorner(window)
 addDragHandler(window)
 local logo = Instance.new('ImageLabel')
 logo.BackgroundTransparency = 1
-logo.Image = get_ez_asset('Elite Zone/Assets/vapelogomini.png')
+logo.Image = get_ez_asset('Elite Zone/Assets/logo.png')
 logo.ImageColor3 = select(3, uipallet.Main:ToHSV()) > 0.5 and uipallet.Text or Color3.new(1, 1, 1)
 logo.Name = 'EZLogo'
 logo.Position = UDim2.fromOffset(12, 11)
-logo.Size = UDim2.fromOffset(55, 16)
+logo.Size = UDim2.fromOffset(28, 16)
 logo.Parent = window
-local v4logo = Instance.new('ImageLabel')
-v4logo.BackgroundTransparency = 1
-v4logo.Image = get_ez_asset('Elite Zone/Assets/v4mini.png')
-v4logo.Name = 'V4Logo'
-v4logo.Position = UDim2.new(1, -1, 0, 0)
-v4logo.Size = UDim2.fromOffset(23, 16)
-v4logo.Parent = logo
+local accentcolor = Instance.new('ImageLabel')
+accentcolor.BackgroundTransparency = 1
+accentcolor.ImageTransparency = 1
+accentcolor.Name = 'AccentColor'
+accentcolor.Size = UDim2.fromOffset(0, 0)
+accentcolor.Visible = false
+accentcolor.Parent = logo
 local children = Instance.new('Frame')
 children.BackgroundTransparency = 1
 children.Position = UDim2.fromOffset(0, 37)
@@ -71,7 +71,7 @@ local settingspane = components.SettingsPane({
 component.Settings = settingspane
 
 function component:Color(hue, sat, val, isRainbow)
-	v4logo.ImageColor3 = Color3.fromHSV(hue, sat, val)
+	accentcolor.ImageColor3 = Color3.fromHSV(hue, sat, val)
 
 	for _, button in self.Buttons do
 		if button.Enabled then

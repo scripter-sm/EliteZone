@@ -169,10 +169,7 @@ do
 		['Elite Zone/Assets/theme.png'] = 'rbxassetid://111525258317113',
 		['Elite Zone/Assets/utility.png'] = 'rbxassetid://108303206513893',
 		['Elite Zone/Assets/EZ.png'] = 'rbxassetid://92153855792786',
-		['Elite Zone/Assets/vapelogo.png'] = 'rbxassetid://126205920310261',
-		['Elite Zone/Assets/vapelogomini.png'] = 'rbxassetid://109041903452149',
-		['Elite Zone/Assets/v4.png'] = 'rbxassetid://102549752760489',
-		['Elite Zone/Assets/v4mini.png'] = 'rbxassetid://115213099001611',
+		['Elite Zone/Assets/logo.png'] = '',
 		['Elite Zone/Assets/world.png'] = 'rbxassetid://118917453153459'
 	}
 
@@ -1255,7 +1252,6 @@ function EZ:LoadGUI()
 		local Scale
 		local Shadow
 		local Gradient
-		local GradientV4
 		local Animations
 		local Watermark
 		local Background
@@ -1343,18 +1339,9 @@ function EZ:LoadGUI()
 		Gradient = TextGUI:CreateToggle({
 			Name = 'Gradient',
 			Tooltip = 'Renders a gradient',
-			Function = function(callback)
-				GradientV4.Object.Visible = callback
-				EZ:UpdateTextGUI()
-			end
-		})
-		GradientV4 = TextGUI:CreateToggle({
-			Name = 'V4 Gradient',
 			Function = function()
 				EZ:UpdateTextGUI()
-			end,
-			Darker = true,
-			Visible = false
+			end
 		})
 		Animations = TextGUI:CreateToggle({
 			Name = 'Animations',
@@ -1476,21 +1463,12 @@ function EZ:LoadGUI()
 		Logo.BackgroundColor3 = Color3.new()
 		Logo.BackgroundTransparency = 1
 		Logo.BorderSizePixel = 0
-		Logo.Image = get_ez_asset('Elite Zone/Assets/vapelogo.png')
+		Logo.Image = get_ez_asset('Elite Zone/Assets/logo.png')
 		Logo.Name = 'Logo'
-		Logo.Position = UDim2.new(1, -142, 0, 3)
-		Logo.Size = UDim2.fromOffset(81, 24)
+		Logo.Position = UDim2.new(1, -70, 0, 3)
+		Logo.Size = UDim2.fromOffset(43, 24)
 		Logo.Visible = false
 		Logo.Parent = TextGUI.Children
-		local LogoV4 = Instance.new('ImageLabel')
-		LogoV4.BackgroundColor3 = Color3.new()
-		LogoV4.BackgroundTransparency = 1
-		LogoV4.BorderSizePixel = 0
-		LogoV4.Image = get_ez_asset('Elite Zone/Assets/v4.png')
-		LogoV4.Name = 'Logo2'
-		LogoV4.Position = UDim2.new(1, -1, 0, 0)
-		LogoV4.Size = UDim2.fromOffset(35, 24)
-		LogoV4.Parent = Logo
 		local LogoShadow = Logo:Clone()
 		LogoShadow.ImageColor3 = Color3.new()
 		LogoShadow.ImageTransparency = 0.65
@@ -1498,15 +1476,9 @@ function EZ:LoadGUI()
 		LogoShadow.Visible = true
 		LogoShadow.ZIndex = 0
 		LogoShadow.Parent = Logo
-		LogoShadow.Logo2.ImageColor3 = Color3.new()
-		LogoShadow.Logo2.ImageTransparency = 0.65
-		LogoShadow.Logo2.ZIndex = 0
 		local LogoGradient = Instance.new('UIGradient')
 		LogoGradient.Rotation = 90
 		LogoGradient.Parent = Logo
-		local LogoGradient2 = Instance.new('UIGradient')
-		LogoGradient2.Rotation = 90
-		LogoGradient2.Parent = LogoV4
 		local LabelCustom = Instance.new('TextLabel')
 		LabelCustom.BackgroundTransparency = 1
 		LabelCustom.BorderSizePixel = 0
@@ -1738,10 +1710,6 @@ function EZ:LoadGUI()
 			LogoGradient.Color = ColorSequence.new({
 				ColorSequenceKeypoint.new(0, Color3.fromHSV(hue, sat, val)),
 				ColorSequenceKeypoint.new(1, Gradient.Enabled and Color3.fromHSV(EZ:Color((hue - 0.075) % 1)) or Color3.fromHSV(hue, sat, val))
-			})
-			LogoGradient2.Color = Gradient.Enabled and GradientV4.Enabled and LogoGradient.Color or ColorSequence.new({
-				ColorSequenceKeypoint.new(0, Color3.new(1, 1, 1)),
-				ColorSequenceKeypoint.new(1, Color3.new(1, 1, 1))
 			})
 			LabelCustom.TextColor3 = CustomTextColor.Enabled and Color3.fromHSV(CustomTextColorSlider.Hue, CustomTextColorSlider.Sat, CustomTextColorSlider.Value) or LogoGradient.Color.Keypoints[2].Value
 		
@@ -4866,19 +4834,19 @@ components = {
 		addDragHandler(window)
 		local logo = Instance.new('ImageLabel')
 		logo.BackgroundTransparency = 1
-		logo.Image = get_ez_asset('Elite Zone/Assets/vapelogomini.png')
+		logo.Image = get_ez_asset('Elite Zone/Assets/logo.png')
 		logo.ImageColor3 = select(3, uipallet.Main:ToHSV()) > 0.5 and uipallet.Text or Color3.new(1, 1, 1)
 		logo.Name = 'EZLogo'
 		logo.Position = UDim2.fromOffset(12, 11)
-		logo.Size = UDim2.fromOffset(55, 16)
+		logo.Size = UDim2.fromOffset(28, 16)
 		logo.Parent = window
-		local v4logo = Instance.new('ImageLabel')
-		v4logo.BackgroundTransparency = 1
-		v4logo.Image = get_ez_asset('Elite Zone/Assets/v4mini.png')
-		v4logo.Name = 'V4Logo'
-		v4logo.Position = UDim2.new(1, -1, 0, 0)
-		v4logo.Size = UDim2.fromOffset(23, 16)
-		v4logo.Parent = logo
+		local accentcolor = Instance.new('ImageLabel')
+		accentcolor.BackgroundTransparency = 1
+		accentcolor.ImageTransparency = 1
+		accentcolor.Name = 'AccentColor'
+		accentcolor.Size = UDim2.fromOffset(0, 0)
+		accentcolor.Visible = false
+		accentcolor.Parent = logo
 		local children = Instance.new('Frame')
 		children.BackgroundTransparency = 1
 		children.Position = UDim2.fromOffset(0, 37)
@@ -4921,7 +4889,7 @@ components = {
 		component.Settings = settingspane
 		
 		function component:Color(hue, sat, val, isRainbow)
-			v4logo.ImageColor3 = Color3.fromHSV(hue, sat, val)
+			accentcolor.ImageColor3 = Color3.fromHSV(hue, sat, val)
 		
 			for _, button in self.Buttons do
 				if button.Enabled then
@@ -6878,7 +6846,7 @@ components = {
 		legiticon.Position = UDim2.fromOffset(8, 11)
 		legiticon.Size = UDim2.fromOffset(29, 16)
 		legiticon.Parent = search
-		listenProperty(EZ.Categories.Main.Object.EZLogo.V4Logo, legiticon, 'ImageColor3', legiticon)
+		listenProperty(EZ.Categories.Main.Object.EZLogo.AccentColor, legiticon, 'ImageColor3', legiticon)
 		local legitdivider = Instance.new('Frame')
 		legitdivider.BackgroundColor3 = color.Light(uipallet.Main, 0.14)
 		legitdivider.BorderSizePixel = 0

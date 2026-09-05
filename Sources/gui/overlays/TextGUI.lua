@@ -5,7 +5,6 @@ local ColorMode
 local Scale
 local Shadow
 local Gradient
-local GradientV4
 local Animations
 local Watermark
 local Background
@@ -93,18 +92,9 @@ Shadow = TextGUI:CreateToggle({
 Gradient = TextGUI:CreateToggle({
 	Name = 'Gradient',
 	Tooltip = 'Renders a gradient',
-	Function = function(callback)
-		GradientV4.Object.Visible = callback
-		EZ:UpdateTextGUI()
-	end
-})
-GradientV4 = TextGUI:CreateToggle({
-	Name = 'V4 Gradient',
 	Function = function()
 		EZ:UpdateTextGUI()
-	end,
-	Darker = true,
-	Visible = false
+	end
 })
 Animations = TextGUI:CreateToggle({
 	Name = 'Animations',
@@ -226,21 +216,12 @@ local Logo = Instance.new('ImageLabel')
 Logo.BackgroundColor3 = Color3.new()
 Logo.BackgroundTransparency = 1
 Logo.BorderSizePixel = 0
-Logo.Image = get_ez_asset('Elite Zone/Assets/vapelogo.png')
+Logo.Image = get_ez_asset('Elite Zone/Assets/logo.png')
 Logo.Name = 'Logo'
-Logo.Position = UDim2.new(1, -142, 0, 3)
-Logo.Size = UDim2.fromOffset(81, 24)
+Logo.Position = UDim2.new(1, -70, 0, 3)
+Logo.Size = UDim2.fromOffset(43, 24)
 Logo.Visible = false
 Logo.Parent = TextGUI.Children
-local LogoV4 = Instance.new('ImageLabel')
-LogoV4.BackgroundColor3 = Color3.new()
-LogoV4.BackgroundTransparency = 1
-LogoV4.BorderSizePixel = 0
-LogoV4.Image = get_ez_asset('Elite Zone/Assets/v4.png')
-LogoV4.Name = 'Logo2'
-LogoV4.Position = UDim2.new(1, -1, 0, 0)
-LogoV4.Size = UDim2.fromOffset(35, 24)
-LogoV4.Parent = Logo
 local LogoShadow = Logo:Clone()
 LogoShadow.ImageColor3 = Color3.new()
 LogoShadow.ImageTransparency = 0.65
@@ -248,15 +229,9 @@ LogoShadow.Position = UDim2.fromOffset(1, 1)
 LogoShadow.Visible = true
 LogoShadow.ZIndex = 0
 LogoShadow.Parent = Logo
-LogoShadow.Logo2.ImageColor3 = Color3.new()
-LogoShadow.Logo2.ImageTransparency = 0.65
-LogoShadow.Logo2.ZIndex = 0
 local LogoGradient = Instance.new('UIGradient')
 LogoGradient.Rotation = 90
 LogoGradient.Parent = Logo
-local LogoGradient2 = Instance.new('UIGradient')
-LogoGradient2.Rotation = 90
-LogoGradient2.Parent = LogoV4
 local LabelCustom = Instance.new('TextLabel')
 LabelCustom.BackgroundTransparency = 1
 LabelCustom.BorderSizePixel = 0
@@ -488,10 +463,6 @@ function TextGUI:UpdateColor(hue, sat, val, default)
 	LogoGradient.Color = ColorSequence.new({
 		ColorSequenceKeypoint.new(0, Color3.fromHSV(hue, sat, val)),
 		ColorSequenceKeypoint.new(1, Gradient.Enabled and Color3.fromHSV(EZ:Color((hue - 0.075) % 1)) or Color3.fromHSV(hue, sat, val))
-	})
-	LogoGradient2.Color = Gradient.Enabled and GradientV4.Enabled and LogoGradient.Color or ColorSequence.new({
-		ColorSequenceKeypoint.new(0, Color3.new(1, 1, 1)),
-		ColorSequenceKeypoint.new(1, Color3.new(1, 1, 1))
 	})
 	LabelCustom.TextColor3 = CustomTextColor.Enabled and Color3.fromHSV(CustomTextColorSlider.Hue, CustomTextColorSlider.Sat, CustomTextColorSlider.Value) or LogoGradient.Color.Keypoints[2].Value
 
