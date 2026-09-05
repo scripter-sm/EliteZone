@@ -169,29 +169,6 @@ general:CreateButton({
 	Tooltip = 'Removes EZ from the current game'
 })
 
-local modules = EZ.Categories.Main.Settings:CreateSettingsPane({Name = 'Modules'})
-modules:CreateToggle({
-	Name = 'Teams by server',
-	Tooltip = 'Ignore players on your team designated by the server',
-	Default = true,
-	Function = function()
-		if EZ.Libraries.entity and EZ.Libraries.entity.Running then
-			EZ.Libraries.entity.refresh()
-		end
-	end
-})
-
-modules:CreateToggle({
-	Name = 'Use team color',
-	Tooltip = 'Uses the TeamColor property on players for render modules',
-	Default = true,
-	Function = function()
-		if EZ.Libraries.entity and EZ.Libraries.entity.Running then
-			EZ.Libraries.entity.refresh()
-		end
-	end
-})
-
 local guipane = EZ.Categories.Main.Settings:CreateSettingsPane({Name = 'GUI'})
 EZ.Blur = guipane:CreateToggle({
 	Name = 'Blur background',
