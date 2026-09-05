@@ -523,6 +523,13 @@ local function addTooltip(gui, text, customText, visCheck)
 		tooltip.Visible = false
 		EZ.CurrentTooltip = nil
 	end)
+
+	-- Destroy() never fires MouseLeave, so a tooltip left open on a destroyed element
+	-- (eg. a Bind torn down mid-hover) would otherwise stay stuck on screen forever
+	gui.Destroying:Once(function()
+		tooltip.Visible = false
+		EZ.CurrentTooltip = nil
+	end)
 end
 
 local function createSignal()
