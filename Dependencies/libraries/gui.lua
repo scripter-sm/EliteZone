@@ -137,7 +137,6 @@ do
 		['Elite Zone/Assets/friends.png'] = 'rbxassetid://92957214042038',
 		['Elite Zone/Assets/inventory.png'] = 'rbxassetid://93264756888499',
 		['Elite Zone/Assets/legit_mode_icon.png'] = 'rbxassetid://102858626075156',
-		['Elite Zone/Assets/legit_switch.png'] = 'rbxassetid://127508881124779',
 		['Elite Zone/Assets/min.png'] = 'rbxassetid://82175054487146',
 		['Elite Zone/Assets/noti_alert.png'] = 'rbxassetid://82356478726846',
 		['Elite Zone/Assets/noti_info.png'] = 'rbxassetid://102614825645099',
@@ -6549,28 +6548,13 @@ components = {
 		icon.Position = UDim2.new(1, -25, 0, 11)
 		icon.Size = UDim2.fromOffset(14, 14)
 		icon.Parent = search
-		local legiticon = Instance.new('ImageButton')
-		legiticon.BackgroundTransparency = 1
-		legiticon.Image = get_ez_asset('Elite Zone/Assets/legit_switch.png')
-		legiticon.Name = 'Legit'
-		legiticon.Position = UDim2.fromOffset(8, 11)
-		legiticon.Size = UDim2.fromOffset(29, 16)
-		legiticon.Parent = search
-		listenProperty(EZ.Categories.Main.Object.EZLogo.AccentColor, legiticon, 'ImageColor3', legiticon)
-		local legitdivider = Instance.new('Frame')
-		legitdivider.BackgroundColor3 = color.Light(uipallet.Main, 0.14)
-		legitdivider.BorderSizePixel = 0
-		legitdivider.Name = 'LegitDivider'
-		legitdivider.Position = UDim2.fromOffset(43, 13)
-		legitdivider.Size = UDim2.fromOffset(2, 12)
-		legitdivider.Parent = search
 		local box = Instance.new('TextBox')
 		box.BackgroundTransparency = 1
 		box.ClearTextOnFocus = false
 		box.FontFace = uipallet.Font
 		box.PlaceholderText = ''
-		box.Position = UDim2.fromOffset(50, 0)
-		box.Size = UDim2.new(1, -50, 0, 37)
+		box.Position = UDim2.fromOffset(10, 0)
+		box.Size = UDim2.new(1, -34, 0, 37)
 		box.Text = ''
 		box.TextColor3 = uipallet.Text
 		box.TextSize = 12
@@ -6651,12 +6635,6 @@ components = {
 		
 		children:GetPropertyChangedSignal('CanvasPosition'):Connect(function()
 			divider.Visible = children.CanvasPosition.Y > 10 and children.Visible
-		end)
-		
-		legiticon.MouseButton1Click:Connect(function()
-			clickgui.Visible = false
-			EZ.Legit.Window.Visible = true
-			EZ.Legit.Window.Position = UDim2.new(0.5, -350, 0.5, -194)
 		end)
 		
 		windowlist:GetPropertyChangedSignal('AbsoluteContentSize'):Connect(function()
