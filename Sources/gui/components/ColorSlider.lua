@@ -26,6 +26,17 @@ for i = 0, 1, 0.1 do
 	table.insert(hueKeypoints, ColorSequenceKeypoint.new(i, Color3.fromHSV(i, 1, 1)))
 end
 
+local colorinfo = TweenInfo.new(0.35, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+
+-- rainbow already changes the shade every tick, so easing it would only fight the cycle
+local function paint(obj, prop, value, instant)
+	if instant then
+		obj[prop] = value
+	else
+		tween:Tween(obj, colorinfo, {[prop] = value})
+	end
+end
+
 -- every bar shares this: press to jump, hold to scrub, release to drop the connections
 local function addDrag(target, callback)
 	target.InputBegan:Connect(function(input)
@@ -333,7 +344,8 @@ local function addPicker(index, info)
 		self.Opacity = o or self.Opacity
 
 		local shade = Color3.fromHSV(self.Hue, self.Sat, self.Value)
-		preview.ImageColor3 = shade
+		local instant = self.Rainbow
+		paint(preview, 'ImageColor3', shade, instant)
 
 		if hasAlpha then
 			previewchecker.ImageTransparency = self.Opacity
@@ -341,17 +353,17 @@ local function addPicker(index, info)
 
 		-- the picker is the only thing the rest of these touch, so skip them while it is closed
 		if picker.Visible then
-			windowicon.ImageColor3 = shade
-			huelayer.BackgroundColor3 = Color3.fromHSV(self.Hue, 1, 1)
+			paint(windowicon, 'ImageColor3', shade, instant)
+			paint(huelayer, 'BackgroundColor3', Color3.fromHSV(self.Hue, 1, 1), instant)
 			svcursor.Position = UDim2.fromScale(self.Sat, 1 - self.Value)
-			svcursor.BackgroundColor3 = shade
+			paint(svcursor, 'BackgroundColor3', shade, instant)
 			huecursor.Position = UDim2.fromScale(0.5, self.Hue)
-			swatch.BackgroundColor3 = shade
+			paint(swatch, 'BackgroundColor3', shade, instant)
 			hexbox.Text = '#'..shade:ToHex()
 
 			if hasAlpha then
 				iconchecker.ImageTransparency = self.Opacity
-				alphabar.BackgroundColor3 = shade
+				paint(alphabar, 'BackgroundColor3', shade, instant)
 				alphacursor.Position = UDim2.fromScale(self.Opacity, 0.5)
 				swatchchecker.ImageTransparency = self.Opacity
 			end
