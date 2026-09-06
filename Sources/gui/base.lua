@@ -540,7 +540,9 @@ function EZ:Load(skipgui, config)
 		local button = Instance.new('TextButton')
 		button.BackgroundColor3 = Color3.new()
 		button.BackgroundTransparency = 0.2
-		button.Position = UDim2.new(1, -90, 0, 4)
+		-- gui ignores the inset so its origin sits a full inset above the screen; offset by two
+		-- insets to land just below the roblox topbar instead of off-screen / behind it
+		button.Position = UDim2.new(1, -42, 0, guiService:GetGuiInset().Y * 2 + 6)
 		button.Size = UDim2.fromOffset(32, 32)
 		button.Text = ''
 		button.Parent = gui
