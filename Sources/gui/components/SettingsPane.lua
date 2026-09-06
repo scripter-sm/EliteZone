@@ -50,10 +50,13 @@ local listlayout = Instance.new('UIListLayout')
 listlayout.SortOrder = Enum.SortOrder.LayoutOrder
 listlayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 listlayout.Parent = settingschildren
+-- hide the pane we open from: a shorter sub-pane leaves the taller parent's rows poking out
+-- below it, and those rows still catch hover (tooltips showing through the open sub-pane)
 if not props.Main then
 	api:CreateGUIButton({
 		Name = props.Name,
 		Function = function()
+			api.Object.Visible = false
 			pane.Visible = true
 		end
 	})
@@ -83,10 +86,16 @@ end)
 
 back.MouseButton1Click:Connect(function()
 	pane.Visible = false
+	if not props.Main then
+		api.Object.Visible = true
+	end
 end)
 
 close.MouseButton1Click:Connect(function()
 	pane.Visible = false
+	if not props.Main then
+		api.Object.Visible = true
+	end
 end)
 
 -- the window keeps growing after this pane is built, since categories come from the script, so
