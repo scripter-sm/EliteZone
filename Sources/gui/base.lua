@@ -29,7 +29,6 @@ local guiService = cloneref(game:GetService('GuiService'))
 local runService = cloneref(game:GetService('RunService'))
 local httpService = cloneref(game:GetService('HttpService'))
 
--- set getgenv().mobile = true before injecting to force the touch layout on a desktop for testing
 local istouch = inputService.TouchEnabled or (getgenv and getgenv().mobile) or false
 
 local fontsize = Instance.new('GetTextBoundsParams')
@@ -541,7 +540,6 @@ function EZ:Load(skipgui, config)
 		button.AnchorPoint = Vector2.new(0, 0.5)
 		button.BackgroundColor3 = Color3.new()
 		button.BackgroundTransparency = 0.2
-		-- left-centered: gui ignores the inset, so the top-right corner sits under roblox's own buttons
 		button.Position = UDim2.new(0, 8, 0.5, 0)
 		button.Size = UDim2.fromOffset(36, 36)
 		button.Text = ''
