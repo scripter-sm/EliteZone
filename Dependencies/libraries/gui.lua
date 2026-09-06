@@ -12,7 +12,6 @@ EZ.Loaded = false
 EZ.Libraries = {}
 EZ.Modules = {}
 EZ.config = 'default'
-EZ.RainbowSliders = {}
 EZ.Settings = {}
 EZ.ThreadFix = setthreadidentity and true or false
 EZ.ToggleNotifications = {}
@@ -152,10 +151,6 @@ do
 		['Elite Zone/Assets/players.png'] = 'rbxassetid://105137446428129',
 		['Elite Zone/Assets/configs.png'] = 'rbxassetid://126051451865127',
 		['Elite Zone/Assets/radar.png'] = 'rbxassetid://97983828696086',
-		['Elite Zone/Assets/rainbow_1.png'] = 'rbxassetid://101329996188554',
-		['Elite Zone/Assets/rainbow_2.png'] = 'rbxassetid://72739074644654',
-		['Elite Zone/Assets/rainbow_3.png'] = 'rbxassetid://100716555253397',
-		['Elite Zone/Assets/rainbow_4.png'] = 'rbxassetid://133424174227092',
 		['Elite Zone/Assets/range.png'] = 'rbxassetid://107794917650053',
 		['Elite Zone/Assets/rangeindicator.png'] = 'rbxassetid://107038094175283',
 		['Elite Zone/Assets/render.png'] = 'rbxassetid://125472576898654',
@@ -991,18 +986,6 @@ function EZ:LoadGUI()
 		Tooltip = 'Toggles visibility of these'
 	})
 	
-	guipane:CreateToggle({
-		Name = 'Show legit mode',
-		Function = function(enabled)
-			clickgui.Search.Legit.Visible = enabled
-			clickgui.Search.LegitDivider.Visible = enabled
-			clickgui.Search.TextBox.Size = UDim2.new(1, enabled and -50 or -10, 0, 37)
-			clickgui.Search.TextBox.Position = UDim2.fromOffset(enabled and 50 or 10, 0)
-		end,
-		Default = true,
-		Tooltip = 'Shows the button to switch to the legit mod menu'
-	})
-	
 	local ScaleSlider = {Object = {}, Value = 1}
 	EZ.Scale = guipane:CreateToggle({
 		Name = 'Auto rescale',
@@ -1033,24 +1016,6 @@ function EZ:LoadGUI()
 		Visible = false
 	})
 	
-	EZ.RainbowSpeed = guipane:CreateSlider({
-		Name = 'Rainbow speed',
-		Min = 0.1,
-		Max = 10,
-		Decimal = 10,
-		Default = 1,
-		Tooltip = 'Adjusts the speed of rainbow values'
-	})
-	
-	EZ.RainbowUpdateSpeed = guipane:CreateSlider({
-		Name = 'Rainbow update rate',
-		Min = 1,
-		Max = 144,
-		Default = 60,
-		Tooltip = 'Adjusts the update rate of rainbow values',
-		Suffix = 'hz'
-	})
-	
 	guipane:CreateDropdown({
 		Name = 'Search bar style',
 		List = {'Floating', 'None'},
@@ -1059,12 +1024,6 @@ function EZ:LoadGUI()
 			EZ.SearchBar.Object.Visible = value == 'Floating'
 		end,
 		Tooltip = 'Switch between search bar styles'
-	})
-	
-	EZ.RainbowMode = guipane:CreateDropdown({
-		Name = 'Rainbow Mode',
-		List = {'Normal', 'Gradient', 'Retro'},
-		Tooltip = 'Normal - Smooth color fade\nGradient - Gradient color fade\nRetro - Static color'
 	})
 	
 	guipane:CreateButton({
@@ -1617,8 +1576,8 @@ function EZ:LoadGUI()
 			LabelCustom.TextColor3 = CustomTextColor.Enabled and Color3.fromHSV(CustomTextColorSlider.Hue, CustomTextColorSlider.Sat, CustomTextColorSlider.Value) or LogoGradient.Color.Keypoints[2].Value
 		
 			local isCustom = ColorMode.Value == 'Custom color' and Color3.fromHSV(ColorSlider.Hue, ColorSlider.Sat, ColorSlider.Value) or nil
-			for index, label in Labels do
-				label.Text.TextColor3 = isCustom or (EZ.GUIColor.Rainbow and Color3.fromHSV(EZ:Color((hue - ((Gradient.Enabled and index + 2 or index) * 0.025)) % 1)) or LogoGradient.Color.Keypoints[2].Value)
+			for _, label in Labels do
+				label.Text.TextColor3 = isCustom or LogoGradient.Color.Keypoints[2].Value
 		
 				if label.Color then
 					label.Color.BackgroundColor3 = label.Text.TextColor3
@@ -2302,22 +2261,6 @@ function EZ:LoadGUI()
 		
 	end)
 	
-	EZ:Clean(task.spawn(function()
-		local hue = 0
-		repeat
-			for _, component in EZ.RainbowSliders do
-				if component.Type == 'GUISlider' then
-					component:SetValue(EZ:Color(hue))
-				else
-					component:SetValue(hue)
-				end
-			end
-	
-			local delta = task.wait(1 / EZ.RainbowUpdateSpeed.Value)
-			hue = (hue + (delta * (0.2 * EZ.RainbowSpeed.Value))) % 1
-		until false
-	end))
-	
 	local cursorConnection
 	EZ:Clean(clickgui:GetPropertyChangedSignal('Visible'):Connect(function()
 		EZ:UpdateGUI()
@@ -2662,33 +2605,32 @@ function EZ:UpdateGUIQueue(hue, sat, val)
 	end
 
 	if not clickgui.Visible and not EZ.Legit.Window.Visible then return end
-	local isRainbow = EZ.GUIColor.Rainbow and EZ.RainbowMode.Value ~= 'Retro'
 
 	for name, component in EZ.Categories do
-		component:Color(hue, sat, val, isRainbow)
+		component:Color(hue, sat, val)
 	end
 
 	for _, component in EZ.Modules do
-		component:Color(hue, sat, val, isRainbow)
+		component:Color(hue, sat, val)
 	end
 
 	for _, component in EZ.Overlays.Options do
 		if component.Color then
-			component:Color(hue, sat, val, isRainbow)
+			component:Color(hue, sat, val)
 		end
 	end
 
 	for _, pane in EZ.Settings do
 		for _, component in pane.Options do
 			if component.Color then
-				component:Color(hue, sat, val, isRainbow)
+				component:Color(hue, sat, val)
 			end
 		end
 	end
 
 	if EZ.Legit.Window.Visible then
 		for _, component in EZ.Legit.Modules do
-			component:Color(hue, sat, val, isRainbow)
+			component:Color(hue, sat, val)
 		end
 	end
 end
@@ -3158,7 +3100,7 @@ components = {
 		windowlist.SortOrder = Enum.SortOrder.LayoutOrder
 		windowlist.Parent = children
 		
-		function component:Color(hue, sat, val, isRainbow) end
+		function component:Color(hue, sat, val) end
 		
 		function component:Expand()
 			self.Expanded = not self.Expanded
@@ -3800,18 +3742,18 @@ components = {
 			end
 		end
 		
-		function component:Color(hue, sat, val, isRainbow)
+		function component:Color(hue, sat, val)
 			for _, component in self.Options do
 				if component.Color then
-					component:Color(hue, sat, val, isRainbow)
+					component:Color(hue, sat, val)
 				end
 			end
 		
-			addbutton.ImageColor3 = isRainbow and Color3.fromHSV(EZ:Color(hue % 1)) or Color3.fromHSV(hue, sat, val)
+			addbutton.ImageColor3 = Color3.fromHSV(hue, sat, val)
 		
 			if self.Selected then
-				self.Selected.BackgroundColor3 = isRainbow and Color3.fromHSV(EZ:Color(hue % 1)) or Color3.fromHSV(hue, sat, val)
-				self.Selected.Title.TextColor3 = EZ.GUIColor.Rainbow and Color3.new(0.19, 0.19, 0.19) or EZ:TextColor(hue, sat, val)
+				self.Selected.BackgroundColor3 = Color3.fromHSV(hue, sat, val)
+				self.Selected.Title.TextColor3 = EZ:TextColor(hue, sat, val)
 				self.Selected.Dots.Dots.ImageColor3 = self.Selected.Title.TextColor3
 				self.Selected.Bind.Icon.ImageColor3 = self.Selected.Title.TextColor3
 				self.Selected.Bind.TextLabel.TextColor3 = self.Selected.Title.TextColor3
@@ -4044,15 +3986,8 @@ components = {
 		-- eases shade and cursor moves so dragging glides instead of snapping, on the same slide as the
 		-- sliders (uipallet.Tween); tween:Tween cancels the previous tween per object, so a drag just
 		-- keeps retargeting one glide toward the mouse.
-		-- rainbow already reshades every tick, so easing it would only fight the cycle
-		local function anim(obj, goal, instant)
-			if instant then
-				for prop, value in goal do
-					obj[prop] = value
-				end
-			else
-				tween:Tween(obj, uipallet.Tween, goal)
-			end
+		local function anim(obj, goal)
+			tween:Tween(obj, uipallet.Tween, goal)
 		end
 		
 		-- every bar shares this: press to jump, hold to scrub, release to drop the connections
@@ -4087,7 +4022,6 @@ components = {
 				Sat = info.DefaultSat or 1,
 				Value = info.DefaultValue or 1,
 				Opacity = info.DefaultOpacity or 1,
-				Rainbow = false,
 				Index = 0,
 				Object = colorslider
 			}
@@ -4311,35 +4245,8 @@ components = {
 			hexbox.TextXAlignment = Enum.TextXAlignment.Left
 			hexbox.ZIndex = 8
 			hexbox.Parent = hexholder
-			local rainbow = Instance.new('TextButton')
-			rainbow.BackgroundTransparency = 1
-			rainbow.Position = UDim2.fromOffset(198, rowY + 6)
-			rainbow.Size = UDim2.fromOffset(12, 12)
-			rainbow.Text = ''
-			rainbow.ZIndex = 7
-			rainbow.Parent = picker
-			local ring1 = Instance.new('ImageLabel')
-			ring1.BackgroundTransparency = 1
-			ring1.Image = get_ez_asset('Elite Zone/Assets/rainbow_1.png')
-			ring1.ImageColor3 = color.Light(uipallet.Main, 0.37)
-			ring1.Size = UDim2.fromOffset(12, 12)
-			ring1.ZIndex = 7
-			ring1.Parent = rainbow
-			local ring2 = Instance.fromExisting(ring1)
-			ring2.Image = get_ez_asset('Elite Zone/Assets/rainbow_2.png')
-			ring2.Parent = rainbow
-			local ring3 = Instance.fromExisting(ring1)
-			ring3.Image = get_ez_asset('Elite Zone/Assets/rainbow_3.png')
-			ring3.Parent = rainbow
-			local ring4 = Instance.fromExisting(ring1)
-			ring4.Image = get_ez_asset('Elite Zone/Assets/rainbow_4.png')
-			ring4.Parent = rainbow
 		
 			function component:Load(data)
-				if data.Rainbow ~= self.Rainbow then
-					self:Toggle()
-				end
-		
 				if self.Hue ~= data.Hue or self.Sat ~= data.Sat or self.Value ~= data.Value or self.Opacity ~= data.Opacity then
 					self:SetValue(data.Hue, data.Sat, data.Value, data.Opacity)
 				end
@@ -4350,8 +4257,7 @@ components = {
 					Hue = self.Hue,
 					Sat = self.Sat,
 					Value = self.Value,
-					Opacity = self.Opacity,
-					Rainbow = self.Rainbow
+					Opacity = self.Opacity
 				}
 			end
 		
@@ -4362,8 +4268,7 @@ components = {
 				self.Opacity = o or self.Opacity
 		
 				local shade = Color3.fromHSV(self.Hue, self.Sat, self.Value)
-				local instant = self.Rainbow
-				anim(preview, {ImageColor3 = shade}, instant)
+				anim(preview, {ImageColor3 = shade})
 		
 				if hasAlpha then
 					previewchecker.ImageTransparency = self.Opacity
@@ -4371,55 +4276,22 @@ components = {
 		
 				-- the picker is the only thing the rest of these touch, so skip them while it is closed
 				if picker.Visible then
-					anim(windowicon, {ImageColor3 = shade}, instant)
-					anim(huelayer, {BackgroundColor3 = Color3.fromHSV(self.Hue, 1, 1)}, instant)
-					anim(svcursor, {Position = UDim2.fromScale(self.Sat, 1 - self.Value), BackgroundColor3 = shade}, instant)
-					anim(huecursor, {Position = UDim2.fromScale(0.5, self.Hue)}, instant)
-					anim(swatch, {BackgroundColor3 = shade}, instant)
+					anim(windowicon, {ImageColor3 = shade})
+					anim(huelayer, {BackgroundColor3 = Color3.fromHSV(self.Hue, 1, 1)})
+					anim(svcursor, {Position = UDim2.fromScale(self.Sat, 1 - self.Value), BackgroundColor3 = shade})
+					anim(huecursor, {Position = UDim2.fromScale(0.5, self.Hue)})
+					anim(swatch, {BackgroundColor3 = shade})
 					hexbox.Text = '#'..shade:ToHex()
 		
 					if hasAlpha then
 						iconchecker.ImageTransparency = self.Opacity
-						anim(alphabar, {BackgroundColor3 = shade}, instant)
-						anim(alphacursor, {Position = UDim2.fromScale(self.Opacity, 0.5)}, instant)
+						anim(alphabar, {BackgroundColor3 = shade})
+						anim(alphacursor, {Position = UDim2.fromScale(self.Opacity, 0.5)})
 						swatchchecker.ImageTransparency = self.Opacity
 					end
 				end
 		
 				callback(self.Hue, self.Sat, self.Value, self.Opacity)
-			end
-		
-			function component:Toggle()
-				self.Rainbow = not self.Rainbow
-		
-				if self.Rainbow then
-					table.insert(EZ.RainbowSliders, self)
-		
-					ring1.ImageColor3 = Color3.fromRGB(5, 127, 100)
-					task.delay(0.1, function()
-						if not self.Rainbow then return end
-						ring2.ImageColor3 = Color3.fromRGB(228, 125, 43)
-						task.delay(0.1, function()
-							if not self.Rainbow then return end
-							ring3.ImageColor3 = Color3.fromRGB(225, 46, 52)
-						end)
-					end)
-				else
-					local rainbowIndex = table.find(EZ.RainbowSliders, self)
-					if rainbowIndex then
-						table.remove(EZ.RainbowSliders, rainbowIndex)
-					end
-		
-					ring3.ImageColor3 = color.Light(uipallet.Main, 0.37)
-					task.delay(0.1, function()
-						if self.Rainbow then return end
-						ring2.ImageColor3 = color.Light(uipallet.Main, 0.37)
-						task.delay(0.1, function()
-							if self.Rainbow then return end
-							ring1.ImageColor3 = color.Light(uipallet.Main, 0.37)
-						end)
-					end)
-				end
 			end
 		
 			addDrag(svmap, function(position)
@@ -4457,10 +4329,6 @@ components = {
 				component:SetValue()
 			end)
 		
-			rainbow.MouseButton1Click:Connect(function()
-				component:Toggle()
-			end)
-		
 			close.MouseButton1Click:Connect(function()
 				picker.Visible = false
 			end)
@@ -4479,10 +4347,6 @@ components = {
 				if not success or not parsed then
 					hexbox.Text = '#'..Color3.fromHSV(component.Hue, component.Sat, component.Value):ToHex()
 					return
-				end
-		
-				if component.Rainbow then
-					component:Toggle()
 				end
 		
 				component:SetValue(parsed:ToHSV())
@@ -4830,12 +4694,12 @@ components = {
 		}, window, component)
 		component.Settings = settingspane
 		
-		function component:Color(hue, sat, val, isRainbow)
+		function component:Color(hue, sat, val)
 			accentcolor.ImageColor3 = Color3.fromHSV(hue, sat, val)
 		
 			for _, button in self.Buttons do
 				if button.Enabled then
-					button.Object.TextColor3 = isRainbow and Color3.fromHSV(EZ:Color((hue - (button.Index * 0.025)) % 1)) or Color3.fromHSV(hue, sat, val)
+					button.Object.TextColor3 = Color3.fromHSV(hue, sat, val)
 		
 					if button.Icon then
 						button.Icon.ImageColor3 = button.Object.TextColor3
@@ -5050,7 +4914,6 @@ components = {
 	GUISlider = function(props, children, api)
 		local component = {
 			Hue = 0.46,
-			Rainbow = false,
 			Sat = 0.96,
 			Type = 'GUISlider',
 			Value = 0.52
@@ -5174,12 +5037,12 @@ components = {
 		huebar.ZIndex = 7
 		huebar.Parent = picker
 		addCorner(huebar, UDim.new(0, 3))
-		local rainbowTable = {}
+		local hueKeypoints = {}
 		for i = 0, 1, 0.1 do
-			table.insert(rainbowTable, ColorSequenceKeypoint.new(i, Color3.fromHSV(i, 1, 1)))
+			table.insert(hueKeypoints, ColorSequenceKeypoint.new(i, Color3.fromHSV(i, 1, 1)))
 		end
 		local huegradient = Instance.new('UIGradient')
-		huegradient.Color = ColorSequence.new(rainbowTable)
+		huegradient.Color = ColorSequence.new(hueKeypoints)
 		huegradient.Rotation = 90
 		huegradient.Parent = huebar
 		local huecursor = Instance.new('Frame')
@@ -5236,31 +5099,6 @@ components = {
 		hexbox.TextXAlignment = Enum.TextXAlignment.Left
 		hexbox.ZIndex = 8
 		hexbox.Parent = hexholder
-		local rainbow = Instance.new('TextButton')
-		rainbow.BackgroundTransparency = 1
-		rainbow.Position = UDim2.fromOffset(198, 185 + 6)
-		rainbow.Size = UDim2.fromOffset(12, 12)
-		rainbow.Text = ''
-		rainbow.ZIndex = 7
-		rainbow.Parent = picker
-		local ring1 = Instance.new('ImageLabel')
-		ring1.BackgroundTransparency = 1
-		ring1.Image = get_ez_asset('Elite Zone/Assets/rainbow_1.png')
-		ring1.ImageColor3 = color.Light(uipallet.Main, 0.37)
-		ring1.Size = UDim2.fromOffset(12, 12)
-		ring1.ZIndex = 7
-		ring1.Parent = rainbow
-		local ring2 = Instance.fromExisting(ring1)
-		ring2.Image = get_ez_asset('Elite Zone/Assets/rainbow_2.png')
-		ring2.Parent = rainbow
-		local ring3 = Instance.fromExisting(ring1)
-		ring3.Image = get_ez_asset('Elite Zone/Assets/rainbow_3.png')
-		ring3.Parent = rainbow
-		local ring4 = Instance.fromExisting(ring1)
-		ring4.Image = get_ez_asset('Elite Zone/Assets/rainbow_4.png')
-		ring4.Parent = rainbow
-		
-		local rainbowthread
 		
 		-- both bars share this: press to jump, hold to scrub, release to drop the connections
 		local function addDrag(target, callback)
@@ -5288,10 +5126,6 @@ components = {
 		end
 		
 		function component:Load(data)
-			if data.Rainbow then
-				self:Toggle()
-			end
-		
 			self:SetValue(data.Hue, data.Sat, data.Value)
 		end
 		
@@ -5299,8 +5133,7 @@ components = {
 			data[props.Name] = {
 				Hue = self.Hue,
 				Sat = self.Sat,
-				Value = self.Value,
-				Rainbow = self.Rainbow
+				Value = self.Value
 			}
 		end
 		
@@ -5312,7 +5145,7 @@ components = {
 			local shade = Color3.fromHSV(self.Hue, self.Sat, self.Value)
 			preview.ImageColor3 = shade
 		
-			-- rainbow drives this every frame, so skip the picker writes while it is closed
+			-- skip the picker writes while it is closed
 			if picker.Visible then
 				windowicon.ImageColor3 = shade
 				huelayer.BackgroundColor3 = Color3.fromHSV(self.Hue, 1, 1)
@@ -5326,45 +5159,7 @@ components = {
 			props.Function(self.Hue, self.Sat, self.Value)
 		end
 		
-		function component:Toggle()
-			self.Rainbow = not self.Rainbow
-			if rainbowthread then
-				task.cancel(rainbowthread)
-			end
-		
-			if self.Rainbow then
-				table.insert(EZ.RainbowSliders, self)
-		
-				ring1.ImageColor3 = Color3.fromRGB(5, 127, 100)
-				rainbowthread = task.delay(0.1, function()
-					ring2.ImageColor3 = Color3.fromRGB(228, 125, 43)
-					rainbowthread = task.delay(0.1, function()
-						ring3.ImageColor3 = Color3.fromRGB(225, 46, 52)
-						rainbowthread = nil
-					end)
-				end)
-			else
-				local index = table.find(EZ.RainbowSliders, self)
-				if index then
-					table.remove(EZ.RainbowSliders, index)
-				end
-		
-				ring3.ImageColor3 = color.Light(uipallet.Main, 0.37)
-				rainbowthread = task.delay(0.1, function()
-					ring2.ImageColor3 = color.Light(uipallet.Main, 0.37)
-					rainbowthread = task.delay(0.1, function()
-						ring1.ImageColor3 = color.Light(uipallet.Main, 0.37)
-						rainbowthread = nil
-					end)
-				end)
-			end
-		end
-		
 		addDrag(svmap, function(position)
-			if component.Rainbow then
-				component:Toggle()
-			end
-		
 			component:SetValue(
 				nil,
 				math.clamp((position.X - svmap.AbsolutePosition.X) / svmap.AbsoluteSize.X, 0, 1),
@@ -5373,10 +5168,6 @@ components = {
 		end)
 		
 		addDrag(huebar, function(position)
-			if component.Rainbow then
-				component:Toggle()
-			end
-		
 			component:SetValue(math.clamp((position.Y - huebar.AbsolutePosition.Y) / huebar.AbsoluteSize.Y, 0, 1))
 		end)
 		
@@ -5397,10 +5188,6 @@ components = {
 			component:SetValue()
 		end)
 		
-		rainbow.MouseButton1Click:Connect(function()
-			component:Toggle()
-		end)
-		
 		close.MouseButton1Click:Connect(function()
 			picker.Visible = false
 		end)
@@ -5419,10 +5206,6 @@ components = {
 			if not success or not parsed then
 				hexbox.Text = '#'..Color3.fromHSV(component.Hue, component.Sat, component.Value):ToHex()
 				return
-			end
-		
-			if component.Rainbow then
-				component:Toggle()
 			end
 		
 			component:SetValue(parsed:ToHSV())
@@ -5483,19 +5266,18 @@ components = {
 		addCorner(knob, UDim.new(1, 0))
 		props.Function = props.Function or function() end
 		
-		function component:Color(hue, sat, val, isRainbow)
+		function component:Color(hue, sat, val)
 			if self.Enabled then
 				tween:Cancel(holder)
-				holder.BackgroundColor3 = isRainbow and Color3.fromHSV(EZ:Color((hue - (self.Index * 0.075)) % 1)) or Color3.fromHSV(hue, sat, val)
+				holder.BackgroundColor3 = Color3.fromHSV(hue, sat, val)
 			end
 		end
 		
 		function component:Toggle()
-			local isRainbow = EZ.GUIColor.Rainbow and EZ.RainbowMode.Value ~= 'Retro'
 			self.Enabled = not self.Enabled
 		
 			tween:Tween(holder, uipallet.Tween, {
-				BackgroundColor3 = self.Enabled and (isRainbow and Color3.fromHSV(EZ:Color((EZ.GUIColor.Hue - (self.Index * 0.075)) % 1)) or Color3.fromHSV(EZ.GUIColor.Hue, EZ.GUIColor.Sat, EZ.GUIColor.Value)) or (isHover and color.Light(uipallet.Main, 0.37) or color.Light(uipallet.Main, 0.14))
+				BackgroundColor3 = self.Enabled and Color3.fromHSV(EZ.GUIColor.Hue, EZ.GUIColor.Sat, EZ.GUIColor.Value) or (isHover and color.Light(uipallet.Main, 0.37) or color.Light(uipallet.Main, 0.14))
 			})
 		
 			tween:Tween(knob, uipallet.Tween, {
@@ -5669,7 +5451,7 @@ components = {
 		props.Function = props.Function or function() end
 		addMaid(component)
 		
-		function component:Color(hue, sat, val, isRainbow)
+		function component:Color(hue, sat, val)
 			if self.Enabled then
 				tween:Cancel(holder)
 				holder.BackgroundColor3 = Color3.fromHSV(hue, sat, val)
@@ -5677,7 +5459,7 @@ components = {
 		
 			for _, component in self.Options do
 				if component.Color then
-					component:Color(hue, sat, val, isRainbow)
+					component:Color(hue, sat, val)
 				end
 			end
 		end
@@ -6030,10 +5812,6 @@ components = {
 		button.Parent = children
 		component.Object = button
 		addTooltip(button, props.Tooltip)
-		local gradient = Instance.new('UIGradient')
-		gradient.Enabled = false
-		gradient.Rotation = 90
-		gradient.Parent = button
 		local modulechildren = Instance.new('Frame')
 		modulechildren.BackgroundColor3 = color.Dark(uipallet.Main, 0.02)
 		modulechildren.BorderSizePixel = 0
@@ -6091,32 +5869,23 @@ components = {
 		component.Children = modulechildren
 		addMaid(component)
 		
-		function component:Color(hue, sat, val, isRainbow)
+		function component:Color(hue, sat, val)
 			if self.Enabled then
-				button.BackgroundColor3 = isRainbow and Color3.fromHSV(EZ:Color((hue - (self.Index * 0.025)) % 1)) or Color3.fromHSV(hue, sat, val)
-				button.TextColor3 = EZ.GUIColor.Rainbow and Color3.new(0.19, 0.19, 0.19) or EZ:TextColor(hue, sat, val)
-				button.UIGradient.Enabled = isRainbow and EZ.RainbowMode.Value == 'Gradient'
-		
-				if button.UIGradient.Enabled then
-					button.BackgroundColor3 = Color3.new(1, 1, 1)
-					button.UIGradient.Color = ColorSequence.new({
-						ColorSequenceKeypoint.new(0, Color3.fromHSV(EZ:Color((hue - (self.Index * 0.025)) % 1))),
-						ColorSequenceKeypoint.new(1, Color3.fromHSV(EZ:Color((hue - ((self.Index + 1) * 0.025)) % 1)))
-					})
-				end
+				button.BackgroundColor3 = Color3.fromHSV(hue, sat, val)
+				button.TextColor3 = EZ:TextColor(hue, sat, val)
 		
 				self.Bind:SetColor(self.Object.TextColor3)
 				dots.ImageColor3 = self.Object.TextColor3
 			end
 		
 			if self.Visible then
-				editbox.BackgroundColor3 = isRainbow and Color3.fromHSV(EZ:Color((hue - (self.Index * 0.025)) % 1)) or Color3.fromHSV(hue, sat, val)
+				editbox.BackgroundColor3 = Color3.fromHSV(hue, sat, val)
 				editborder.Color = editbox.BackgroundColor3
 			end
 		
 			for _, component in self.Options do
 				if component.Color then
-					component:Color(hue, sat, val, isRainbow)
+					component:Color(hue, sat, val)
 				end
 			end
 		end
@@ -6171,7 +5940,6 @@ components = {
 		
 			self.Enabled = not self.Enabled
 			divider.Visible = self.Enabled
-			gradient.Enabled = self.Enabled
 			button.TextColor3 = (isHover or modulechildren.Visible) and uipallet.Text or color.Dark(uipallet.Text, 0.16)
 			button.BackgroundColor3 = (isHover or modulechildren.Visible) and color.Light(uipallet.Main, 0.02) or uipallet.Main
 			dots.ImageColor3 = self.Enabled and Color3.fromRGB(50, 50, 50) or color.Light(uipallet.Main, 0.37)
@@ -6462,10 +6230,10 @@ components = {
 		windowlist.Parent = children
 		addMaid(component)
 		
-		function component:Color(hue, sat, val, isRainbow)
+		function component:Color(hue, sat, val)
 			for _, component in self.Options do
 				if component.Color then
-					component:Color(hue, sat, val, isRainbow)
+					component:Color(hue, sat, val)
 				end
 			end
 		end
@@ -7103,8 +6871,8 @@ components = {
 		props.Function = props.Function or function() end
 		props.Decimal = props.Decimal or 1
 		
-		function component:Color(hue, sat, val, isRainbow)
-			fill.BackgroundColor3 = isRainbow and Color3.fromHSV(EZ:Color((hue - (self.Index * 0.075)) % 1)) or Color3.fromHSV(hue, sat, val)
+		function component:Color(hue, sat, val)
+			fill.BackgroundColor3 = Color3.fromHSV(hue, sat, val)
 			knob.BackgroundColor3 = fill.BackgroundColor3
 		end
 		
@@ -7292,9 +7060,9 @@ components = {
 		local close = addCloseButton(targetswindow)
 		props.Function = props.Function or function() end
 		
-		function component:Color(hue, sat, val, isRainbow)
+		function component:Color(hue, sat, val)
 			if targetswindow.Visible then
-				holder.BackgroundColor3 = isRainbow and Color3.fromHSV(EZ:Color((hue - (self.Index * 0.075)) % 1)) or Color3.fromHSV(hue, sat, val)
+				holder.BackgroundColor3 = Color3.fromHSV(hue, sat, val)
 			end
 		
 			if self.Players.Enabled then
@@ -7765,9 +7533,9 @@ components = {
 		add.Parent = boxholder
 		props.Function = props.Function or function() end
 		
-		function component:Color(hue, sat, val, isRainbow)
+		function component:Color(hue, sat, val)
 			if textlistwindow.Visible then
-				holder.BackgroundColor3 = isRainbow and Color3.fromHSV(EZ:Color((hue - (self.Index * 0.075)) % 1)) or Color3.fromHSV(hue, sat, val)
+				holder.BackgroundColor3 = Color3.fromHSV(hue, sat, val)
 			end
 		end
 		
@@ -8022,10 +7790,10 @@ components = {
 		addCorner(knob, UDim.new(1, 0))
 		props.Function = props.Function or function() end
 		
-		function component:Color(hue, sat, val, isRainbow)
+		function component:Color(hue, sat, val)
 			if self.Enabled then
 				tween:Cancel(holder)
-				holder.BackgroundColor3 = isRainbow and Color3.fromHSV(EZ:Color((hue - (self.Index * 0.075)) % 1)) or Color3.fromHSV(hue, sat, val)
+				holder.BackgroundColor3 = Color3.fromHSV(hue, sat, val)
 			end
 		end
 		
@@ -8050,11 +7818,10 @@ components = {
 		end
 		
 		function component:Toggle()
-			local isRainbow = EZ.GUIColor.Rainbow and EZ.RainbowMode.Value ~= 'Retro'
 			self.Enabled = not self.Enabled
 		
 			tween:Tween(holder, uipallet.Tween, {
-				BackgroundColor3 = self.Enabled and (isRainbow and Color3.fromHSV(EZ:Color((EZ.GUIColor.Hue - (self.Index * 0.075)) % 1)) or Color3.fromHSV(EZ.GUIColor.Hue, EZ.GUIColor.Sat, EZ.GUIColor.Value)) or (isHover and color.Light(uipallet.Main, 0.37) or color.Light(uipallet.Main, 0.14))
+				BackgroundColor3 = self.Enabled and Color3.fromHSV(EZ.GUIColor.Hue, EZ.GUIColor.Sat, EZ.GUIColor.Value) or (isHover and color.Light(uipallet.Main, 0.37) or color.Light(uipallet.Main, 0.14))
 			})
 		
 			tween:Tween(knob, uipallet.Tween, {
@@ -8198,8 +7965,8 @@ components = {
 		props.Decimal = props.Decimal or 1
 		local random = Random.new()
 		
-		function component:Color(hue, sat, val, isRainbow)
-			fill.BackgroundColor3 = isRainbow and Color3.fromHSV(EZ:Color((hue - (self.Index * 0.075)) % 1)) or Color3.fromHSV(hue, sat, val)
+		function component:Color(hue, sat, val)
+			fill.BackgroundColor3 = Color3.fromHSV(hue, sat, val)
 			knobknob.ImageColor3 = fill.BackgroundColor3
 			knobmaxknob.ImageColor3 = fill.BackgroundColor3
 		end
