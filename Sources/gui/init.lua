@@ -89,7 +89,6 @@ EZ:CreateCategoryList({
 	configs = true
 })
 
-components.LegitWindow()
 EZ.SearchBar = components.SearchBar()
 EZ.Categories.Main:CreateOverlayBar()
 

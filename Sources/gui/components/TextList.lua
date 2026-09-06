@@ -69,7 +69,7 @@ textlistwindow.Position = UDim2.fromOffset(456, 227)
 textlistwindow.Size = UDim2.fromOffset(220, 85)
 textlistwindow.Text = ''
 textlistwindow.Visible = false
-textlistwindow.Parent = api.Legit and EZ.Legit.Window or clickgui
+textlistwindow.Parent = clickgui
 component.Window = textlistwindow
 addBlur(textlistwindow)
 addCorner(textlistwindow)
@@ -331,7 +331,7 @@ textlist:GetPropertyChangedSignal('AbsolutePosition'):Connect(function()
 		setthreadidentity(8)
 	end
 
-	local actualPosition = (textlist.AbsolutePosition - (api.Legit and EZ.Legit.Window.AbsolutePosition or -guiService:GetGuiInset())) / scale.Scale
+	local actualPosition = (textlist.AbsolutePosition + guiService:GetGuiInset()) / scale.Scale
 	textlistwindow.Position = UDim2.fromOffset(actualPosition.X + 223, actualPosition.Y)
 end)
 

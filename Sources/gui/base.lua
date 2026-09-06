@@ -491,7 +491,7 @@ function EZ:Load(skipgui, config)
 	if isfile(self.config_dir..self.config..'.txt') then
 		local mainData = loadJson(self.config_dir..self.config..'.txt')
 		if not mainData then
-			mainData = {Categories = {}, Modules = {}, Legit = {}}
+			mainData = {Categories = {}, Modules = {}}
 			self:CreateNotification('Elite Zone', 'Failed to load '..self.config..' Config.', 10, 'alert')
 			canSave = false
 		end
@@ -515,13 +515,6 @@ function EZ:Load(skipgui, config)
 			if module then
 				module:Load(data)
 				toggleCount += module.Enabled and 1 or 0
-			end
-		end
-
-		for name, data in mainData.Legit do
-			local module = self.Legit.Modules[name]
-			if module then
-				module:Load(data)
 			end
 		end
 
@@ -579,7 +572,7 @@ function EZ:LoadGUI()
 end
 
 function EZ:Remove(obj)
-	local container = (self.Modules[obj] and self.Modules or self.Legit.Modules[obj] and self.Legit.Modules or self.Categories)
+	local container = (self.Modules[obj] and self.Modules or self.Categories)
 	if container and container[obj] then
 		local component = container[obj]
 		local isModule = component.Type == 'Module'
@@ -636,7 +629,6 @@ function EZ:SaveConfig(name)
 	local data = {
 		Modules = {},
 		Categories = {},
-		Legit = {},
 		v = 1
 	}
 
@@ -648,10 +640,6 @@ function EZ:SaveConfig(name)
 
 	for _, module in self.Modules do
 		module:Save(data.Modules)
-	end
-
-	for _, module in self.Legit.Modules do
-		module:Save(data.Legit)
 	end
 
 	writefile(self.config_dir..(name or self.config)..'.txt', httpService:JSONEncode(data))
@@ -738,12 +726,6 @@ function EZ:Uninject()
 		end
 	end
 
-	for _, module in self.Legit.Modules do
-		if module.Enabled then
-			module:Toggle()
-		end
-	end
-
 	for _, category in self.Categories do
 		if category.Type == 'Overlay' and category.Button.Enabled then
 			category.Button:Toggle()
@@ -793,7 +775,7 @@ function EZ:UpdateGUIQueue(hue, sat, val)
 		TextGUI:UpdateColor(hue, sat, val, default)
 	end
 
-	if not clickgui.Visible and not EZ.Legit.Window.Visible then return end
+	if not clickgui.Visible then return end
 
 	for name, component in EZ.Categories do
 		component:Color(hue, sat, val)
@@ -816,12 +798,6 @@ function EZ:UpdateGUIQueue(hue, sat, val)
 			end
 		end
 	end
-
-	if EZ.Legit.Window.Visible then
-		for _, component in EZ.Legit.Modules do
-			component:Color(hue, sat, val)
-		end
-	end
 end
 
 --Components
@@ -832,14 +808,6 @@ EZ.Components = setmetatable(components, {
 			rawset(module, 'Create'..index, function(_, props)
 				return callback(props, module.Children, module)
 			end)
-		end
-
-		if EZ.Legit then
-			for _, module in EZ.Legit.Modules do
-				rawset(module, 'Create'..index, function(_, props)
-					return callback(props, module.Children, module)
-				end)
-			end
 		end
 
 		rawset(components, index, callback)
