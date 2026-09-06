@@ -4789,11 +4789,6 @@ components = {
 			end
 		
 			window.Size = UDim2.fromOffset(220, 42 + windowlist.AbsoluteContentSize.Y / scale.Scale)
-			for _, button in component.Buttons do
-				if button.Icon then
-					button.Object.Text = string.rep(' ', 39 * scale.Scale)..button.Name
-				end
-			end
 		end)
 		
 		EZ.Categories.Main = component
@@ -5239,7 +5234,7 @@ components = {
 		toggle.BorderSizePixel = 0
 		toggle.FontFace = uipallet.Font
 		toggle.Size = UDim2.new(1, 0, 0, 40)
-		toggle.Text = string.rep(' ', 33 * scale.Scale)..props.Name
+		toggle.Text = string.rep(' ', 33)..props.Name
 		toggle.TextColor3 = color.Dark(uipallet.Text, 0.16)
 		toggle.TextSize = 14
 		toggle.TextXAlignment = Enum.TextXAlignment.Left
@@ -5289,10 +5284,6 @@ components = {
 		
 			props.Function(self.Enabled)
 		end
-		
-		scale:GetPropertyChangedSignal('Scale'):Connect(function()
-			toggle.Text = string.rep(' ', 33 * scale.Scale)..props.Name
-		end)
 		
 		toggle.MouseEnter:Connect(function()
 			isHover = true
