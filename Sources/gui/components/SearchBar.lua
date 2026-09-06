@@ -123,8 +123,6 @@ box:GetPropertyChangedSignal('Text'):Connect(function()
 				listenProperty(module.Object, button, prop, button)
 			end
 
-			listenProperty(module.Object.UIGradient, button.UIGradient, 'Color', button)
-			listenProperty(module.Object.UIGradient, button.UIGradient, 'Enabled', button)
 			listenProperty(module.Object.Dots.Dots, button.Dots.Dots, 'ImageColor3', button)
 
 			button.Parent = children
