@@ -803,28 +803,56 @@ function EZ:Load(skipgui, config)
 	self:LoadPositions()
 
 	if istouch and not skipgui then
+		local inset = guiService:GetGuiInset()
 		local button = Instance.new('TextButton')
-		button.AnchorPoint = Vector2.new(0, 0.5)
 		button.BackgroundColor3 = Color3.new()
 		button.BackgroundTransparency = 0.2
-		button.Position = UDim2.new(0, 8, 0.5, 0)
+		button.Position = UDim2.new(0, 8, 0.5, -18)
 		button.Size = UDim2.fromOffset(36, 36)
 		button.Text = ''
 		button.Parent = gui
-		local image = Instance.new('ImageLabel')
-		image.BackgroundTransparency = 1
-		image.Image = get_ez_asset('Elite Zone/Assets/logo.png')
-		image.Position = UDim2.fromOffset(8, 8)
-		image.Size = UDim2.fromOffset(20, 20)
-		image.Parent = button
-		addCorner(button, UDim.new(1, 0))
+		addCorner(button, UDim.new(0, 8))
 		local stroke = Instance.new('UIStroke')
 		stroke.Color = Color3.new(1, 1, 1)
 		stroke.Transparency = 0.7
 		stroke.Parent = button
+		local image = Instance.new('ImageLabel')
+		image.AnchorPoint = Vector2.new(0.5, 0.5)
+		image.BackgroundTransparency = 1
+		image.Image = get_ez_asset('Elite Zone/Assets/logo.png')
+		image.Position = UDim2.fromScale(0.5, 0.5)
+		image.Size = UDim2.fromOffset(26, 26)
+		image.ScaleType = Enum.ScaleType.Fit
+		image.Parent = button
 
-		button.MouseButton1Click:Connect(function()
-			self.GUIBind.Triggered:Fire(true)
+		button.InputBegan:Connect(function(input)
+			if input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch then
+				return
+			end
+
+			local origin = input.Position
+			local drag = Vector2.new(button.AbsolutePosition.X - origin.X, button.AbsolutePosition.Y - origin.Y + inset.Y)
+			local moved = false
+			local release
+			local move = inputService.InputChanged:Connect(function(new)
+				if new.UserInputType == (input.UserInputType == Enum.UserInputType.MouseButton1 and Enum.UserInputType.MouseMovement or Enum.UserInputType.Touch) then
+					if (new.Position - origin).Magnitude > 6 then
+						moved = true
+					end
+
+					button.Position = UDim2.fromOffset(new.Position.X + drag.X, new.Position.Y + drag.Y)
+				end
+			end)
+
+			release = input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then
+					move:Disconnect()
+					release:Disconnect()
+					if not moved then
+						self.GUIBind.Triggered:Fire(true)
+					end
+				end
+			end)
 		end)
 	end
 
