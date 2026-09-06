@@ -26,10 +26,9 @@ for i = 0, 1, 0.1 do
 	table.insert(hueKeypoints, ColorSequenceKeypoint.new(i, Color3.fromHSV(i, 1, 1)))
 end
 
-local animinfo = TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-
--- eases shade and cursor moves so dragging glides instead of snapping; tween:Tween cancels the
--- previous tween per object, so a drag just keeps retargeting one glide toward the mouse.
+-- eases shade and cursor moves so dragging glides instead of snapping, on the same slide as the
+-- sliders (uipallet.Tween); tween:Tween cancels the previous tween per object, so a drag just
+-- keeps retargeting one glide toward the mouse.
 -- rainbow already reshades every tick, so easing it would only fight the cycle
 local function anim(obj, goal, instant)
 	if instant then
@@ -37,7 +36,7 @@ local function anim(obj, goal, instant)
 			obj[prop] = value
 		end
 	else
-		tween:Tween(obj, animinfo, goal)
+		tween:Tween(obj, uipallet.Tween, goal)
 	end
 end
 
