@@ -242,7 +242,6 @@ EZ.CategoryIcons = {
 	settings = {Asset = 'Elite Zone/Assets/settings.png', Size = UDim2.fromOffset(14, 14)},
 	configs = {Asset = 'Elite Zone/Assets/configs.png', Size = UDim2.fromOffset(17, 10)},
 	pin = {Asset = 'Elite Zone/Assets/pin.png', Size = UDim2.fromOffset(14, 14)},
-	spotify = {Asset = 'Elite Zone/Assets/spotify.png', Size = UDim2.fromOffset(16, 16)},
 	overlays = {Asset = 'Elite Zone/Assets/overlays.png', Size = UDim2.fromOffset(14, 14)},
 	theme = {Asset = 'Elite Zone/Assets/theme.png', Size = UDim2.fromOffset(26, 12)},
 	add = {Asset = 'Elite Zone/Assets/add.png', Size = UDim2.fromOffset(16, 16)},
