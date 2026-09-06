@@ -47,7 +47,7 @@ do
 		['Elite Zone/Assets/textgui.png'] = 'rbxassetid://99438663817412',
 		['Elite Zone/Assets/theme.png'] = 'rbxassetid://111525258317113',
 		['Elite Zone/Assets/utility.png'] = 'rbxassetid://108303206513893',
-		['Elite Zone/Assets/logo.png'] = '',
+		['Elite Zone/Assets/logo.png'] = 'rbxassetid://109639965083338',
 		['Elite Zone/Assets/world.png'] = 'rbxassetid://118917453153459'
 	}
 
