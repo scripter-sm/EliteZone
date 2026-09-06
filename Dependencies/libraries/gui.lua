@@ -136,7 +136,6 @@ do
 		['Elite Zone/Assets/expandarrow.png'] = 'rbxassetid://86360332526471',
 		['Elite Zone/Assets/friends.png'] = 'rbxassetid://92957214042038',
 		['Elite Zone/Assets/inventory.png'] = 'rbxassetid://93264756888499',
-		['Elite Zone/Assets/legit_mode_icon.png'] = 'rbxassetid://102858626075156',
 		['Elite Zone/Assets/min.png'] = 'rbxassetid://82175054487146',
 		['Elite Zone/Assets/noti_alert.png'] = 'rbxassetid://82356478726846',
 		['Elite Zone/Assets/noti_info.png'] = 'rbxassetid://102614825645099',
@@ -766,7 +765,7 @@ function EZ:Load(skipgui, config)
 	if isfile(self.config_dir..self.config..'.txt') then
 		local mainData = loadJson(self.config_dir..self.config..'.txt')
 		if not mainData then
-			mainData = {Categories = {}, Modules = {}, Legit = {}}
+			mainData = {Categories = {}, Modules = {}}
 			self:CreateNotification('Elite Zone', 'Failed to load '..self.config..' Config.', 10, 'alert')
 			canSave = false
 		end
@@ -790,13 +789,6 @@ function EZ:Load(skipgui, config)
 			if module then
 				module:Load(data)
 				toggleCount += module.Enabled and 1 or 0
-			end
-		end
-
-		for name, data in mainData.Legit do
-			local module = self.Legit.Modules[name]
-			if module then
-				module:Load(data)
 			end
 		end
 
@@ -941,7 +933,6 @@ function EZ:LoadGUI()
 		configs = true
 	})
 	
-	components.LegitWindow()
 	EZ.SearchBar = components.SearchBar()
 	EZ.Categories.Main:CreateOverlayBar()
 	
@@ -2389,7 +2380,7 @@ function EZ:LoadGUI()
 end
 
 function EZ:Remove(obj)
-	local container = (self.Modules[obj] and self.Modules or self.Legit.Modules[obj] and self.Legit.Modules or self.Categories)
+	local container = (self.Modules[obj] and self.Modules or self.Categories)
 	if container and container[obj] then
 		local component = container[obj]
 		local isModule = component.Type == 'Module'
@@ -2446,7 +2437,6 @@ function EZ:SaveConfig(name)
 	local data = {
 		Modules = {},
 		Categories = {},
-		Legit = {},
 		v = 1
 	}
 
@@ -2458,10 +2448,6 @@ function EZ:SaveConfig(name)
 
 	for _, module in self.Modules do
 		module:Save(data.Modules)
-	end
-
-	for _, module in self.Legit.Modules do
-		module:Save(data.Legit)
 	end
 
 	writefile(self.config_dir..(name or self.config)..'.txt', httpService:JSONEncode(data))
@@ -2548,12 +2534,6 @@ function EZ:Uninject()
 		end
 	end
 
-	for _, module in self.Legit.Modules do
-		if module.Enabled then
-			module:Toggle()
-		end
-	end
-
 	for _, category in self.Categories do
 		if category.Type == 'Overlay' and category.Button.Enabled then
 			category.Button:Toggle()
@@ -2603,7 +2583,7 @@ function EZ:UpdateGUIQueue(hue, sat, val)
 		TextGUI:UpdateColor(hue, sat, val, default)
 	end
 
-	if not clickgui.Visible and not EZ.Legit.Window.Visible then return end
+	if not clickgui.Visible then return end
 
 	for name, component in EZ.Categories do
 		component:Color(hue, sat, val)
@@ -2624,12 +2604,6 @@ function EZ:UpdateGUIQueue(hue, sat, val)
 			if component.Color then
 				component:Color(hue, sat, val)
 			end
-		end
-	end
-
-	if EZ.Legit.Window.Visible then
-		for _, component in EZ.Legit.Modules do
-			component:Color(hue, sat, val)
 		end
 	end
 end
@@ -5323,467 +5297,6 @@ components = {
 		return component
 		
 	end,
-	LegitModule = function(props, children, api)
-		EZ:Remove(props.Name)
-		local component = {
-			Enabled = false,
-			Legit = true,
-			Name = props.Name,
-			Options = {},
-			Type = 'LegitModule'
-		}
-		
-		local button = Instance.new('TextButton')
-		button.AutoButtonColor = false
-		button.BackgroundColor3 = color.Light(uipallet.Main, 0.02)
-		button.Name = props.Name
-		button.Text = ''
-		button.Parent = children
-		component.Object = button
-		addTooltip(button, props.Tooltip, nil, function()
-			return EZ.LegitVisible
-		end)
-		addCorner(button)
-		local title = Instance.new('TextLabel')
-		title.BackgroundTransparency = 1
-		title.FontFace = uipallet.Font
-		title.Position = UDim2.fromOffset(16, 81)
-		title.Size = UDim2.new(1, -16, 0, 20)
-		title.Text = props.Name
-		title.TextColor3 = color.Dark(uipallet.Text, 0.31)
-		title.TextSize = 13
-		title.TextXAlignment = Enum.TextXAlignment.Left
-		title.Parent = button
-		local holder = Instance.new('Frame')
-		holder.BackgroundColor3 = color.Light(uipallet.Main, 0.14)
-		holder.Position = UDim2.new(1, -57, 0, 15)
-		holder.Size = UDim2.fromOffset(22, 12)
-		holder.Parent = button
-		addCorner(holder, UDim.new(1, 0))
-		local knob = Instance.new('Frame')
-		knob.BackgroundColor3 = uipallet.Main
-		knob.Position = UDim2.fromOffset(2, 2)
-		knob.Size = UDim2.fromOffset(8, 8)
-		knob.Parent = holder
-		addCorner(knob, UDim.new(1, 0))
-		local dotsbutton = Instance.new('TextButton')
-		dotsbutton.BackgroundTransparency = 1
-		dotsbutton.Name = 'Dots'
-		dotsbutton.Position = UDim2.new(1, -27, 0, 9)
-		dotsbutton.Size = UDim2.fromOffset(14, 24)
-		dotsbutton.Text = ''
-		dotsbutton.Parent = button
-		local dots = Instance.new('ImageLabel')
-		dots.BackgroundTransparency = 1
-		dots.Image = get_ez_asset('Elite Zone/Assets/overlaydots.png')
-		dots.ImageColor3 = color.Light(uipallet.Main, 0.37)
-		dots.Name = 'Dots'
-		dots.Position = UDim2.fromOffset(6, 6)
-		dots.Size = UDim2.fromOffset(2, 12)
-		dots.Parent = dotsbutton
-		local shadow = Instance.new('TextButton')
-		shadow.Name = 'Shadow'
-		shadow.Size = UDim2.new(1, 0, 1, -5)
-		shadow.BackgroundColor3 = Color3.new()
-		shadow.BackgroundTransparency = 1
-		shadow.AutoButtonColor = false
-		shadow.ClipsDescendants = true
-		shadow.Visible = false
-		shadow.Text = ''
-		shadow.Parent = api.Window
-		addCorner(shadow)
-		local settingspane = Instance.new('TextButton')
-		settingspane.Size = UDim2.new(0, 220, 1, 0)
-		settingspane.Position = UDim2.fromScale(1, 0)
-		settingspane.BackgroundColor3 = uipallet.Main
-		settingspane.AutoButtonColor = false
-		settingspane.Text = ''
-		settingspane.Parent = shadow
-		local settingstitle = Instance.new('TextLabel')
-		settingstitle.Name = 'Title'
-		settingstitle.Size = UDim2.new(1, -36, 0, 20)
-		settingstitle.Position = UDim2.fromOffset(36, 12)
-		settingstitle.BackgroundTransparency = 1
-		settingstitle.Text = props.Name
-		settingstitle.TextXAlignment = Enum.TextXAlignment.Left
-		settingstitle.TextColor3 = color.Dark(uipallet.Text, 0.16)
-		settingstitle.TextSize = 13
-		settingstitle.FontFace = uipallet.Font
-		settingstitle.Parent = settingspane
-		local back = Instance.new('ImageButton')
-		back.Name = 'Back'
-		back.Size = UDim2.fromOffset(16, 16)
-		back.Position = UDim2.fromOffset(11, 13)
-		back.BackgroundTransparency = 1
-		back.Image = get_ez_asset('Elite Zone/Assets/back.png')
-		back.ImageColor3 = color.Light(uipallet.Main, 0.37)
-		back.Parent = settingspane
-		addCorner(settingspane)
-		local settingschildren = Instance.new('ScrollingFrame')
-		settingschildren.BackgroundColor3 = uipallet.Main
-		settingschildren.BorderSizePixel = 0
-		settingschildren.CanvasSize = UDim2.new()
-		settingschildren.Name = 'Children'
-		settingschildren.Position = UDim2.fromOffset(0, 41)
-		settingschildren.ScrollBarThickness = 2
-		settingschildren.ScrollBarImageTransparency = 0.75
-		settingschildren.Size = UDim2.new(1, 0, 1, -45)
-		settingschildren.Parent = settingspane
-		local windowlist = Instance.new('UIListLayout')
-		windowlist.SortOrder = Enum.SortOrder.LayoutOrder
-		windowlist.HorizontalAlignment = Enum.HorizontalAlignment.Center
-		windowlist.Parent = settingschildren
-		if props.Size then
-			local modulechildren = Instance.new('Frame')
-			modulechildren.Size = props.Size
-			modulechildren.BackgroundTransparency = 1
-			modulechildren.Visible = false
-			modulechildren.Parent = scaledgui
-			addDragHandler(modulechildren, api.Window)
-			local objectstroke = Instance.new('UIStroke')
-			objectstroke.Color = Color3.fromRGB(5, 134, 105)
-			objectstroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-			objectstroke.Thickness = 0
-			objectstroke.Parent = modulechildren
-			component.Children = modulechildren
-		end
-		props.Function = props.Function or function() end
-		addMaid(component)
-		
-		function component:Color(hue, sat, val)
-			if self.Enabled then
-				tween:Cancel(holder)
-				holder.BackgroundColor3 = Color3.fromHSV(hue, sat, val)
-			end
-		
-			for _, component in self.Options do
-				if component.Color then
-					component:Color(hue, sat, val)
-				end
-			end
-		end
-		
-		function component:Load(data)
-			EZ:LoadOptions(self, data.Options)
-		
-			if self.Enabled ~= data.Enabled then
-				self:Toggle()
-			end
-		
-			if data.Position and self.Children then
-				self.Children.Position = UDim2.fromOffset(data.Position.X, data.Position.Y)
-			end
-		end
-		
-		function component:Save(data)
-			data[props.Name] = {
-				Enabled = self.Enabled,
-				Options = EZ:SaveOptions(self),
-				Position = self.Children and {
-					X = self.Children.Position.X.Offset,
-					Y = self.Children.Position.Y.Offset
-				} or nil
-			}
-		end
-		
-		function component:Toggle()
-			self.Enabled = not self.Enabled
-			if self.Children then
-				self.Children.Visible = self.Enabled
-			end
-		
-			title.TextColor3 = self.Enabled and color.Light(uipallet.Text, 0.2) or color.Dark(uipallet.Text, 0.31)
-			button.BackgroundColor3 = self.Enabled and color.Light(uipallet.Main, 0.05) or button.BackgroundColor3
-		
-			tween:Tween(holder, uipallet.Tween, {
-				BackgroundColor3 = self.Enabled and Color3.fromHSV(EZ.GUIColor.Hue, EZ.GUIColor.Sat, EZ.GUIColor.Value) or color.Light(uipallet.Main, 0.14)
-			})
-		
-			tween:Tween(knob, uipallet.Tween, {
-				Position = UDim2.fromOffset(self.Enabled and 12 or 2, 2)
-			})
-		
-			if not self.Enabled then
-				for _, v in self.Connections do
-					v:Disconnect()
-				end
-				table.clear(self.Connections)
-			end
-		
-			task.spawn(props.Function, self.Enabled)
-		end
-		
-		for index, comp in components do
-			component['Create'..index] = function(_, props)
-				return comp(props, settingschildren, component)
-			end
-		end
-		
-		back.MouseEnter:Connect(function()
-			back.ImageColor3 = uipallet.Text
-		end)
-		
-		back.MouseLeave:Connect(function()
-			back.ImageColor3 = color.Light(uipallet.Main, 0.37)
-		end)
-		
-		back.MouseButton1Click:Connect(function()
-			tween:Tween(shadow, uipallet.Tween, {
-				BackgroundTransparency = 1
-			})
-		
-			tween:Tween(settingspane, uipallet.Tween, {
-				Position = UDim2.fromScale(1, 0)
-			})
-		
-			task.delay(0.2, function()
-				shadow.Visible = false
-			end)
-		end)
-		
-		button.MouseEnter:Connect(function()
-			if not component.Enabled then
-				button.BackgroundColor3 = color.Light(uipallet.Main, 0.05)
-			end
-		end)
-		
-		button.MouseLeave:Connect(function()
-			if not component.Enabled then
-				button.BackgroundColor3 = color.Light(uipallet.Main, 0.02)
-			end
-		end)
-		
-		button.MouseButton1Click:Connect(function()
-			component:Toggle()
-		end)
-		
-		button.MouseButton2Click:Connect(function()
-			shadow.Visible = true
-		
-			tween:Tween(shadow, uipallet.Tween, {
-				BackgroundTransparency = 0.5
-			})
-		
-			tween:Tween(settingspane, uipallet.Tween, {
-				Position = UDim2.new(1, -220, 0, 0)
-			})
-		end)
-		
-		dotsbutton.MouseButton1Click:Connect(function()
-			shadow.Visible = true
-		
-			tween:Tween(shadow, uipallet.Tween, {
-				BackgroundTransparency = 0.5
-			})
-		
-			tween:Tween(settingspane, uipallet.Tween, {
-				Position = UDim2.new(1, -220, 0, 0)
-			})
-		end)
-		
-		dotsbutton.MouseEnter:Connect(function()
-			dots.ImageColor3 = uipallet.Text
-		end)
-		
-		dotsbutton.MouseLeave:Connect(function()
-			dots.ImageColor3 = color.Light(uipallet.Main, 0.37)
-		end)
-		
-		shadow.MouseButton1Click:Connect(function()
-			tween:Tween(shadow, uipallet.Tween, {
-				BackgroundTransparency = 1
-			})
-		
-			tween:Tween(settingspane, uipallet.Tween, {
-				Position = UDim2.fromScale(1, 0)
-			})
-		
-			task.delay(0.2, function()
-				shadow.Visible = false
-			end)
-		end)
-		
-		shadow:GetPropertyChangedSignal('Visible'):Connect(function()
-			tooltip.Visible = false
-			EZ.LegitVisible = shadow.Visible
-		end)
-		
-		windowlist:GetPropertyChangedSignal('AbsoluteContentSize'):Connect(function()
-			if EZ.ThreadFix then
-				setthreadidentity(8)
-			end
-		
-			settingschildren.CanvasSize = UDim2.fromOffset(0, windowlist.AbsoluteContentSize.Y / scale.Scale)
-		end)
-		
-		api.Modules[props.Name] = component
-		
-		local sorting = {}
-		for _, mod in api.Modules do
-			table.insert(sorting, mod.Name)
-		end
-		table.sort(sorting)
-		
-		for index, name in sorting do
-			api.Modules[name].Object.LayoutOrder = index
-		end
-		
-		return component
-		
-	end,
-	LegitWindow = function(props, children, api)
-		local component = {
-			Modules = {}
-		}
-		
-		local window = Instance.new('Frame')
-		window.BackgroundColor3 = uipallet.Main
-		window.Position = UDim2.new(0.5, -350, 0.5, -190)
-		window.Size = UDim2.fromOffset(700, 380)
-		window.Name = 'LegitGUI'
-		window.Visible = false
-		window.Parent = scaledgui
-		table.insert(EZ.Windows, window)
-		component.Window = window
-		addBlur(window)
-		addCorner(window)
-		addDragHandler(window)
-		local modal = Instance.new('TextButton')
-		modal.BackgroundTransparency = 1
-		modal.Modal = true
-		modal.Text = ''
-		modal.Parent = window
-		local icon = Instance.new('ImageLabel')
-		icon.BackgroundTransparency = 1
-		icon.Image = get_ez_asset('Elite Zone/Assets/legit_mode_icon.png')
-		icon.ImageColor3 = uipallet.Text
-		icon.Position = UDim2.fromOffset(18, 11)
-		icon.Size = UDim2.fromOffset(16, 16)
-		icon.Parent = window
-		local close = Instance.new('ImageButton')
-		close.BackgroundTransparency = 1
-		close.Image = get_ez_asset('Elite Zone/Assets/min.png')
-		close.ImageColor3 = color.Light(uipallet.Main, 0.24)
-		close.Position = UDim2.new(1, -31, 0, 11)
-		close.Size = UDim2.fromOffset(16, 16)
-		close.Parent = window
-		local holder = Instance.new('Frame')
-		holder.BackgroundColor3 = color.Dark(uipallet.Main, 0.02)
-		holder.Position = UDim2.new(1, -253, 0, 42)
-		holder.Size = UDim2.fromOffset(242, 29)
-		holder.Parent = window
-		addCorner(holder, UDim.new(0, 4))
-		local stroke = Instance.new('UIStroke')
-		stroke.Color = color.Light(uipallet.Main, 0.02)
-		stroke.Parent = holder
-		local searchicon = Instance.new('ImageLabel')
-		searchicon.BackgroundTransparency = 1
-		searchicon.Image = get_ez_asset('Elite Zone/Assets/search.png')
-		searchicon.ImageColor3 = color.Light(uipallet.Main, 0.42)
-		searchicon.Position = UDim2.new(1, -25, 0, 9)
-		searchicon.Size = UDim2.fromOffset(12, 12)
-		searchicon.Parent = holder
-		local box = Instance.new('TextBox')
-		box.BackgroundTransparency = 1
-		box.ClearTextOnFocus = false
-		box.FontFace = uipallet.Font
-		box.PlaceholderColor3 = color.Dark(uipallet.Text, 0.16)
-		box.PlaceholderText = 'Search mods'
-		box.Position = UDim2.fromOffset(8, 0)
-		box.Size = UDim2.new(1, -8, 1, 0)
-		box.Text = ''
-		box.TextColor3 = color.Dark(uipallet.Text, 0.16)
-		box.TextSize = 14
-		box.TextXAlignment = Enum.TextXAlignment.Left
-		box.Parent = holder
-		local children = Instance.new('ScrollingFrame')
-		children.BackgroundTransparency = 1
-		children.BorderSizePixel = 0
-		children.CanvasSize = UDim2.new()
-		children.Position = UDim2.fromOffset(14, 76)
-		children.ScrollBarThickness = 2
-		children.ScrollBarImageTransparency = 0.75
-		children.Size = UDim2.fromOffset(684, 301)
-		children.Parent = window
-		local windowlist = Instance.new('UIGridLayout')
-		windowlist.CellSize = UDim2.fromOffset(163, 114)
-		windowlist.CellPadding = UDim2.fromOffset(6, 6)
-		windowlist.FillDirectionMaxCells = 4
-		windowlist.SortOrder = Enum.SortOrder.LayoutOrder
-		windowlist.Parent = children
-		
-		for index, comp in components do
-			component['Create'..index] = function(_, props)
-				return comp(props, children, component)
-			end
-		end
-		
-		function component:CreateModule(props)
-			return components.LegitModule(props, children, component)
-		end
-		
-		local function visibleCheck()
-			for _, module in component.Modules do
-				if module.Children then
-					local visible = clickgui.Visible
-					
-		
-					module.Children.Visible = (not visible or window.Visible) and module.Enabled
-				end
-			end
-		end
-		
-		box:GetPropertyChangedSignal('Text'):Connect(function()
-			for name, module in component.Modules do
-				module.Object.Visible = (box.Text == '' or name:lower():find(box.Text:lower())) and true or false
-			end
-		end)
-		
-		close.MouseButton1Click:Connect(function()
-			window.Visible = false
-			clickgui.Visible = true
-		end)
-		
-		close.MouseEnter:Connect(function()
-			close.ImageColor3 = color.Light(uipallet.Main, 0.37)
-		end)
-		
-		close.MouseLeave:Connect(function()
-			close.ImageColor3 = color.Light(uipallet.Main, 0.24)
-		end)
-		
-		EZ:Clean(clickgui:GetPropertyChangedSignal('Visible'):Connect(visibleCheck))
-		
-		holder.MouseEnter:Connect(function()
-			tween:Tween(stroke, uipallet.Tween, {
-				Color = color.Light(uipallet.Main, 0.0875)
-			})
-		end)
-		
-		holder.MouseLeave:Connect(function()
-			tween:Tween(stroke, uipallet.Tween, {
-				Color = color.Light(uipallet.Main, 0.02)
-			})
-		end)
-		
-		window:GetPropertyChangedSignal('Visible'):Connect(function()
-			EZ:UpdateGUI()
-			visibleCheck()
-		end)
-		
-		windowlist:GetPropertyChangedSignal('AbsoluteContentSize'):Connect(function()
-			if EZ.ThreadFix then
-				setthreadidentity(8)
-			end
-		
-			children.CanvasSize = UDim2.fromOffset(0, windowlist.AbsoluteContentSize.Y / scale.Scale)
-		end)
-		
-		EZ.Legit = component
-		
-		return component
-		
-	end,
 	Module = function(props, children, api)
 		EZ:Remove(props.Name)
 		local component = {
@@ -7453,7 +6966,7 @@ components = {
 		textlistwindow.Size = UDim2.fromOffset(220, 85)
 		textlistwindow.Text = ''
 		textlistwindow.Visible = false
-		textlistwindow.Parent = api.Legit and EZ.Legit.Window or clickgui
+		textlistwindow.Parent = clickgui
 		component.Window = textlistwindow
 		addBlur(textlistwindow)
 		addCorner(textlistwindow)
@@ -7715,7 +7228,7 @@ components = {
 				setthreadidentity(8)
 			end
 		
-			local actualPosition = (textlist.AbsolutePosition - (api.Legit and EZ.Legit.Window.AbsolutePosition or -guiService:GetGuiInset())) / scale.Scale
+			local actualPosition = (textlist.AbsolutePosition + guiService:GetGuiInset()) / scale.Scale
 			textlistwindow.Position = UDim2.fromOffset(actualPosition.X + 223, actualPosition.Y)
 		end)
 		
@@ -8080,14 +7593,6 @@ EZ.Components = setmetatable(components, {
 			rawset(module, 'Create'..index, function(_, props)
 				return callback(props, module.Children, module)
 			end)
-		end
-
-		if EZ.Legit then
-			for _, module in EZ.Legit.Modules do
-				rawset(module, 'Create'..index, function(_, props)
-					return callback(props, module.Children, module)
-				end)
-			end
 		end
 
 		rawset(components, index, callback)
