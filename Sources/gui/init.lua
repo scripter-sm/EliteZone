@@ -94,71 +94,9 @@ EZ.SearchBar = components.SearchBar()
 EZ.Categories.Main:CreateOverlayBar()
 
 local general = EZ.Categories.Main.Settings:CreateSettingsPane({Name = 'General'})
-local settingConnections = {}
 EZ.MultiKeybind = general:CreateToggle({
 	Name = 'Enable Multi-Keybinding',
 	Tooltip = 'Allows multiple keys to be bound to a module (eg. G + H)'
-})
-general:CreateToggle({
-	Name = 'Allow setting keybinds',
-	Function = function(callback)
-		if callback then
-			for _, container in {EZ.Modules, EZ.Legit.Modules} do
-				for _, module in container do
-					for _, component in module.Options do
-						if component.Type == 'Toggle' then
-							local bind = components.Bind({
-								Module = true
-							}, nil, component)
-							bind.Object.Position = UDim2.new(1, -40, 0, 5)
-
-							table.insert(settingConnections, bind.Triggered:Connect(function(isDown)
-								if bind.Hold then
-									if component.Enabled ~= isDown then
-										if EZ.SettingToggleNotifications.Enabled then
-											EZ:CreateNotification(module.Name, component.Name..' '..(not component.Enabled and '<font color="#00AA00">ON</font>' or '<font color="#FF5A5A">OFF</font>'), 1.5)
-										end
-
-										component:Toggle()
-									end
-								else
-									if EZ.SettingToggleNotifications.Enabled then
-										EZ:CreateNotification(module.Name, component.Name..' '..(not component.Enabled and '<font color="#00AA00">ON</font>' or '<font color="#FF5A5A">OFF</font>'), 1.5)
-									end
-
-									component:Toggle()
-								end
-							end))
-
-							table.insert(settingConnections, component.Object.MouseEnter:Connect(function()
-								bind:SetVisible(true)
-							end))
-
-							table.insert(settingConnections, component.Object.MouseLeave:Connect(function()
-								bind:SetVisible(false)
-							end))
-						end
-					end
-				end
-			end
-		else
-			for _, container in {EZ.Modules, EZ.Legit.Modules} do
-				for _, module in container do
-					for _, component in module.Options do
-						if component.Bind then
-							component.Bind:Destroy()
-						end
-					end
-				end
-			end
-
-			for _, connection in settingConnections do
-				connection:Disconnect()
-			end
-			table.clear(settingConnections)
-		end
-	end,
-	Tooltip = 'Hover a toggle setting to bind it to a key'
 })
 
 general:CreateButton({
@@ -325,10 +263,6 @@ EZ.Notifications = notifpane:CreateToggle({
 		if EZ.ToggleNotifications.Object then
 			EZ.ToggleNotifications.Object.Visible = enabled
 		end
-
-		if EZ.SettingToggleNotifications.Object then
-			EZ.SettingToggleNotifications.Object.Visible = enabled
-		end
 	end,
 	Tooltip = 'Shows notifications',
 	Default = true
@@ -337,12 +271,6 @@ EZ.Notifications = notifpane:CreateToggle({
 EZ.ToggleNotifications = notifpane:CreateToggle({
 	Name = 'Toggle alert',
 	Tooltip = 'Notifies you if a module is enabled/disabled.',
-	Default = true,
-	Darker = true
-})
-EZ.SettingToggleNotifications = notifpane:CreateToggle({
-	Name = 'Setting toggle alert',
-	Tooltip = 'Notifies you when a bound setting is toggled.',
 	Default = true,
 	Darker = true
 })

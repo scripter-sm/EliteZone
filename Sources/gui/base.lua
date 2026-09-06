@@ -13,7 +13,6 @@ EZ.Modules = {}
 EZ.config = 'default'
 EZ.RainbowSliders = {}
 EZ.Settings = {}
-EZ.SettingToggleNotifications = {}
 EZ.ThreadFix = setthreadidentity and true or false
 EZ.ToggleNotifications = {}
 EZ.Windows = {}
