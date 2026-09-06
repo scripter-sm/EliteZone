@@ -29,6 +29,9 @@ local guiService = cloneref(game:GetService('GuiService'))
 local runService = cloneref(game:GetService('RunService'))
 local httpService = cloneref(game:GetService('HttpService'))
 
+-- set getgenv().mobile = true before injecting to force the touch layout on a desktop for testing
+local istouch = inputService.TouchEnabled or (getgenv and getgenv().mobile) or false
+
 local fontsize = Instance.new('GetTextBoundsParams')
 fontsize.Width = math.huge
 local notifications
@@ -533,7 +536,7 @@ function EZ:Load(skipgui, config)
 	self.Loaded = canSave
 	self:LoadPositions()
 
-	if inputService.TouchEnabled and not skipgui then
+	if istouch and not skipgui then
 		local button = Instance.new('TextButton')
 		button.BackgroundColor3 = Color3.new()
 		button.BackgroundTransparency = 0.2

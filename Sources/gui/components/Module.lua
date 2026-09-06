@@ -274,7 +274,7 @@ bind.Triggered:Connect(function(isDown)
 	end
 end)
 
-if inputService.TouchEnabled then
+if istouch then
 	local isHeld = false
 
 	button.MouseButton1Down:Connect(function()
