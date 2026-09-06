@@ -893,7 +893,7 @@ function EZ:LoadGUI()
 	scarcitybanner.FontFace = uipallet.Font
 	scarcitybanner.Position = UDim2.fromScale(0, 0.97)
 	scarcitybanner.Size = UDim2.fromScale(1, 0.02)
-	scarcitybanner.Text = 'made by scripter.sm'
+	scarcitybanner.Text = 'test 3444'
 	scarcitybanner.TextColor3 = Color3.new(1, 1, 1)
 	scarcitybanner.TextScaled = true
 	scarcitybanner.TextStrokeTransparency = 0.5
@@ -4114,10 +4114,9 @@ components = {
 			table.insert(hueKeypoints, ColorSequenceKeypoint.new(i, Color3.fromHSV(i, 1, 1)))
 		end
 		
-		local animinfo = TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-		
-		-- eases shade and cursor moves so dragging glides instead of snapping; tween:Tween cancels the
-		-- previous tween per object, so a drag just keeps retargeting one glide toward the mouse.
+		-- eases shade and cursor moves so dragging glides instead of snapping, on the same slide as the
+		-- sliders (uipallet.Tween); tween:Tween cancels the previous tween per object, so a drag just
+		-- keeps retargeting one glide toward the mouse.
 		-- rainbow already reshades every tick, so easing it would only fight the cycle
 		local function anim(obj, goal, instant)
 			if instant then
@@ -4125,7 +4124,7 @@ components = {
 					obj[prop] = value
 				end
 			else
-				tween:Tween(obj, animinfo, goal)
+				tween:Tween(obj, uipallet.Tween, goal)
 			end
 		end
 		
