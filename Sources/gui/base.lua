@@ -11,7 +11,6 @@ EZ.Loaded = false
 EZ.Libraries = {}
 EZ.Modules = {}
 EZ.config = 'default'
-EZ.RainbowSliders = {}
 EZ.Settings = {}
 EZ.ThreadFix = setthreadidentity and true or false
 EZ.ToggleNotifications = {}
@@ -795,33 +794,32 @@ function EZ:UpdateGUIQueue(hue, sat, val)
 	end
 
 	if not clickgui.Visible and not EZ.Legit.Window.Visible then return end
-	local isRainbow = EZ.GUIColor.Rainbow and EZ.RainbowMode.Value ~= 'Retro'
 
 	for name, component in EZ.Categories do
-		component:Color(hue, sat, val, isRainbow)
+		component:Color(hue, sat, val)
 	end
 
 	for _, component in EZ.Modules do
-		component:Color(hue, sat, val, isRainbow)
+		component:Color(hue, sat, val)
 	end
 
 	for _, component in EZ.Overlays.Options do
 		if component.Color then
-			component:Color(hue, sat, val, isRainbow)
+			component:Color(hue, sat, val)
 		end
 	end
 
 	for _, pane in EZ.Settings do
 		for _, component in pane.Options do
 			if component.Color then
-				component:Color(hue, sat, val, isRainbow)
+				component:Color(hue, sat, val)
 			end
 		end
 	end
 
 	if EZ.Legit.Window.Visible then
 		for _, component in EZ.Legit.Modules do
-			component:Color(hue, sat, val, isRainbow)
+			component:Color(hue, sat, val)
 		end
 	end
 end

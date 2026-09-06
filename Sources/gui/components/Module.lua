@@ -24,10 +24,6 @@ button.TextXAlignment = Enum.TextXAlignment.Left
 button.Parent = children
 component.Object = button
 addTooltip(button, props.Tooltip)
-local gradient = Instance.new('UIGradient')
-gradient.Enabled = false
-gradient.Rotation = 90
-gradient.Parent = button
 local modulechildren = Instance.new('Frame')
 modulechildren.BackgroundColor3 = color.Dark(uipallet.Main, 0.02)
 modulechildren.BorderSizePixel = 0
@@ -85,32 +81,23 @@ component.Edit = edit
 component.Children = modulechildren
 addMaid(component)
 
-function component:Color(hue, sat, val, isRainbow)
+function component:Color(hue, sat, val)
 	if self.Enabled then
-		button.BackgroundColor3 = isRainbow and Color3.fromHSV(EZ:Color((hue - (self.Index * 0.025)) % 1)) or Color3.fromHSV(hue, sat, val)
-		button.TextColor3 = EZ.GUIColor.Rainbow and Color3.new(0.19, 0.19, 0.19) or EZ:TextColor(hue, sat, val)
-		button.UIGradient.Enabled = isRainbow and EZ.RainbowMode.Value == 'Gradient'
-
-		if button.UIGradient.Enabled then
-			button.BackgroundColor3 = Color3.new(1, 1, 1)
-			button.UIGradient.Color = ColorSequence.new({
-				ColorSequenceKeypoint.new(0, Color3.fromHSV(EZ:Color((hue - (self.Index * 0.025)) % 1))),
-				ColorSequenceKeypoint.new(1, Color3.fromHSV(EZ:Color((hue - ((self.Index + 1) * 0.025)) % 1)))
-			})
-		end
+		button.BackgroundColor3 = Color3.fromHSV(hue, sat, val)
+		button.TextColor3 = EZ:TextColor(hue, sat, val)
 
 		self.Bind:SetColor(self.Object.TextColor3)
 		dots.ImageColor3 = self.Object.TextColor3
 	end
 
 	if self.Visible then
-		editbox.BackgroundColor3 = isRainbow and Color3.fromHSV(EZ:Color((hue - (self.Index * 0.025)) % 1)) or Color3.fromHSV(hue, sat, val)
+		editbox.BackgroundColor3 = Color3.fromHSV(hue, sat, val)
 		editborder.Color = editbox.BackgroundColor3
 	end
 
 	for _, component in self.Options do
 		if component.Color then
-			component:Color(hue, sat, val, isRainbow)
+			component:Color(hue, sat, val)
 		end
 	end
 end
@@ -165,7 +152,6 @@ function component:Toggle(multiple)
 
 	self.Enabled = not self.Enabled
 	divider.Visible = self.Enabled
-	gradient.Enabled = self.Enabled
 	button.TextColor3 = (isHover or modulechildren.Visible) and uipallet.Text or color.Dark(uipallet.Text, 0.16)
 	button.BackgroundColor3 = (isHover or modulechildren.Visible) and color.Light(uipallet.Main, 0.02) or uipallet.Main
 	dots.ImageColor3 = self.Enabled and Color3.fromRGB(50, 50, 50) or color.Light(uipallet.Main, 0.37)

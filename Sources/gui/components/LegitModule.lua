@@ -124,7 +124,7 @@ end
 props.Function = props.Function or function() end
 addMaid(component)
 
-function component:Color(hue, sat, val, isRainbow)
+function component:Color(hue, sat, val)
 	if self.Enabled then
 		tween:Cancel(holder)
 		holder.BackgroundColor3 = Color3.fromHSV(hue, sat, val)
@@ -132,7 +132,7 @@ function component:Color(hue, sat, val, isRainbow)
 
 	for _, component in self.Options do
 		if component.Color then
-			component:Color(hue, sat, val, isRainbow)
+			component:Color(hue, sat, val)
 		end
 	end
 end

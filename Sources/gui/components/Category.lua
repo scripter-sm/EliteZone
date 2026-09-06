@@ -109,7 +109,7 @@ windowlist.HorizontalAlignment = Enum.HorizontalAlignment.Center
 windowlist.SortOrder = Enum.SortOrder.LayoutOrder
 windowlist.Parent = children
 
-function component:Color(hue, sat, val, isRainbow) end
+function component:Color(hue, sat, val) end
 
 function component:Expand()
 	self.Expanded = not self.Expanded

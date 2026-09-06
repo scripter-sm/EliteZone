@@ -75,8 +75,8 @@ addCorner(knob, UDim.new(1, 0))
 props.Function = props.Function or function() end
 props.Decimal = props.Decimal or 1
 
-function component:Color(hue, sat, val, isRainbow)
-	fill.BackgroundColor3 = isRainbow and Color3.fromHSV(EZ:Color((hue - (self.Index * 0.075)) % 1)) or Color3.fromHSV(hue, sat, val)
+function component:Color(hue, sat, val)
+	fill.BackgroundColor3 = Color3.fromHSV(hue, sat, val)
 	knob.BackgroundColor3 = fill.BackgroundColor3
 end
 

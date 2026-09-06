@@ -489,18 +489,18 @@ function component:ChangeValue(value, skipGUI)
 	end
 end
 
-function component:Color(hue, sat, val, isRainbow)
+function component:Color(hue, sat, val)
 	for _, component in self.Options do
 		if component.Color then
-			component:Color(hue, sat, val, isRainbow)
+			component:Color(hue, sat, val)
 		end
 	end
 
-	addbutton.ImageColor3 = isRainbow and Color3.fromHSV(EZ:Color(hue % 1)) or Color3.fromHSV(hue, sat, val)
+	addbutton.ImageColor3 = Color3.fromHSV(hue, sat, val)
 
 	if self.Selected then
-		self.Selected.BackgroundColor3 = isRainbow and Color3.fromHSV(EZ:Color(hue % 1)) or Color3.fromHSV(hue, sat, val)
-		self.Selected.Title.TextColor3 = EZ.GUIColor.Rainbow and Color3.new(0.19, 0.19, 0.19) or EZ:TextColor(hue, sat, val)
+		self.Selected.BackgroundColor3 = Color3.fromHSV(hue, sat, val)
+		self.Selected.Title.TextColor3 = EZ:TextColor(hue, sat, val)
 		self.Selected.Dots.Dots.ImageColor3 = self.Selected.Title.TextColor3
 		self.Selected.Bind.Icon.ImageColor3 = self.Selected.Title.TextColor3
 		self.Selected.Bind.TextLabel.TextColor3 = self.Selected.Title.TextColor3

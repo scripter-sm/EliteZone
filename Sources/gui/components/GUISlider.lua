@@ -1,6 +1,5 @@
 local component = {
 	Hue = 0.46,
-	Rainbow = false,
 	Sat = 0.96,
 	Type = 'GUISlider',
 	Value = 0.52
@@ -124,12 +123,12 @@ huebar.Size = UDim2.fromOffset(12, 130)
 huebar.ZIndex = 7
 huebar.Parent = picker
 addCorner(huebar, UDim.new(0, 3))
-local rainbowTable = {}
+local hueKeypoints = {}
 for i = 0, 1, 0.1 do
-	table.insert(rainbowTable, ColorSequenceKeypoint.new(i, Color3.fromHSV(i, 1, 1)))
+	table.insert(hueKeypoints, ColorSequenceKeypoint.new(i, Color3.fromHSV(i, 1, 1)))
 end
 local huegradient = Instance.new('UIGradient')
-huegradient.Color = ColorSequence.new(rainbowTable)
+huegradient.Color = ColorSequence.new(hueKeypoints)
 huegradient.Rotation = 90
 huegradient.Parent = huebar
 local huecursor = Instance.new('Frame')
@@ -186,31 +185,6 @@ hexbox.TextSize = 13
 hexbox.TextXAlignment = Enum.TextXAlignment.Left
 hexbox.ZIndex = 8
 hexbox.Parent = hexholder
-local rainbow = Instance.new('TextButton')
-rainbow.BackgroundTransparency = 1
-rainbow.Position = UDim2.fromOffset(198, 185 + 6)
-rainbow.Size = UDim2.fromOffset(12, 12)
-rainbow.Text = ''
-rainbow.ZIndex = 7
-rainbow.Parent = picker
-local ring1 = Instance.new('ImageLabel')
-ring1.BackgroundTransparency = 1
-ring1.Image = get_ez_asset('Elite Zone/Assets/rainbow_1.png')
-ring1.ImageColor3 = color.Light(uipallet.Main, 0.37)
-ring1.Size = UDim2.fromOffset(12, 12)
-ring1.ZIndex = 7
-ring1.Parent = rainbow
-local ring2 = Instance.fromExisting(ring1)
-ring2.Image = get_ez_asset('Elite Zone/Assets/rainbow_2.png')
-ring2.Parent = rainbow
-local ring3 = Instance.fromExisting(ring1)
-ring3.Image = get_ez_asset('Elite Zone/Assets/rainbow_3.png')
-ring3.Parent = rainbow
-local ring4 = Instance.fromExisting(ring1)
-ring4.Image = get_ez_asset('Elite Zone/Assets/rainbow_4.png')
-ring4.Parent = rainbow
-
-local rainbowthread
 
 -- both bars share this: press to jump, hold to scrub, release to drop the connections
 local function addDrag(target, callback)
@@ -238,10 +212,6 @@ local function addDrag(target, callback)
 end
 
 function component:Load(data)
-	if data.Rainbow then
-		self:Toggle()
-	end
-
 	self:SetValue(data.Hue, data.Sat, data.Value)
 end
 
@@ -249,8 +219,7 @@ function component:Save(data)
 	data[props.Name] = {
 		Hue = self.Hue,
 		Sat = self.Sat,
-		Value = self.Value,
-		Rainbow = self.Rainbow
+		Value = self.Value
 	}
 end
 
@@ -262,7 +231,7 @@ function component:SetValue(h, s, v)
 	local shade = Color3.fromHSV(self.Hue, self.Sat, self.Value)
 	preview.ImageColor3 = shade
 
-	-- rainbow drives this every frame, so skip the picker writes while it is closed
+	-- skip the picker writes while it is closed
 	if picker.Visible then
 		windowicon.ImageColor3 = shade
 		huelayer.BackgroundColor3 = Color3.fromHSV(self.Hue, 1, 1)
@@ -276,45 +245,7 @@ function component:SetValue(h, s, v)
 	props.Function(self.Hue, self.Sat, self.Value)
 end
 
-function component:Toggle()
-	self.Rainbow = not self.Rainbow
-	if rainbowthread then
-		task.cancel(rainbowthread)
-	end
-
-	if self.Rainbow then
-		table.insert(EZ.RainbowSliders, self)
-
-		ring1.ImageColor3 = Color3.fromRGB(5, 127, 100)
-		rainbowthread = task.delay(0.1, function()
-			ring2.ImageColor3 = Color3.fromRGB(228, 125, 43)
-			rainbowthread = task.delay(0.1, function()
-				ring3.ImageColor3 = Color3.fromRGB(225, 46, 52)
-				rainbowthread = nil
-			end)
-		end)
-	else
-		local index = table.find(EZ.RainbowSliders, self)
-		if index then
-			table.remove(EZ.RainbowSliders, index)
-		end
-
-		ring3.ImageColor3 = color.Light(uipallet.Main, 0.37)
-		rainbowthread = task.delay(0.1, function()
-			ring2.ImageColor3 = color.Light(uipallet.Main, 0.37)
-			rainbowthread = task.delay(0.1, function()
-				ring1.ImageColor3 = color.Light(uipallet.Main, 0.37)
-				rainbowthread = nil
-			end)
-		end)
-	end
-end
-
 addDrag(svmap, function(position)
-	if component.Rainbow then
-		component:Toggle()
-	end
-
 	component:SetValue(
 		nil,
 		math.clamp((position.X - svmap.AbsolutePosition.X) / svmap.AbsoluteSize.X, 0, 1),
@@ -323,10 +254,6 @@ addDrag(svmap, function(position)
 end)
 
 addDrag(huebar, function(position)
-	if component.Rainbow then
-		component:Toggle()
-	end
-
 	component:SetValue(math.clamp((position.Y - huebar.AbsolutePosition.Y) / huebar.AbsoluteSize.Y, 0, 1))
 end)
 
@@ -347,10 +274,6 @@ preview.MouseButton1Click:Connect(function()
 	component:SetValue()
 end)
 
-rainbow.MouseButton1Click:Connect(function()
-	component:Toggle()
-end)
-
 close.MouseButton1Click:Connect(function()
 	picker.Visible = false
 end)
@@ -369,10 +292,6 @@ hexbox.FocusLost:Connect(function(enter)
 	if not success or not parsed then
 		hexbox.Text = '#'..Color3.fromHSV(component.Hue, component.Sat, component.Value):ToHex()
 		return
-	end
-
-	if component.Rainbow then
-		component:Toggle()
 	end
 
 	component:SetValue(parsed:ToHSV())

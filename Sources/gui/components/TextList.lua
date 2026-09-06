@@ -125,9 +125,9 @@ add.Size = UDim2.fromOffset(16, 16)
 add.Parent = boxholder
 props.Function = props.Function or function() end
 
-function component:Color(hue, sat, val, isRainbow)
+function component:Color(hue, sat, val)
 	if textlistwindow.Visible then
-		holder.BackgroundColor3 = isRainbow and Color3.fromHSV(EZ:Color((hue - (self.Index * 0.075)) % 1)) or Color3.fromHSV(hue, sat, val)
+		holder.BackgroundColor3 = Color3.fromHSV(hue, sat, val)
 	end
 end
 

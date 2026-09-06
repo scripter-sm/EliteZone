@@ -133,18 +133,6 @@ guipane:CreateToggle({
 	Tooltip = 'Toggles visibility of these'
 })
 
-guipane:CreateToggle({
-	Name = 'Show legit mode',
-	Function = function(enabled)
-		clickgui.Search.Legit.Visible = enabled
-		clickgui.Search.LegitDivider.Visible = enabled
-		clickgui.Search.TextBox.Size = UDim2.new(1, enabled and -50 or -10, 0, 37)
-		clickgui.Search.TextBox.Position = UDim2.fromOffset(enabled and 50 or 10, 0)
-	end,
-	Default = true,
-	Tooltip = 'Shows the button to switch to the legit mod menu'
-})
-
 local ScaleSlider = {Object = {}, Value = 1}
 EZ.Scale = guipane:CreateToggle({
 	Name = 'Auto rescale',
@@ -175,24 +163,6 @@ ScaleSlider = guipane:CreateSlider({
 	Visible = false
 })
 
-EZ.RainbowSpeed = guipane:CreateSlider({
-	Name = 'Rainbow speed',
-	Min = 0.1,
-	Max = 10,
-	Decimal = 10,
-	Default = 1,
-	Tooltip = 'Adjusts the speed of rainbow values'
-})
-
-EZ.RainbowUpdateSpeed = guipane:CreateSlider({
-	Name = 'Rainbow update rate',
-	Min = 1,
-	Max = 144,
-	Default = 60,
-	Tooltip = 'Adjusts the update rate of rainbow values',
-	Suffix = 'hz'
-})
-
 guipane:CreateDropdown({
 	Name = 'Search bar style',
 	List = {'Floating', 'None'},
@@ -201,12 +171,6 @@ guipane:CreateDropdown({
 		EZ.SearchBar.Object.Visible = value == 'Floating'
 	end,
 	Tooltip = 'Switch between search bar styles'
-})
-
-EZ.RainbowMode = guipane:CreateDropdown({
-	Name = 'Rainbow Mode',
-	List = {'Normal', 'Gradient', 'Retro'},
-	Tooltip = 'Normal - Smooth color fade\nGradient - Gradient color fade\nRetro - Static color'
 })
 
 guipane:CreateButton({
@@ -290,22 +254,6 @@ EZ.GUIBind = EZ.Categories.Main.Settings:CreateBind({
 })
 
 --Overlays
-
-EZ:Clean(task.spawn(function()
-	local hue = 0
-	repeat
-		for _, component in EZ.RainbowSliders do
-			if component.Type == 'GUISlider' then
-				component:SetValue(EZ:Color(hue))
-			else
-				component:SetValue(hue)
-			end
-		end
-
-		local delta = task.wait(1 / EZ.RainbowUpdateSpeed.Value)
-		hue = (hue + (delta * (0.2 * EZ.RainbowSpeed.Value))) % 1
-	until false
-end))
 
 local cursorConnection
 EZ:Clean(clickgui:GetPropertyChangedSignal('Visible'):Connect(function()

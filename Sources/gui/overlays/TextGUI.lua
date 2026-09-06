@@ -467,8 +467,8 @@ function TextGUI:UpdateColor(hue, sat, val, default)
 	LabelCustom.TextColor3 = CustomTextColor.Enabled and Color3.fromHSV(CustomTextColorSlider.Hue, CustomTextColorSlider.Sat, CustomTextColorSlider.Value) or LogoGradient.Color.Keypoints[2].Value
 
 	local isCustom = ColorMode.Value == 'Custom color' and Color3.fromHSV(ColorSlider.Hue, ColorSlider.Sat, ColorSlider.Value) or nil
-	for index, label in Labels do
-		label.Text.TextColor3 = isCustom or (EZ.GUIColor.Rainbow and Color3.fromHSV(EZ:Color((hue - ((Gradient.Enabled and index + 2 or index) * 0.025)) % 1)) or LogoGradient.Color.Keypoints[2].Value)
+	for _, label in Labels do
+		label.Text.TextColor3 = isCustom or LogoGradient.Color.Keypoints[2].Value
 
 		if label.Color then
 			label.Color.BackgroundColor3 = label.Text.TextColor3

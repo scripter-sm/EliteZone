@@ -83,12 +83,12 @@ local settingspane = components.SettingsPane({
 }, window, component)
 component.Settings = settingspane
 
-function component:Color(hue, sat, val, isRainbow)
+function component:Color(hue, sat, val)
 	accentcolor.ImageColor3 = Color3.fromHSV(hue, sat, val)
 
 	for _, button in self.Buttons do
 		if button.Enabled then
-			button.Object.TextColor3 = isRainbow and Color3.fromHSV(EZ:Color((hue - (button.Index * 0.025)) % 1)) or Color3.fromHSV(hue, sat, val)
+			button.Object.TextColor3 = Color3.fromHSV(hue, sat, val)
 
 			if button.Icon then
 				button.Icon.ImageColor3 = button.Object.TextColor3

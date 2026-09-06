@@ -41,19 +41,18 @@ knob.Parent = holder
 addCorner(knob, UDim.new(1, 0))
 props.Function = props.Function or function() end
 
-function component:Color(hue, sat, val, isRainbow)
+function component:Color(hue, sat, val)
 	if self.Enabled then
 		tween:Cancel(holder)
-		holder.BackgroundColor3 = isRainbow and Color3.fromHSV(EZ:Color((hue - (self.Index * 0.075)) % 1)) or Color3.fromHSV(hue, sat, val)
+		holder.BackgroundColor3 = Color3.fromHSV(hue, sat, val)
 	end
 end
 
 function component:Toggle()
-	local isRainbow = EZ.GUIColor.Rainbow and EZ.RainbowMode.Value ~= 'Retro'
 	self.Enabled = not self.Enabled
 
 	tween:Tween(holder, uipallet.Tween, {
-		BackgroundColor3 = self.Enabled and (isRainbow and Color3.fromHSV(EZ:Color((EZ.GUIColor.Hue - (self.Index * 0.075)) % 1)) or Color3.fromHSV(EZ.GUIColor.Hue, EZ.GUIColor.Sat, EZ.GUIColor.Value)) or (isHover and color.Light(uipallet.Main, 0.37) or color.Light(uipallet.Main, 0.14))
+		BackgroundColor3 = self.Enabled and Color3.fromHSV(EZ.GUIColor.Hue, EZ.GUIColor.Sat, EZ.GUIColor.Value) or (isHover and color.Light(uipallet.Main, 0.37) or color.Light(uipallet.Main, 0.14))
 	})
 
 	tween:Tween(knob, uipallet.Tween, {

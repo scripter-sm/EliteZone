@@ -29,15 +29,8 @@ end
 -- eases shade and cursor moves so dragging glides instead of snapping, on the same slide as the
 -- sliders (uipallet.Tween); tween:Tween cancels the previous tween per object, so a drag just
 -- keeps retargeting one glide toward the mouse.
--- rainbow already reshades every tick, so easing it would only fight the cycle
-local function anim(obj, goal, instant)
-	if instant then
-		for prop, value in goal do
-			obj[prop] = value
-		end
-	else
-		tween:Tween(obj, uipallet.Tween, goal)
-	end
+local function anim(obj, goal)
+	tween:Tween(obj, uipallet.Tween, goal)
 end
 
 -- every bar shares this: press to jump, hold to scrub, release to drop the connections
@@ -72,7 +65,6 @@ local function addPicker(index, info)
 		Sat = info.DefaultSat or 1,
 		Value = info.DefaultValue or 1,
 		Opacity = info.DefaultOpacity or 1,
-		Rainbow = false,
 		Index = 0,
 		Object = colorslider
 	}
@@ -296,35 +288,8 @@ local function addPicker(index, info)
 	hexbox.TextXAlignment = Enum.TextXAlignment.Left
 	hexbox.ZIndex = 8
 	hexbox.Parent = hexholder
-	local rainbow = Instance.new('TextButton')
-	rainbow.BackgroundTransparency = 1
-	rainbow.Position = UDim2.fromOffset(198, rowY + 6)
-	rainbow.Size = UDim2.fromOffset(12, 12)
-	rainbow.Text = ''
-	rainbow.ZIndex = 7
-	rainbow.Parent = picker
-	local ring1 = Instance.new('ImageLabel')
-	ring1.BackgroundTransparency = 1
-	ring1.Image = get_ez_asset('Elite Zone/Assets/rainbow_1.png')
-	ring1.ImageColor3 = color.Light(uipallet.Main, 0.37)
-	ring1.Size = UDim2.fromOffset(12, 12)
-	ring1.ZIndex = 7
-	ring1.Parent = rainbow
-	local ring2 = Instance.fromExisting(ring1)
-	ring2.Image = get_ez_asset('Elite Zone/Assets/rainbow_2.png')
-	ring2.Parent = rainbow
-	local ring3 = Instance.fromExisting(ring1)
-	ring3.Image = get_ez_asset('Elite Zone/Assets/rainbow_3.png')
-	ring3.Parent = rainbow
-	local ring4 = Instance.fromExisting(ring1)
-	ring4.Image = get_ez_asset('Elite Zone/Assets/rainbow_4.png')
-	ring4.Parent = rainbow
 
 	function component:Load(data)
-		if data.Rainbow ~= self.Rainbow then
-			self:Toggle()
-		end
-
 		if self.Hue ~= data.Hue or self.Sat ~= data.Sat or self.Value ~= data.Value or self.Opacity ~= data.Opacity then
 			self:SetValue(data.Hue, data.Sat, data.Value, data.Opacity)
 		end
@@ -335,8 +300,7 @@ local function addPicker(index, info)
 			Hue = self.Hue,
 			Sat = self.Sat,
 			Value = self.Value,
-			Opacity = self.Opacity,
-			Rainbow = self.Rainbow
+			Opacity = self.Opacity
 		}
 	end
 
@@ -347,8 +311,7 @@ local function addPicker(index, info)
 		self.Opacity = o or self.Opacity
 
 		local shade = Color3.fromHSV(self.Hue, self.Sat, self.Value)
-		local instant = self.Rainbow
-		anim(preview, {ImageColor3 = shade}, instant)
+		anim(preview, {ImageColor3 = shade})
 
 		if hasAlpha then
 			previewchecker.ImageTransparency = self.Opacity
@@ -356,55 +319,22 @@ local function addPicker(index, info)
 
 		-- the picker is the only thing the rest of these touch, so skip them while it is closed
 		if picker.Visible then
-			anim(windowicon, {ImageColor3 = shade}, instant)
-			anim(huelayer, {BackgroundColor3 = Color3.fromHSV(self.Hue, 1, 1)}, instant)
-			anim(svcursor, {Position = UDim2.fromScale(self.Sat, 1 - self.Value), BackgroundColor3 = shade}, instant)
-			anim(huecursor, {Position = UDim2.fromScale(0.5, self.Hue)}, instant)
-			anim(swatch, {BackgroundColor3 = shade}, instant)
+			anim(windowicon, {ImageColor3 = shade})
+			anim(huelayer, {BackgroundColor3 = Color3.fromHSV(self.Hue, 1, 1)})
+			anim(svcursor, {Position = UDim2.fromScale(self.Sat, 1 - self.Value), BackgroundColor3 = shade})
+			anim(huecursor, {Position = UDim2.fromScale(0.5, self.Hue)})
+			anim(swatch, {BackgroundColor3 = shade})
 			hexbox.Text = '#'..shade:ToHex()
 
 			if hasAlpha then
 				iconchecker.ImageTransparency = self.Opacity
-				anim(alphabar, {BackgroundColor3 = shade}, instant)
-				anim(alphacursor, {Position = UDim2.fromScale(self.Opacity, 0.5)}, instant)
+				anim(alphabar, {BackgroundColor3 = shade})
+				anim(alphacursor, {Position = UDim2.fromScale(self.Opacity, 0.5)})
 				swatchchecker.ImageTransparency = self.Opacity
 			end
 		end
 
 		callback(self.Hue, self.Sat, self.Value, self.Opacity)
-	end
-
-	function component:Toggle()
-		self.Rainbow = not self.Rainbow
-
-		if self.Rainbow then
-			table.insert(EZ.RainbowSliders, self)
-
-			ring1.ImageColor3 = Color3.fromRGB(5, 127, 100)
-			task.delay(0.1, function()
-				if not self.Rainbow then return end
-				ring2.ImageColor3 = Color3.fromRGB(228, 125, 43)
-				task.delay(0.1, function()
-					if not self.Rainbow then return end
-					ring3.ImageColor3 = Color3.fromRGB(225, 46, 52)
-				end)
-			end)
-		else
-			local rainbowIndex = table.find(EZ.RainbowSliders, self)
-			if rainbowIndex then
-				table.remove(EZ.RainbowSliders, rainbowIndex)
-			end
-
-			ring3.ImageColor3 = color.Light(uipallet.Main, 0.37)
-			task.delay(0.1, function()
-				if self.Rainbow then return end
-				ring2.ImageColor3 = color.Light(uipallet.Main, 0.37)
-				task.delay(0.1, function()
-					if self.Rainbow then return end
-					ring1.ImageColor3 = color.Light(uipallet.Main, 0.37)
-				end)
-			end)
-		end
 	end
 
 	addDrag(svmap, function(position)
@@ -442,10 +372,6 @@ local function addPicker(index, info)
 		component:SetValue()
 	end)
 
-	rainbow.MouseButton1Click:Connect(function()
-		component:Toggle()
-	end)
-
 	close.MouseButton1Click:Connect(function()
 		picker.Visible = false
 	end)
@@ -464,10 +390,6 @@ local function addPicker(index, info)
 		if not success or not parsed then
 			hexbox.Text = '#'..Color3.fromHSV(component.Hue, component.Sat, component.Value):ToHex()
 			return
-		end
-
-		if component.Rainbow then
-			component:Toggle()
 		end
 
 		component:SetValue(parsed:ToHSV())
