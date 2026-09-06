@@ -2048,15 +2048,16 @@ function EZ:LoadGUI()
 		ratio_seam.Parent = ratio_bg
 		
 		-- Global ZIndexBehavior sorts every descendant of the ScreenGui by raw ZIndex, so the hud's
-		-- default-1 labels/icons/headshot interleave with module windows (background falls behind, text
-		-- rides on top). Drop the whole subtree into its own band below the modules so it stays one flat
-		-- layer and tucks cleanly under the click gui.
+		-- 0..3 parts interleave with the module windows (all at 1): background sinks behind a module
+		-- while the labels/icons ride on top. Flatten the whole subtree onto one ZIndex above the
+		-- modules but below the popouts/notifications (5) so it draws as a single layer on top; internal
+		-- stacking still holds from child order and nesting.
 		for _, obj in Holder:GetDescendants() do
 			if obj:IsA('GuiObject') then
-				obj.ZIndex -= 10
+				obj.ZIndex = 4
 			end
 		end
-		Holder.ZIndex = -10
+		Holder.ZIndex = 4
 		
 		local function pick(list)
 			return list[math.random(#list)]
