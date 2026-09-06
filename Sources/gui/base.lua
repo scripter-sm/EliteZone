@@ -543,7 +543,7 @@ function EZ:Load(skipgui, config)
 		button.Parent = gui
 		local image = Instance.new('ImageLabel')
 		image.BackgroundTransparency = 1
-		image.Image = get_ez_asset('Elite Zone/Assets/EZ.png')
+		image.Image = get_ez_asset('Elite Zone/Assets/logo.png')
 		image.Position = UDim2.fromOffset(6, 6)
 		image.Size = UDim2.fromOffset(20, 20)
 		image.Parent = button
