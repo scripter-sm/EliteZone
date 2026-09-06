@@ -11,7 +11,7 @@ toggle.BackgroundColor3 = color.Dark(children.BackgroundColor3, props.Darker and
 toggle.BorderSizePixel = 0
 toggle.FontFace = uipallet.Font
 toggle.Size = UDim2.new(1, 0, 0, 40)
-toggle.Text = string.rep(' ', 33)..props.Name
+toggle.Text = string.rep(' ', istouch and 33 or 33 * scale.Scale)..props.Name
 toggle.TextColor3 = color.Dark(uipallet.Text, 0.16)
 toggle.TextSize = 14
 toggle.TextXAlignment = Enum.TextXAlignment.Left
@@ -60,6 +60,12 @@ function component:Toggle()
 	})
 
 	props.Function(self.Enabled)
+end
+
+if not istouch then
+	scale:GetPropertyChangedSignal('Scale'):Connect(function()
+		toggle.Text = string.rep(' ', 33 * scale.Scale)..props.Name
+	end)
 end
 
 toggle.MouseEnter:Connect(function()

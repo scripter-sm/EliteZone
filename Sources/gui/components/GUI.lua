@@ -175,6 +175,13 @@ windowlist:GetPropertyChangedSignal('AbsoluteContentSize'):Connect(function()
 	end
 
 	window.Size = UDim2.fromOffset(220, 42 + windowlist.AbsoluteContentSize.Y / scale.Scale)
+	if not istouch then
+		for _, button in component.Buttons do
+			if button.Icon then
+				button.Object.Text = string.rep(' ', 39 * scale.Scale)..button.Name
+			end
+		end
+	end
 end)
 
 EZ.Categories.Main = component
