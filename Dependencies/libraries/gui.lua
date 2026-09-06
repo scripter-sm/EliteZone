@@ -4114,14 +4114,18 @@ components = {
 			table.insert(hueKeypoints, ColorSequenceKeypoint.new(i, Color3.fromHSV(i, 1, 1)))
 		end
 		
-		local colorinfo = TweenInfo.new(0.35, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+		local animinfo = TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
 		
-		-- rainbow already changes the shade every tick, so easing it would only fight the cycle
-		local function paint(obj, prop, value, instant)
+		-- eases shade and cursor moves so dragging glides instead of snapping; tween:Tween cancels the
+		-- previous tween per object, so a drag just keeps retargeting one glide toward the mouse.
+		-- rainbow already reshades every tick, so easing it would only fight the cycle
+		local function anim(obj, goal, instant)
 			if instant then
-				obj[prop] = value
+				for prop, value in goal do
+					obj[prop] = value
+				end
 			else
-				tween:Tween(obj, colorinfo, {[prop] = value})
+				tween:Tween(obj, animinfo, goal)
 			end
 		end
 		
@@ -4433,7 +4437,7 @@ components = {
 		
 				local shade = Color3.fromHSV(self.Hue, self.Sat, self.Value)
 				local instant = self.Rainbow
-				paint(preview, 'ImageColor3', shade, instant)
+				anim(preview, {ImageColor3 = shade}, instant)
 		
 				if hasAlpha then
 					previewchecker.ImageTransparency = self.Opacity
@@ -4441,18 +4445,17 @@ components = {
 		
 				-- the picker is the only thing the rest of these touch, so skip them while it is closed
 				if picker.Visible then
-					paint(windowicon, 'ImageColor3', shade, instant)
-					paint(huelayer, 'BackgroundColor3', Color3.fromHSV(self.Hue, 1, 1), instant)
-					svcursor.Position = UDim2.fromScale(self.Sat, 1 - self.Value)
-					paint(svcursor, 'BackgroundColor3', shade, instant)
-					huecursor.Position = UDim2.fromScale(0.5, self.Hue)
-					paint(swatch, 'BackgroundColor3', shade, instant)
+					anim(windowicon, {ImageColor3 = shade}, instant)
+					anim(huelayer, {BackgroundColor3 = Color3.fromHSV(self.Hue, 1, 1)}, instant)
+					anim(svcursor, {Position = UDim2.fromScale(self.Sat, 1 - self.Value), BackgroundColor3 = shade}, instant)
+					anim(huecursor, {Position = UDim2.fromScale(0.5, self.Hue)}, instant)
+					anim(swatch, {BackgroundColor3 = shade}, instant)
 					hexbox.Text = '#'..shade:ToHex()
 		
 					if hasAlpha then
 						iconchecker.ImageTransparency = self.Opacity
-						paint(alphabar, 'BackgroundColor3', shade, instant)
-						alphacursor.Position = UDim2.fromScale(self.Opacity, 0.5)
+						anim(alphabar, {BackgroundColor3 = shade}, instant)
+						anim(alphacursor, {Position = UDim2.fromScale(self.Opacity, 0.5)}, instant)
 						swatchchecker.ImageTransparency = self.Opacity
 					end
 				end
