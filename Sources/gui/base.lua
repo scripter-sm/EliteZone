@@ -538,21 +538,25 @@ function EZ:Load(skipgui, config)
 
 	if istouch and not skipgui then
 		local button = Instance.new('TextButton')
+		button.AnchorPoint = Vector2.new(0, 0.5)
 		button.BackgroundColor3 = Color3.new()
 		button.BackgroundTransparency = 0.2
-		-- gui ignores the inset so its origin sits a full inset above the screen; offset by two
-		-- insets to land just below the roblox topbar instead of off-screen / behind it
-		button.Position = UDim2.new(1, -42, 0, guiService:GetGuiInset().Y * 2 + 6)
-		button.Size = UDim2.fromOffset(32, 32)
+		-- left-centered: gui ignores the inset, so the top-right corner sits under roblox's own buttons
+		button.Position = UDim2.new(0, 8, 0.5, 0)
+		button.Size = UDim2.fromOffset(36, 36)
 		button.Text = ''
 		button.Parent = gui
 		local image = Instance.new('ImageLabel')
 		image.BackgroundTransparency = 1
 		image.Image = get_ez_asset('Elite Zone/Assets/logo.png')
-		image.Position = UDim2.fromOffset(6, 6)
+		image.Position = UDim2.fromOffset(8, 8)
 		image.Size = UDim2.fromOffset(20, 20)
 		image.Parent = button
 		addCorner(button, UDim.new(1, 0))
+		local stroke = Instance.new('UIStroke')
+		stroke.Color = Color3.new(1, 1, 1)
+		stroke.Transparency = 0.7
+		stroke.Parent = button
 
 		button.MouseButton1Click:Connect(function()
 			self.GUIBind.Triggered:Fire(true)
