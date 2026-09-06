@@ -155,7 +155,6 @@ do
 		['Elite Zone/Assets/textgui.png'] = 'rbxassetid://99438663817412',
 		['Elite Zone/Assets/theme.png'] = 'rbxassetid://111525258317113',
 		['Elite Zone/Assets/utility.png'] = 'rbxassetid://108303206513893',
-		['Elite Zone/Assets/EZ.png'] = 'rbxassetid://92153855792786',
 		['Elite Zone/Assets/logo.png'] = '',
 		['Elite Zone/Assets/world.png'] = 'rbxassetid://118917453153459'
 	}
@@ -811,7 +810,7 @@ function EZ:Load(skipgui, config)
 		button.Parent = gui
 		local image = Instance.new('ImageLabel')
 		image.BackgroundTransparency = 1
-		image.Image = get_ez_asset('Elite Zone/Assets/EZ.png')
+		image.Image = get_ez_asset('Elite Zone/Assets/logo.png')
 		image.Position = UDim2.fromOffset(6, 6)
 		image.Size = UDim2.fromOffset(20, 20)
 		image.Parent = button
