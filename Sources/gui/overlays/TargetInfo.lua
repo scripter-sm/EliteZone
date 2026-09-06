@@ -339,6 +339,17 @@ ratio_seam.Size = UDim2.new(0, 2, 1, 0)
 ratio_seam.ZIndex = 3
 ratio_seam.Parent = ratio_bg
 
+-- Global ZIndexBehavior sorts every descendant of the ScreenGui by raw ZIndex, so the hud's
+-- default-1 labels/icons/headshot interleave with module windows (background falls behind, text
+-- rides on top). Drop the whole subtree into its own band below the modules so it stays one flat
+-- layer and tucks cleanly under the click gui.
+for _, obj in Holder:GetDescendants() do
+	if obj:IsA('GuiObject') then
+		obj.ZIndex -= 10
+	end
+end
+Holder.ZIndex = -10
+
 local function pick(list)
 	return list[math.random(#list)]
 end
