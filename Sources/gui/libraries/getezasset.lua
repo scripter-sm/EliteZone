@@ -29,7 +29,6 @@ do
 		['Elite Zone/Assets/friends.png'] = 'rbxassetid://92957214042038',
 		['Elite Zone/Assets/inventory.png'] = 'rbxassetid://93264756888499',
 		['Elite Zone/Assets/legit_mode_icon.png'] = 'rbxassetid://102858626075156',
-		['Elite Zone/Assets/legit_switch.png'] = 'rbxassetid://127508881124779',
 		['Elite Zone/Assets/min.png'] = 'rbxassetid://82175054487146',
 		['Elite Zone/Assets/noti_alert.png'] = 'rbxassetid://82356478726846',
 		['Elite Zone/Assets/noti_info.png'] = 'rbxassetid://102614825645099',

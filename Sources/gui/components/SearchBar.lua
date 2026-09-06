@@ -30,28 +30,13 @@ icon.ImageColor3 = color.Light(uipallet.Main, 0.37)
 icon.Position = UDim2.new(1, -25, 0, 11)
 icon.Size = UDim2.fromOffset(14, 14)
 icon.Parent = search
-local legiticon = Instance.new('ImageButton')
-legiticon.BackgroundTransparency = 1
-legiticon.Image = get_ez_asset('Elite Zone/Assets/legit_switch.png')
-legiticon.Name = 'Legit'
-legiticon.Position = UDim2.fromOffset(8, 11)
-legiticon.Size = UDim2.fromOffset(29, 16)
-legiticon.Parent = search
-listenProperty(EZ.Categories.Main.Object.EZLogo.AccentColor, legiticon, 'ImageColor3', legiticon)
-local legitdivider = Instance.new('Frame')
-legitdivider.BackgroundColor3 = color.Light(uipallet.Main, 0.14)
-legitdivider.BorderSizePixel = 0
-legitdivider.Name = 'LegitDivider'
-legitdivider.Position = UDim2.fromOffset(43, 13)
-legitdivider.Size = UDim2.fromOffset(2, 12)
-legitdivider.Parent = search
 local box = Instance.new('TextBox')
 box.BackgroundTransparency = 1
 box.ClearTextOnFocus = false
 box.FontFace = uipallet.Font
 box.PlaceholderText = ''
-box.Position = UDim2.fromOffset(50, 0)
-box.Size = UDim2.new(1, -50, 0, 37)
+box.Position = UDim2.fromOffset(10, 0)
+box.Size = UDim2.new(1, -34, 0, 37)
 box.Text = ''
 box.TextColor3 = uipallet.Text
 box.TextSize = 12
@@ -132,12 +117,6 @@ end)
 
 children:GetPropertyChangedSignal('CanvasPosition'):Connect(function()
 	divider.Visible = children.CanvasPosition.Y > 10 and children.Visible
-end)
-
-legiticon.MouseButton1Click:Connect(function()
-	clickgui.Visible = false
-	EZ.Legit.Window.Visible = true
-	EZ.Legit.Window.Position = UDim2.new(0.5, -350, 0.5, -194)
 end)
 
 windowlist:GetPropertyChangedSignal('AbsoluteContentSize'):Connect(function()
