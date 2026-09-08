@@ -1,4 +1,7 @@
 -- This file was compiled by Elite Zone's Compiler. [v3.8]
+
+--[[ Library ]]
+
 local cloneref = cloneref or function(obj)
 	return obj
 end
@@ -9,6 +12,11 @@ end
 
 local InputService = GetService('UserInputService');
 local TextService = GetService('TextService');
+local HttpService = GetService('HttpService');
+
+local function ensurefolder(path)
+	if not isfolder(path) then makefolder(path) end
+end
 
 local CoreGui = (function()
 	if gethui then
@@ -95,10 +103,7 @@ MenuDim.Parent = MenuDimGui;
 local Toggles = {};
 local Options = {};
 
-getgenv().Toggles = Toggles;
-getgenv().Options = Options;
-
-local Library = {
+local EZ = {
 	Registry = {};
 	RegistryMap = {};
 
@@ -181,10 +186,35 @@ local Library = {
 	ShowCustomCursor = true;
 };
 
+EZ.Toggles = Toggles;
+EZ.Options = Options;
+
+function EZ:EnsureFolders()
+	ensurefolder('Elite Zone');
+	ensurefolder('Elite Zone/cache');
+	ensurefolder('Elite Zone/themes');
+	ensurefolder('Elite Zone/' .. self.Game);
+	ensurefolder('Elite Zone/' .. self.Game .. '/config');
+end
+
+function EZ:ReadCache()
+	if not isfile('Elite Zone/cache/autoload.dat') then return {} end
+	local ok, data = pcall(function()
+		return HttpService:JSONDecode(readfile('Elite Zone/cache/autoload.dat'));
+	end);
+	return ok and type(data) == 'table' and data or {};
+end
+
+function EZ:WriteCache(data)
+	ensurefolder('Elite Zone');
+	ensurefolder('Elite Zone/cache');
+	writefile('Elite Zone/cache/autoload.dat', HttpService:JSONEncode(data));
+end
+
 local RainbowStep = 0
 local Hue = 0
 
-table.insert(Library.Signals, RenderStepped:Connect(function(Delta)
+table.insert(EZ.Signals, RenderStepped:Connect(function(Delta)
 	RainbowStep = RainbowStep + Delta
 
 	if RainbowStep >= (1 / 60) then
@@ -196,17 +226,17 @@ table.insert(Library.Signals, RenderStepped:Connect(function(Delta)
 			Hue = 0;
 		end;
 
-		Library.CurrentRainbowHue = Hue;
-		Library.CurrentRainbowColor = Color3.fromHSV(Hue, 0.8, 1);
+		EZ.CurrentRainbowHue = Hue;
+		EZ.CurrentRainbowColor = Color3.fromHSV(Hue, 0.8, 1);
 	end
 end))
 
-function Library:SafeCallback(f, ...)
+function EZ:SafeCallback(f, ...)
 	if (not f) then
 		return;
 	end;
 
-	if not Library.NotifyOnError then
+	if not EZ.NotifyOnError then
 		return f(...);
 	end;
 
@@ -216,20 +246,20 @@ function Library:SafeCallback(f, ...)
 		local _, i = event:find(":%d+: ");
 
 		if not i then
-			return Library:Notify(event);
+			return EZ:Notify(event);
 		end;
 
-		return Library:Notify(event:sub(i + 1), 3);
+		return EZ:Notify(event:sub(i + 1), 3);
 	end;
 end;
 
-function Library:AttemptSave()
-	if Library.SaveManager then
-		Library.SaveManager:Save();
+function EZ:AttemptSave()
+	if EZ.SaveManager then
+		EZ.SaveManager:Save();
 	end;
 end;
 
-function Library:Create(Class, Properties)
+function EZ:Create(Class, Properties)
 	local _Instance = Class;
 
 	if type(Class) == 'string' then
@@ -249,7 +279,7 @@ function Library:Create(Class, Properties)
 			end);
 
 			if not Ok then
-				warn(('Library:Create - failed to set %q'):format(tostring(Property)));
+				warn(('EZ:Create - failed to set %q'):format(tostring(Property)));
 			end;
 		end;
 	end;
@@ -257,10 +287,10 @@ function Library:Create(Class, Properties)
 	return _Instance;
 end;
 
-function Library:ApplyTextStroke(Inst)
+function EZ:ApplyTextStroke(Inst)
 	Inst.TextStrokeTransparency = 1;
 
-	Library:Create('UIStroke', {
+	EZ:Create('UIStroke', {
 		Color = Color3.new(0, 0, 0);
 		Thickness = 1;
 		LineJoinMode = Enum.LineJoinMode.Miter;
@@ -268,30 +298,30 @@ function Library:ApplyTextStroke(Inst)
 	});
 end;
 
-function Library:CreateLabel(Properties, IsHud)
-	local _Instance = Library:Create('TextLabel', {
+function EZ:CreateLabel(Properties, IsHud)
+	local _Instance = EZ:Create('TextLabel', {
 		BackgroundTransparency = 1;
-		Font = Library.Font;
-		TextColor3 = Library.FontColor;
+		Font = EZ.Font;
+		TextColor3 = EZ.FontColor;
 		TextSize = 16;
 		TextStrokeTransparency = 0;
 	});
 
-	Library:ApplyTextStroke(_Instance);
+	EZ:ApplyTextStroke(_Instance);
 
-	Library:AddToRegistry(_Instance, {
+	EZ:AddToRegistry(_Instance, {
 		TextColor3 = 'FontColor';
 	}, IsHud);
 
-	return Library:Create(_Instance, Properties);
+	return EZ:Create(_Instance, Properties);
 end;
 
-function Library:MakeDraggable(Instance, Cutoff, IgnoreForced)
+function EZ:MakeDraggable(Instance, Cutoff, IgnoreForced)
 	Instance.Active = true;
 
 	Instance.InputBegan:Connect(function(Input)
 		if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
-			if IgnoreForced == true and Library.CantDragForced == true then
+			if IgnoreForced == true and EZ.CantDragForced == true then
 				return;
 			end;
 
@@ -318,12 +348,12 @@ function Library:MakeDraggable(Instance, Cutoff, IgnoreForced)
 	end)
 end;
 
-function Library:MakeDraggableOutline(Instance, Cutoff, IgnoreForced)
+function EZ:MakeDraggableOutline(Instance, Cutoff, IgnoreForced)
 	Instance.Active = true;
 
 	Instance.InputBegan:Connect(function(Input)
 		if Input.UserInputType == Enum.UserInputType.MouseButton1 then
-			if IgnoreForced == true and Library.CantDragForced == true then
+			if IgnoreForced == true and EZ.CantDragForced == true then
 				return;
 			end;
 
@@ -336,7 +366,7 @@ function Library:MakeDraggableOutline(Instance, Cutoff, IgnoreForced)
 				return;
 			end;
 
-			local Outline = Library:Create('Frame', {
+			local Outline = EZ:Create('Frame', {
 				Parent = OutlineGui;
 				AnchorPoint = Instance.AnchorPoint;
 				BackgroundTransparency = 1;
@@ -344,12 +374,12 @@ function Library:MakeDraggableOutline(Instance, Cutoff, IgnoreForced)
 				Position = Instance.Position;
 			});
 
-			local Stroke = Library:Create('UIStroke', {
+			local Stroke = EZ:Create('UIStroke', {
 				Parent = Outline;
-				Color = Library.AccentColor or Color3.new(0, 0, 0);
+				Color = EZ.AccentColor or Color3.new(0, 0, 0);
 			});
 
-			Library.IsDragging = true;
+			EZ.IsDragging = true;
 
 			while InputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) do
 				Outline.Position = UDim2.new(
@@ -359,7 +389,7 @@ function Library:MakeDraggableOutline(Instance, Cutoff, IgnoreForced)
 					Mouse.Y - ObjPos.Y + (Instance.Size.Y.Offset * Instance.AnchorPoint.Y)
 				);
 
-				Stroke.Color = Library.AccentColor or Color3.new(0, 0, 0);
+				Stroke.Color = EZ.AccentColor or Color3.new(0, 0, 0);
 
 				RenderStepped:Wait();
 			end;
@@ -367,9 +397,9 @@ function Library:MakeDraggableOutline(Instance, Cutoff, IgnoreForced)
 			Instance.Position = Outline.Position;
 			Outline:Destroy();
 
-			Library.IsDragging = false;
+			EZ.IsDragging = false;
 		elseif Input.UserInputType == Enum.UserInputType.Touch then
-			if IgnoreForced == true and Library.CantDragForced == true then
+			if IgnoreForced == true and EZ.CantDragForced == true then
 				return;
 			end;
 
@@ -382,7 +412,7 @@ function Library:MakeDraggableOutline(Instance, Cutoff, IgnoreForced)
 				return;
 			end;
 
-			local Outline = Library:Create('Frame', {
+			local Outline = EZ:Create('Frame', {
 				Parent = OutlineGui;
 				AnchorPoint = Instance.AnchorPoint;
 				BackgroundTransparency = 1;
@@ -390,12 +420,12 @@ function Library:MakeDraggableOutline(Instance, Cutoff, IgnoreForced)
 				Position = Instance.Position;
 			});
 
-			local Stroke = Library:Create('UIStroke', {
+			local Stroke = EZ:Create('UIStroke', {
 				Parent = Outline;
-				Color = Library.AccentColor or Color3.new(0, 0, 0);
+				Color = EZ.AccentColor or Color3.new(0, 0, 0);
 			});
 
-			Library.IsDragging = true;
+			EZ.IsDragging = true;
 
 			local Held = true;
 			local Conn;
@@ -414,7 +444,7 @@ function Library:MakeDraggableOutline(Instance, Cutoff, IgnoreForced)
 					Input.Position.Y - ObjPos.Y + (Instance.Size.Y.Offset * Instance.AnchorPoint.Y)
 				);
 
-				Stroke.Color = Library.AccentColor or Color3.new(0, 0, 0);
+				Stroke.Color = EZ.AccentColor or Color3.new(0, 0, 0);
 
 				RenderStepped:Wait();
 			end;
@@ -427,18 +457,18 @@ function Library:MakeDraggableOutline(Instance, Cutoff, IgnoreForced)
 
 			Outline:Destroy();
 
-			Library.IsDragging = false;
+			EZ.IsDragging = false;
 		end;
 	end)
 end;
 
-function Library:MakeDraggableUsingParent(Handle, Target, Cutoff, IgnoreForced)
+function EZ:MakeDraggableUsingParent(Handle, Target, Cutoff, IgnoreForced)
 	Handle.Active = true;
 
-	if Library.IsMobile == false then
+	if EZ.IsMobile == false then
 		Handle.InputBegan:Connect(function(Input)
 			if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
-				if IgnoreForced == true and Library.CantDragForced == true then
+				if IgnoreForced == true and EZ.CantDragForced == true then
 					return;
 				end;
 
@@ -464,17 +494,17 @@ function Library:MakeDraggableUsingParent(Handle, Target, Cutoff, IgnoreForced)
 			end;
 		end)
 	else
-		Library:MakeDraggable(Target, Cutoff, IgnoreForced);
+		EZ:MakeDraggable(Target, Cutoff, IgnoreForced);
 	end;
 end;
 
-function Library:MakeResizable(Instance, MinSize)
+function EZ:MakeResizable(Instance, MinSize)
 	Instance.Active = true;
 
 	local GripSize = 25;
 	local GripTransparency = 0.5;
 
-	local GripRegion = Library:Create('Frame', {
+	local GripRegion = EZ:Create('Frame', {
 		SizeConstraint = Enum.SizeConstraint.RelativeXX;
 		BackgroundColor3 = Color3.new(0, 0, 0);
 		BackgroundTransparency = 1;
@@ -487,8 +517,8 @@ function Library:MakeResizable(Instance, MinSize)
 		Parent = Instance;
 	});
 
-	local Grip = Library:Create('ImageButton', {
-		BackgroundColor3 = Library.AccentColor;
+	local Grip = EZ:Create('ImageButton', {
+		BackgroundColor3 = EZ.AccentColor;
 		BackgroundTransparency = 1;
 		BorderSizePixel = 0;
 		Size = UDim2.new(2, 0, 2, 0);
@@ -497,23 +527,23 @@ function Library:MakeResizable(Instance, MinSize)
 		Parent = GripRegion;
 	});
 
-	local GripCorner = Library:Create('UICorner', {
+	local GripCorner = EZ:Create('UICorner', {
 		CornerRadius = UDim.new(0.5, 0);
 		Parent = Grip;
 	});
 
-	Library:AddToRegistry(Grip, { BackgroundColor3 = 'AccentColor' });
+	EZ:AddToRegistry(Grip, { BackgroundColor3 = 'AccentColor' });
 
-	MinSize = MinSize or Library.MinSize;
+	MinSize = MinSize or EZ.MinSize;
 
 	local DragOffset = nil;
 	local Outline = nil;
 
-	local Stroke = Library:Create('UIStroke', {
-		Color = Library.AccentColor or Color3.new(0, 0, 0);
+	local Stroke = EZ:Create('UIStroke', {
+		Color = EZ.AccentColor or Color3.new(0, 0, 0);
 	});
 
-	Library:AddToRegistry(Stroke, { Color = 'AccentColor' });
+	EZ:AddToRegistry(Stroke, { Color = 'AccentColor' });
 
 	local function Reset(Transparency)
 		Grip.Position = UDim2.new();
@@ -532,7 +562,7 @@ function Library:MakeResizable(Instance, MinSize)
 		end;
 	end;
 
-	if Library.IsMobile ~= true then
+	if EZ.IsMobile ~= true then
 		Grip.MouseButton1Down:Connect(function()
 			if DragOffset then
 				return;
@@ -543,7 +573,7 @@ function Library:MakeResizable(Instance, MinSize)
 				Mouse.Y - (Instance.AbsolutePosition.Y + Instance.AbsoluteSize.Y)
 			);
 
-			Outline = Library:Create('Frame', {
+			Outline = EZ:Create('Frame', {
 				Parent = OutlineGui;
 				AnchorPoint = Instance.AnchorPoint;
 				BackgroundTransparency = 1;
@@ -589,7 +619,7 @@ function Library:MakeResizable(Instance, MinSize)
 				Input.Position.Y - (Instance.AbsolutePosition.Y + Instance.AbsoluteSize.Y)
 			);
 
-			Outline = Library:Create('Frame', {
+			Outline = EZ:Create('Frame', {
 				Parent = OutlineGui;
 				AnchorPoint = Instance.AnchorPoint;
 				BackgroundTransparency = 1;
@@ -627,9 +657,9 @@ function Library:MakeResizable(Instance, MinSize)
 	Reset(GripTransparency);
 end;
 
-function Library:UpdateBackground(Mode)
-	local B = Library.Background;
-	local Open = (Library.Visible == true) and (B.Enabled ~= false);
+function EZ:UpdateBackground(Mode)
+	local B = EZ.Background;
+	local Open = (EZ.Visible == true) and (B.Enabled ~= false);
 
 	MenuDim.BackgroundColor3 = B.Color;
 
@@ -670,7 +700,7 @@ function Library:UpdateBackground(Mode)
 		return;
 	end;
 
-	local Info = TweenInfo.new(Library.MenuFadeTime, Enum.EasingStyle.Linear);
+	local Info = TweenInfo.new(EZ.MenuFadeTime, Enum.EasingStyle.Linear);
 
 	if MenuColor.Parent then
 		TweenService:Create(MenuColor, Info, {
@@ -685,32 +715,32 @@ function Library:UpdateBackground(Mode)
 	TweenService:Create(MenuDim, Info, { BackgroundTransparency = Dim }):Play();
 end;
 
-function Library:UpdateKeybindFrame()
+function EZ:UpdateKeybindFrame()
 	for _, Option in next, Options do
 		if type(Option) == 'table' and Option.Type == 'KeyPicker' and Option.Update then
 			Option:Update();
 		end;
 	end;
 
-	Library:UpdateKeybindMenu();
+	EZ:UpdateKeybindMenu();
 end;
 
-function Library:UpdateKeybindMenu()
-	if not Library.KeybindInner then
+function EZ:UpdateKeybindMenu()
+	if not EZ.KeybindInner then
 		return;
 	end;
 
-	local T = 1 - math.clamp(Library.KeybindMenuTransparency or 1, 0, 1);
+	local T = 1 - math.clamp(EZ.KeybindMenuTransparency or 1, 0, 1);
 
-	Library.KeybindInner.BackgroundTransparency = T;
+	EZ.KeybindInner.BackgroundTransparency = T;
 
-	if T == 0 and not Library._KeybindFaded then
+	if T == 0 and not EZ._KeybindFaded then
 		return;
 	end;
 
-	Library._KeybindFaded = T > 0;
+	EZ._KeybindFaded = T > 0;
 
-	for _, Desc in next, Library.KeybindInner:GetDescendants() do
+	for _, Desc in next, EZ.KeybindInner:GetDescendants() do
 		if Desc:IsA('Frame') then
 			Desc.BackgroundTransparency = T;
 		elseif Desc:IsA('TextLabel') then
@@ -720,70 +750,70 @@ function Library:UpdateKeybindMenu()
 	end;
 end;
 
-function Library:UpdateNotifications()
-	local S = Library.NotificationStyle;
+function EZ:UpdateNotifications()
+	local S = EZ.NotificationStyle;
 
-	if Library.NotificationOuter then
+	if EZ.NotificationOuter then
 		local PX = S.PositionX or 0.5;
 
 		local Height = S.Clips ~= false and (S.ClipsDistance or 200) or 8192;
 
-		Library.NotificationOuter.AnchorPoint = Vector2.new(PX, 0);
-		Library.NotificationOuter.Position = UDim2.fromScale(PX, S.PositionY or 0.6);
-		Library.NotificationOuter.ClipsDescendants = S.Clips ~= false;
-		Library.NotificationOuter.Size = UDim2.fromOffset(8192, Height);
+		EZ.NotificationOuter.AnchorPoint = Vector2.new(PX, 0);
+		EZ.NotificationOuter.Position = UDim2.fromScale(PX, S.PositionY or 0.6);
+		EZ.NotificationOuter.ClipsDescendants = S.Clips ~= false;
+		EZ.NotificationOuter.Size = UDim2.fromOffset(8192, Height);
 	end;
 
-	if Library.NotificationLayout then
+	if EZ.NotificationLayout then
 		local Align = ({
 			Left = Enum.HorizontalAlignment.Left;
 			Center = Enum.HorizontalAlignment.Center;
 			Right = Enum.HorizontalAlignment.Right;
 		})[S.Anchor] or Enum.HorizontalAlignment.Center;
 
-		Library.NotificationLayout.HorizontalAlignment = Align;
-		Library.NotificationLayout.SortOrder = Enum.SortOrder.LayoutOrder;
+		EZ.NotificationLayout.HorizontalAlignment = Align;
+		EZ.NotificationLayout.SortOrder = Enum.SortOrder.LayoutOrder;
 	end;
 end;
 
-function Library:AddToolTip(InfoStr, HoverInstance)
-	local X, Y = Library:GetTextBounds(InfoStr, Library.Font, 14);
-	local Tooltip = Library:Create('Frame', {
-		BackgroundColor3 = Library.MainColor,
-		BorderColor3 = Library.OutlineColor,
+function EZ:AddToolTip(InfoStr, HoverInstance)
+	local X, Y = EZ:GetTextBounds(InfoStr, EZ.Font, 14);
+	local Tooltip = EZ:Create('Frame', {
+		BackgroundColor3 = EZ.MainColor,
+		BorderColor3 = EZ.OutlineColor,
 
 		Size = UDim2.fromOffset(X + 5, Y + 4),
 		ZIndex = 100,
-		Parent = Library.ScreenGui,
+		Parent = EZ.ScreenGui,
 
 		Visible = false,
 	})
 
-	local Label = Library:CreateLabel({
+	local Label = EZ:CreateLabel({
 		Position = UDim2.fromOffset(3, 1),
 		Size = UDim2.fromOffset(X, Y);
 		TextSize = 14;
 		Text = InfoStr,
-		TextColor3 = Library.FontColor,
+		TextColor3 = EZ.FontColor,
 		TextXAlignment = Enum.TextXAlignment.Left;
 		ZIndex = Tooltip.ZIndex + 1,
 
 		Parent = Tooltip;
 	});
 
-	Library:AddToRegistry(Tooltip, {
+	EZ:AddToRegistry(Tooltip, {
 		BackgroundColor3 = 'MainColor';
 		BorderColor3 = 'OutlineColor';
 	});
 
-	Library:AddToRegistry(Label, {
+	EZ:AddToRegistry(Label, {
 		TextColor3 = 'FontColor',
 	});
 
 	local IsHovering = false
 
 	HoverInstance.MouseEnter:Connect(function()
-		if Library:MouseIsOverOpenedFrame() then
+		if EZ:MouseIsOverOpenedFrame() then
 			return
 		end
 
@@ -803,9 +833,9 @@ function Library:AddToolTip(InfoStr, HoverInstance)
 		Tooltip.Visible = false
 	end)
 
-	if Library.MainFrame then
-		Library.MainFrame:GetPropertyChangedSignal('Visible'):Connect(function()
-			if Library.MainFrame.Visible == false then
+	if EZ.MainFrame then
+		EZ.MainFrame:GetPropertyChangedSignal('Visible'):Connect(function()
+			if EZ.MainFrame.Visible == false then
 				IsHovering = false
 				Tooltip.Visible = false
 			end
@@ -813,12 +843,12 @@ function Library:AddToolTip(InfoStr, HoverInstance)
 	end
 end
 
-function Library:OnHighlight(HighlightInstance, Instance, Properties, PropertiesDefault, Condition)
+function EZ:OnHighlight(HighlightInstance, Instance, Properties, PropertiesDefault, Condition)
 	local function ApplyDefault()
-		local Reg = Library.RegistryMap[Instance];
+		local Reg = EZ.RegistryMap[Instance];
 
 		for Property, ColorIdx in next, PropertiesDefault do
-			Instance[Property] = Library[ColorIdx] or ColorIdx;
+			Instance[Property] = EZ[ColorIdx] or ColorIdx;
 
 			if Reg and Reg.Properties[Property] then
 				Reg.Properties[Property] = ColorIdx;
@@ -832,10 +862,10 @@ function Library:OnHighlight(HighlightInstance, Instance, Properties, Properties
 			return;
 		end;
 
-		local Reg = Library.RegistryMap[Instance];
+		local Reg = EZ.RegistryMap[Instance];
 
 		for Property, ColorIdx in next, Properties do
-			Instance[Property] = Library[ColorIdx] or ColorIdx;
+			Instance[Property] = EZ[ColorIdx] or ColorIdx;
 
 			if Reg and Reg.Properties[Property] then
 				Reg.Properties[Property] = ColorIdx;
@@ -848,8 +878,8 @@ function Library:OnHighlight(HighlightInstance, Instance, Properties, Properties
 	HighlightInstance.MouseLeave:Connect(ApplyDefault);
 end;
 
-function Library:MouseIsOverOpenedFrame()
-	for Frame, _ in next, Library.OpenedFrames do
+function EZ:MouseIsOverOpenedFrame()
+	for Frame, _ in next, EZ.OpenedFrames do
 		local AbsPos, AbsSize = Frame.AbsolutePosition, Frame.AbsoluteSize;
 
 		if Mouse.X >= AbsPos.X and Mouse.X <= AbsPos.X + AbsSize.X
@@ -860,7 +890,7 @@ function Library:MouseIsOverOpenedFrame()
 	end;
 end;
 
-function Library:IsMouseOverFrame(Frame)
+function EZ:IsMouseOverFrame(Frame)
 	local AbsPos, AbsSize = Frame.AbsolutePosition, Frame.AbsoluteSize;
 
 	if Mouse.X >= AbsPos.X and Mouse.X <= AbsPos.X + AbsSize.X
@@ -870,70 +900,70 @@ function Library:IsMouseOverFrame(Frame)
 	end;
 end;
 
-function Library:UpdateDependencyBoxes()
-	for _, Depbox in next, Library.DependencyBoxes do
+function EZ:UpdateDependencyBoxes()
+	for _, Depbox in next, EZ.DependencyBoxes do
 		Depbox:Update();
 	end;
 end;
 
-function Library:MapValue(Value, MinA, MaxA, MinB, MaxB)
+function EZ:MapValue(Value, MinA, MaxA, MinB, MaxB)
 	return (1 - ((Value - MinA) / (MaxA - MinA))) * MinB + ((Value - MinA) / (MaxA - MinA)) * MaxB;
 end;
 
-function Library:GetTextBounds(Text, Font, Size, Resolution)
+function EZ:GetTextBounds(Text, Font, Size, Resolution)
 	local Bounds = TextService:GetTextSize(Text, Size, Font, Resolution or Vector2.new(1920, 1080))
 	return Bounds.X, Bounds.Y
 end;
 
-function Library:GetDarkerColor(Color)
+function EZ:GetDarkerColor(Color)
 	local H, S, V = Color3.toHSV(Color);
 	return Color3.fromHSV(H, S, V / 1.5);
 end;
-Library.AccentColorDark = Library:GetDarkerColor(Library.AccentColor);
+EZ.AccentColorDark = EZ:GetDarkerColor(EZ.AccentColor);
 
-function Library:AddToRegistry(Instance, Properties, IsHud)
-	local Idx = #Library.Registry + 1;
+function EZ:AddToRegistry(Instance, Properties, IsHud)
+	local Idx = #EZ.Registry + 1;
 	local Data = {
 		Instance = Instance;
 		Properties = Properties;
 		Idx = Idx;
 	};
 
-	table.insert(Library.Registry, Data);
-	Library.RegistryMap[Instance] = Data;
+	table.insert(EZ.Registry, Data);
+	EZ.RegistryMap[Instance] = Data;
 
 	if IsHud then
-		table.insert(Library.HudRegistry, Data);
+		table.insert(EZ.HudRegistry, Data);
 	end;
 end;
 
-function Library:RemoveFromRegistry(Instance)
-	local Data = Library.RegistryMap[Instance];
+function EZ:RemoveFromRegistry(Instance)
+	local Data = EZ.RegistryMap[Instance];
 
 	if Data then
-		for Idx = #Library.Registry, 1, -1 do
-			if Library.Registry[Idx] == Data then
-				table.remove(Library.Registry, Idx);
+		for Idx = #EZ.Registry, 1, -1 do
+			if EZ.Registry[Idx] == Data then
+				table.remove(EZ.Registry, Idx);
 				break;
 			end;
 		end;
 
-		for Idx = #Library.HudRegistry, 1, -1 do
-			if Library.HudRegistry[Idx] == Data then
-				table.remove(Library.HudRegistry, Idx);
+		for Idx = #EZ.HudRegistry, 1, -1 do
+			if EZ.HudRegistry[Idx] == Data then
+				table.remove(EZ.HudRegistry, Idx);
 				break;
 			end;
 		end;
 
-		Library.RegistryMap[Instance] = nil;
+		EZ.RegistryMap[Instance] = nil;
 	end;
 end;
 
-function Library:UpdateColorsUsingRegistry()
-	for Idx, Object in next, Library.Registry do
+function EZ:UpdateColorsUsingRegistry()
+	for Idx, Object in next, EZ.Registry do
 		for Property, ColorIdx in next, Object.Properties do
 			if type(ColorIdx) == 'string' then
-				Object.Instance[Property] = Library[ColorIdx];
+				Object.Instance[Property] = EZ[ColorIdx];
 			elseif type(ColorIdx) == 'function' then
 				Object.Instance[Property] = ColorIdx()
 			end
@@ -941,20 +971,20 @@ function Library:UpdateColorsUsingRegistry()
 	end;
 end;
 
-function Library:GiveSignal(Signal)
+function EZ:GiveSignal(Signal)
 
-	table.insert(Library.Signals, Signal)
+	table.insert(EZ.Signals, Signal)
 end
 
-function Library:Unload()
+function EZ:Unload()
 
-	for Idx = #Library.Signals, 1, -1 do
-		local Connection = table.remove(Library.Signals, Idx)
+	for Idx = #EZ.Signals, 1, -1 do
+		local Connection = table.remove(EZ.Signals, Idx)
 		Connection:Disconnect()
 	end
 
-	if Library.OnUnload then
-		Library.OnUnload()
+	if EZ.OnUnload then
+		EZ.OnUnload()
 	end
 
 	ContextActionService:UnbindAction('Freeze');
@@ -967,47 +997,47 @@ function Library:Unload()
 	MenuColor:Destroy()
 end
 
-function Library:OnUnload(Callback)
-	Library.OnUnload = Callback
+function EZ:OnUnload(Callback)
+	EZ.OnUnload = Callback
 end
 
-function Library:EnableFlagCopying(Bool)
-	Library.FlagCopying = Bool;
+function EZ:EnableFlagCopying(Bool)
+	EZ.FlagCopying = Bool;
 end
 
-function Library:IsVisible()
-	return Library.Visible;
+function EZ:IsVisible()
+	return EZ.Visible;
 end
 
-function Library:CreateEvent(Name)
-	Library.Events[Name] = Instance.new('BindableEvent');
+function EZ:CreateEvent(Name)
+	EZ.Events[Name] = Instance.new('BindableEvent');
 end
 
-function Library:FireEvent(Name, ...)
-	if Library.Events[Name] then
-		Library.Events[Name]:Fire(...);
+function EZ:FireEvent(Name, ...)
+	if EZ.Events[Name] then
+		EZ.Events[Name]:Fire(...);
 	end;
 end
 
-function Library:OnEvent(Name)
-	if not Library.Events[Name] then
-		Library:CreateEvent(Name);
+function EZ:OnEvent(Name)
+	if not EZ.Events[Name] then
+		EZ:CreateEvent(Name);
 	end;
 
-	return Library.Events[Name].Event;
+	return EZ.Events[Name].Event;
 end
 
-Library:CreateEvent('VisibilityChanged');
+EZ:CreateEvent('VisibilityChanged');
 
 local InputBinds = {};
 
-function Library:BindToInput(Key, Callback)
+function EZ:BindToInput(Key, Callback)
 	InputBinds[Key] = InputBinds[Key] or {};
 	table.insert(InputBinds[Key], Callback);
 end
 
-Library:GiveSignal(InputService.InputBegan:Connect(function(Input, ...)
-	if not Library.Visible then
+EZ:GiveSignal(InputService.InputBegan:Connect(function(Input, ...)
+	if not EZ.Visible then
 		return;
 	end;
 
@@ -1020,12 +1050,12 @@ Library:GiveSignal(InputService.InputBegan:Connect(function(Input, ...)
 	end;
 end))
 
-function Library:AddContextMenu(Anchor, Trigger)
+function EZ:AddContextMenu(Anchor, Trigger)
 	local ContextMenu = { Visible = false };
 
 	ContextMenu.Options = {};
 
-	ContextMenu.Container = Library:Create('ImageButton', {
+	ContextMenu.Container = EZ:Create('ImageButton', {
 		BorderColor3 = Color3.new();
 		ZIndex = 14;
 		Visible = false;
@@ -1035,16 +1065,16 @@ function Library:AddContextMenu(Anchor, Trigger)
 		AutoButtonColor = false;
 	});
 
-	ContextMenu.Inner = Library:Create('Frame', {
-		BackgroundColor3 = Library.BackgroundColor;
-		BorderColor3 = Library.OutlineColor;
+	ContextMenu.Inner = EZ:Create('Frame', {
+		BackgroundColor3 = EZ.BackgroundColor;
+		BorderColor3 = EZ.OutlineColor;
 		BorderMode = Enum.BorderMode.Inset;
 		Size = UDim2.fromScale(1, 1);
 		ZIndex = 15;
 		Parent = ContextMenu.Container;
 	});
 
-	Library:Create('UIListLayout', {
+	EZ:Create('UIListLayout', {
 		Name = 'Layout';
 		HorizontalAlignment = Enum.HorizontalAlignment.Left;
 		FillDirection = Enum.FillDirection.Vertical;
@@ -1052,7 +1082,7 @@ function Library:AddContextMenu(Anchor, Trigger)
 		Parent = ContextMenu.Inner;
 	});
 
-	Library:Create('UIPadding', {
+	EZ:Create('UIPadding', {
 		Name = 'Padding';
 		PaddingLeft = UDim.new(0, 0);
 		Parent = ContextMenu.Inner;
@@ -1083,21 +1113,21 @@ function Library:AddContextMenu(Anchor, Trigger)
 	local IsOpen = false;
 
 	(Trigger or Anchor).InputBegan:Connect(function(Input)
-		if Input.UserInputType == Enum.UserInputType.MouseButton1 and not Library:MouseIsOverOpenedFrame() then
+		if Input.UserInputType == Enum.UserInputType.MouseButton1 and not EZ:MouseIsOverOpenedFrame() then
 			return ContextMenu:Hide();
-		elseif Input.UserInputType == Enum.UserInputType.MouseButton2 and not Library:MouseIsOverOpenedFrame() then
+		elseif Input.UserInputType == Enum.UserInputType.MouseButton2 and not EZ:MouseIsOverOpenedFrame() then
 			return ContextMenu:Show();
 		end;
 	end);
 
-	Library:BindToInput(Enum.UserInputType.MouseButton1, function()
-		if IsOpen and not Library:IsMouseOverFrame(ContextMenu.Container) then
+	EZ:BindToInput(Enum.UserInputType.MouseButton1, function()
+		if IsOpen and not EZ:IsMouseOverFrame(ContextMenu.Container) then
 			ContextMenu:Hide();
 		end;
 	end);
 
-	Library:BindToInput(Enum.UserInputType.MouseButton2, function()
-		if IsOpen and not Library:IsMouseOverFrame(ContextMenu.Container) and not Library:IsMouseOverFrame(Anchor) then
+	EZ:BindToInput(Enum.UserInputType.MouseButton2, function()
+		if IsOpen and not EZ:IsMouseOverFrame(ContextMenu.Container) and not EZ:IsMouseOverFrame(Anchor) then
 			ContextMenu:Hide();
 		end;
 	end);
@@ -1107,7 +1137,7 @@ function Library:AddContextMenu(Anchor, Trigger)
 	task.spawn(UpdatePosition);
 	task.spawn(UpdateSize);
 
-	Library:AddToRegistry(ContextMenu.Inner, {
+	EZ:AddToRegistry(ContextMenu.Inner, {
 		BackgroundColor3 = 'BackgroundColor';
 		BorderColor3 = 'OutlineColor';
 	});
@@ -1118,15 +1148,15 @@ function Library:AddContextMenu(Anchor, Trigger)
 
 		IsOpen = true;
 
-		for Frame in next, Library.OpenedFrames do
+		for Frame in next, EZ.OpenedFrames do
 			if Frame.Name == 'Color' then
 				Frame.Visible = false;
-				Library.OpenedFrames[Frame] = nil;
+				EZ.OpenedFrames[Frame] = nil;
 			end;
 		end;
 
 		self.Container.Visible = true;
-		Library.OpenedFrames[ContextMenu.Container] = true;
+		EZ.OpenedFrames[ContextMenu.Container] = true;
 	end;
 
 	function ContextMenu:Hide()
@@ -1135,7 +1165,7 @@ function Library:AddContextMenu(Anchor, Trigger)
 
 		task.wait();
 
-		Library.OpenedFrames[ContextMenu.Container] = nil;
+		EZ.OpenedFrames[ContextMenu.Container] = nil;
 	end;
 
 	function ContextMenu:AddOption(Str, Callback)
@@ -1143,7 +1173,7 @@ function Library:AddContextMenu(Anchor, Trigger)
 			Callback = function() end;
 		end;
 
-		local Button = Library:CreateLabel({
+		local Button = EZ:CreateLabel({
 			Active = false;
 			Size = UDim2.new(1, 0, 0, 15);
 			TextSize = 13;
@@ -1153,7 +1183,7 @@ function Library:AddContextMenu(Anchor, Trigger)
 			TextXAlignment = Enum.TextXAlignment.Center;
 		});
 
-		Library:OnHighlight(Button, Button,
+		EZ:OnHighlight(Button, Button,
 			{ TextColor3 = 'AccentColor' },
 			{ TextColor3 = 'FontColor' }
 		);
@@ -1174,9 +1204,9 @@ function Library:AddContextMenu(Anchor, Trigger)
 	return ContextMenu;
 end
 
-Library:GiveSignal(ScreenGui.DescendantRemoving:Connect(function(Instance)
-	if Library.RegistryMap[Instance] then
-		Library:RemoveFromRegistry(Instance);
+EZ:GiveSignal(ScreenGui.DescendantRemoving:Connect(function(Instance)
+	if EZ.RegistryMap[Instance] then
+		EZ:RemoveFromRegistry(Instance);
 	end;
 end))
 
@@ -1211,16 +1241,16 @@ do
 
 		ColorPicker:SetHSVFromRGB(ColorPicker.Value);
 
-		local DisplayFrame = Library:Create('Frame', {
+		local DisplayFrame = EZ:Create('Frame', {
 			BackgroundColor3 = ColorPicker.Value;
-			BorderColor3 = Library:GetDarkerColor(ColorPicker.Value);
+			BorderColor3 = EZ:GetDarkerColor(ColorPicker.Value);
 			BorderMode = Enum.BorderMode.Inset;
 			Size = UDim2.new(0, 28, 0, 14);
 			ZIndex = 6;
 			Parent = ToggleLabel;
 		});
 
-		local CheckerFrame = Library:Create('ImageLabel', {
+		local CheckerFrame = EZ:Create('ImageLabel', {
 			BorderSizePixel = 0;
 			Size = UDim2.new(0, 27, 0, 13);
 			ZIndex = 5;
@@ -1229,7 +1259,7 @@ do
 			Parent = DisplayFrame;
 		});
 
-		local PickerFrameOuter = Library:Create('Frame', {
+		local PickerFrameOuter = EZ:Create('Frame', {
 			Name = 'Color';
 			BackgroundColor3 = Color3.new(1, 1, 1);
 			BorderColor3 = Color3.new(0, 0, 0);
@@ -1244,24 +1274,24 @@ do
 			PickerFrameOuter.Position = UDim2.fromOffset(DisplayFrame.AbsolutePosition.X, DisplayFrame.AbsolutePosition.Y + 18);
 		end)
 
-		local PickerFrameInner = Library:Create('Frame', {
-			BackgroundColor3 = Library.BackgroundColor;
-			BorderColor3 = Library.OutlineColor;
+		local PickerFrameInner = EZ:Create('Frame', {
+			BackgroundColor3 = EZ.BackgroundColor;
+			BorderColor3 = EZ.OutlineColor;
 			BorderMode = Enum.BorderMode.Inset;
 			Size = UDim2.new(1, 0, 1, 0);
 			ZIndex = 16;
 			Parent = PickerFrameOuter;
 		});
 
-		local Highlight = Library:Create('Frame', {
-			BackgroundColor3 = Library.AccentColor;
+		local Highlight = EZ:Create('Frame', {
+			BackgroundColor3 = EZ.AccentColor;
 			BorderSizePixel = 0;
 			Size = UDim2.new(1, 0, 0, 2);
 			ZIndex = 17;
 			Parent = PickerFrameInner;
 		});
 
-		local SatVibMapOuter = Library:Create('Frame', {
+		local SatVibMapOuter = EZ:Create('Frame', {
 			BorderColor3 = Color3.new(0, 0, 0);
 			Position = UDim2.new(0, 4, 0, 25);
 			Size = UDim2.new(0, 200, 0, 200);
@@ -1269,16 +1299,16 @@ do
 			Parent = PickerFrameInner;
 		});
 
-		local SatVibMapInner = Library:Create('Frame', {
-			BackgroundColor3 = Library.BackgroundColor;
-			BorderColor3 = Library.OutlineColor;
+		local SatVibMapInner = EZ:Create('Frame', {
+			BackgroundColor3 = EZ.BackgroundColor;
+			BorderColor3 = EZ.OutlineColor;
 			BorderMode = Enum.BorderMode.Inset;
 			Size = UDim2.new(1, 0, 1, 0);
 			ZIndex = 18;
 			Parent = SatVibMapOuter;
 		});
 
-		local SatVibMap = Library:Create('ImageLabel', {
+		local SatVibMap = EZ:Create('ImageLabel', {
 			BorderSizePixel = 0;
 			Size = UDim2.new(1, 0, 1, 0);
 			ZIndex = 18;
@@ -1286,7 +1316,7 @@ do
 			Parent = SatVibMapInner;
 		});
 
-		local CursorOuter = Library:Create('ImageLabel', {
+		local CursorOuter = EZ:Create('ImageLabel', {
 			AnchorPoint = Vector2.new(0.5, 0.5);
 			Size = UDim2.new(0, 6, 0, 6);
 			BackgroundTransparency = 1;
@@ -1296,7 +1326,7 @@ do
 			Parent = SatVibMap;
 		});
 
-		local CursorInner = Library:Create('ImageLabel', {
+		local CursorInner = EZ:Create('ImageLabel', {
 			Size = UDim2.new(0, CursorOuter.Size.X.Offset - 2, 0, CursorOuter.Size.Y.Offset - 2);
 			Position = UDim2.new(0, 1, 0, 1);
 			BackgroundTransparency = 1;
@@ -1305,7 +1335,7 @@ do
 			Parent = CursorOuter;
 		})
 
-		local HueSelectorOuter = Library:Create('Frame', {
+		local HueSelectorOuter = EZ:Create('Frame', {
 			BorderColor3 = Color3.new(0, 0, 0);
 			Position = UDim2.new(0, 208, 0, 25);
 			Size = UDim2.new(0, 15, 0, 200);
@@ -1313,7 +1343,7 @@ do
 			Parent = PickerFrameInner;
 		});
 
-		local HueSelectorInner = Library:Create('Frame', {
+		local HueSelectorInner = EZ:Create('Frame', {
 			BackgroundColor3 = Color3.new(1, 1, 1);
 			BorderSizePixel = 0;
 			Size = UDim2.new(1, 0, 1, 0);
@@ -1321,7 +1351,7 @@ do
 			Parent = HueSelectorOuter;
 		});
 
-		local HueCursor = Library:Create('Frame', {
+		local HueCursor = EZ:Create('Frame', {
 			BackgroundColor3 = Color3.new(1, 1, 1);
 			AnchorPoint = Vector2.new(0, 0.5);
 			BorderColor3 = Color3.new(0, 0, 0);
@@ -1330,7 +1360,7 @@ do
 			Parent = HueSelectorInner;
 		});
 
-		local HueBoxOuter = Library:Create('Frame', {
+		local HueBoxOuter = EZ:Create('Frame', {
 			BorderColor3 = Color3.new(0, 0, 0);
 			Position = UDim2.fromOffset(4, 228),
 			Size = UDim2.new(0.5, -6, 0, 20),
@@ -1338,16 +1368,16 @@ do
 			Parent = PickerFrameInner;
 		});
 
-		local HueBoxInner = Library:Create('Frame', {
-			BackgroundColor3 = Library.MainColor;
-			BorderColor3 = Library.OutlineColor;
+		local HueBoxInner = EZ:Create('Frame', {
+			BackgroundColor3 = EZ.MainColor;
+			BorderColor3 = EZ.OutlineColor;
 			BorderMode = Enum.BorderMode.Inset;
 			Size = UDim2.new(1, 0, 1, 0);
 			ZIndex = 18,
 			Parent = HueBoxOuter;
 		});
 
-		Library:Create('UIGradient', {
+		EZ:Create('UIGradient', {
 			Color = ColorSequence.new({
 				ColorSequenceKeypoint.new(0, Color3.new(1, 1, 1)),
 				ColorSequenceKeypoint.new(1, Color3.fromRGB(212, 212, 212))
@@ -1356,15 +1386,15 @@ do
 			Parent = HueBoxInner;
 		});
 
-		local HueBox = Library:Create('TextBox', {
+		local HueBox = EZ:Create('TextBox', {
 			BackgroundTransparency = 1;
 			Position = UDim2.new(0, 5, 0, 0);
 			Size = UDim2.new(1, -5, 1, 0);
-			Font = Library.Font;
+			Font = EZ.Font;
 			PlaceholderColor3 = Color3.fromRGB(190, 190, 190);
 			PlaceholderText = 'Hex color',
 			Text = '#FFFFFF',
-			TextColor3 = Library.FontColor;
+			TextColor3 = EZ.FontColor;
 			TextSize = 14;
 			TextStrokeTransparency = 0;
 			TextXAlignment = Enum.TextXAlignment.Left;
@@ -1372,24 +1402,24 @@ do
 			Parent = HueBoxInner;
 		});
 
-		Library:ApplyTextStroke(HueBox);
+		EZ:ApplyTextStroke(HueBox);
 
-		local RgbBoxBase = Library:Create(HueBoxOuter:Clone(), {
+		local RgbBoxBase = EZ:Create(HueBoxOuter:Clone(), {
 			Position = UDim2.new(0.5, 2, 0, 228),
 			Size = UDim2.new(0.5, -6, 0, 20),
 			Parent = PickerFrameInner
 		});
 
-		local RgbBox = Library:Create(RgbBoxBase.Frame:FindFirstChild('TextBox'), {
+		local RgbBox = EZ:Create(RgbBoxBase.Frame:FindFirstChild('TextBox'), {
 			Text = '255, 255, 255',
 			PlaceholderText = 'RGB color',
-			TextColor3 = Library.FontColor
+			TextColor3 = EZ.FontColor
 		});
 
 		local TransparencyBoxOuter, TransparencyBoxInner, TransparencyCursor;
 
 		if Info.Transparency then
-			TransparencyBoxOuter = Library:Create('Frame', {
+			TransparencyBoxOuter = EZ:Create('Frame', {
 				BorderColor3 = Color3.new(0, 0, 0);
 				Position = UDim2.fromOffset(4, 251);
 				Size = UDim2.new(1, -8, 0, 15);
@@ -1397,18 +1427,18 @@ do
 				Parent = PickerFrameInner;
 			});
 
-			TransparencyBoxInner = Library:Create('Frame', {
+			TransparencyBoxInner = EZ:Create('Frame', {
 				BackgroundColor3 = ColorPicker.Value;
-				BorderColor3 = Library.OutlineColor;
+				BorderColor3 = EZ.OutlineColor;
 				BorderMode = Enum.BorderMode.Inset;
 				Size = UDim2.new(1, 0, 1, 0);
 				ZIndex = 19;
 				Parent = TransparencyBoxOuter;
 			});
 
-			Library:AddToRegistry(TransparencyBoxInner, { BorderColor3 = 'OutlineColor' });
+			EZ:AddToRegistry(TransparencyBoxInner, { BorderColor3 = 'OutlineColor' });
 
-			Library:Create('ImageLabel', {
+			EZ:Create('ImageLabel', {
 				BackgroundTransparency = 1;
 				Size = UDim2.new(1, 0, 1, 0);
 				Image = 'http://www.roblox.com/asset/?id=12978095818';
@@ -1416,7 +1446,7 @@ do
 				Parent = TransparencyBoxInner;
 			});
 
-			TransparencyCursor = Library:Create('Frame', {
+			TransparencyCursor = EZ:Create('Frame', {
 				BackgroundColor3 = Color3.new(1, 1, 1);
 				AnchorPoint = Vector2.new(0.5, 0);
 				BorderColor3 = Color3.new(0, 0, 0);
@@ -1426,7 +1456,7 @@ do
 			});
 		end;
 
-		local DisplayLabel = Library:CreateLabel({
+		local DisplayLabel = EZ:CreateLabel({
 			Size = UDim2.new(1, 0, 0, 14);
 			Position = UDim2.fromOffset(5, 5);
 			TextXAlignment = Enum.TextXAlignment.Left;
@@ -1440,7 +1470,7 @@ do
 		local ContextMenu = {}
 		do
 			ContextMenu.Options = {}
-			ContextMenu.Container = Library:Create('Frame', {
+			ContextMenu.Container = EZ:Create('Frame', {
 				BorderColor3 = Color3.new(),
 				ZIndex = 14,
 
@@ -1448,23 +1478,23 @@ do
 				Parent = ScreenGui
 			})
 
-			ContextMenu.Inner = Library:Create('Frame', {
-				BackgroundColor3 = Library.BackgroundColor;
-				BorderColor3 = Library.OutlineColor;
+			ContextMenu.Inner = EZ:Create('Frame', {
+				BackgroundColor3 = EZ.BackgroundColor;
+				BorderColor3 = EZ.OutlineColor;
 				BorderMode = Enum.BorderMode.Inset;
 				Size = UDim2.fromScale(1, 1);
 				ZIndex = 15;
 				Parent = ContextMenu.Container;
 			});
 
-			Library:Create('UIListLayout', {
+			EZ:Create('UIListLayout', {
 				Name = 'Layout',
 				FillDirection = Enum.FillDirection.Vertical;
 				SortOrder = Enum.SortOrder.LayoutOrder;
 				Parent = ContextMenu.Inner;
 			});
 
-			Library:Create('UIPadding', {
+			EZ:Create('UIPadding', {
 				Name = 'Padding',
 				PaddingLeft = UDim.new(0, 4),
 				Parent = ContextMenu.Inner,
@@ -1497,7 +1527,7 @@ do
 			task.spawn(updateMenuPosition)
 			task.spawn(updateMenuSize)
 
-			Library:AddToRegistry(ContextMenu.Inner, {
+			EZ:AddToRegistry(ContextMenu.Inner, {
 				BackgroundColor3 = 'BackgroundColor';
 				BorderColor3 = 'OutlineColor';
 			});
@@ -1515,7 +1545,7 @@ do
 					Callback = function() end
 				end
 
-				local Button = Library:CreateLabel({
+				local Button = EZ:CreateLabel({
 					Active = false;
 					Size = UDim2.new(1, 0, 0, 15);
 					TextSize = 13;
@@ -1525,7 +1555,7 @@ do
 					TextXAlignment = Enum.TextXAlignment.Left,
 				});
 
-				Library:OnHighlight(Button, Button,
+				EZ:OnHighlight(Button, Button,
 					{ TextColor3 = 'AccentColor' },
 					{ TextColor3 = 'FontColor' }
 				);
@@ -1556,7 +1586,7 @@ do
 
 				if #Pickers < 3 then
 					ContextMenu:Hide();
-					return Library:Notify('not enough colors for a gradient.', 2);
+					return EZ:Notify('not enough colors for a gradient.', 2);
 				end;
 
 				local First, Last = Pickers[1].Value, Pickers[#Pickers].Value;
@@ -1566,7 +1596,7 @@ do
 					Picker:SetValueRGB(First:Lerp(Last, Index / #Pickers), Picker.Transparency);
 				end;
 
-				Library:Notify('created gradient!', 2);
+				EZ:Notify('created gradient!', 2);
 				ContextMenu:Hide();
 			end)
 
@@ -1575,53 +1605,53 @@ do
 					Picker:SetValueRGB(ColorPicker.Value, Picker.Transparency);
 				end;
 
-				Library:Notify('matched all colors!', 2);
+				EZ:Notify('matched all colors!', 2);
 				ContextMenu:Hide();
 			end)
 
 			ContextMenu:AddOption('Copy color', function()
-				Library.ColorClipboard = ColorPicker
-				Library:Notify('Copied color!', 2)
+				EZ.ColorClipboard = ColorPicker
+				EZ:Notify('Copied color!', 2)
 				ContextMenu:Hide();
 			end)
 
 			ContextMenu:AddOption('Paste color', function()
-				if not Library.ColorClipboard then
-					return Library:Notify('You have not copied a color!', 2)
+				if not EZ.ColorClipboard then
+					return EZ:Notify('You have not copied a color!', 2)
 				end
 
-				ColorPicker:SetValueRGB(Library.ColorClipboard.Value, Library.ColorClipboard.Transparency)
+				ColorPicker:SetValueRGB(EZ.ColorClipboard.Value, EZ.ColorClipboard.Transparency)
 				ContextMenu:Hide();
 			end)
 
 			ContextMenu:AddOption('Copy HEX', function()
 				pcall(setclipboard, ColorPicker.Value:ToHex())
-				Library:Notify('Copied hex code to clipboard!', 2)
+				EZ:Notify('Copied hex code to clipboard!', 2)
 			end)
 
 			ContextMenu:AddOption('Copy RGB', function()
 				pcall(setclipboard, table.concat({ math.floor(ColorPicker.Value.R * 255), math.floor(ColorPicker.Value.G * 255), math.floor(ColorPicker.Value.B * 255) }, ', '))
-				Library:Notify('Copied RGB values to clipboard!', 2)
+				EZ:Notify('Copied RGB values to clipboard!', 2)
 			end)
 
-			if Library.FlagCopying then
+			if EZ.FlagCopying then
 				ContextMenu:AddOption('Copy Flag', function()
 					pcall(setclipboard, ColorPicker.Idx);
 					task.wait();
-					Library:Notify('Copied flag to clipboard!', 2);
+					EZ:Notify('Copied flag to clipboard!', 2);
 					ContextMenu:Hide();
 				end)
 			end
 		end
 
-		Library:AddToRegistry(PickerFrameInner, { BackgroundColor3 = 'BackgroundColor'; BorderColor3 = 'OutlineColor'; });
-		Library:AddToRegistry(Highlight, { BackgroundColor3 = 'AccentColor'; });
-		Library:AddToRegistry(SatVibMapInner, { BackgroundColor3 = 'BackgroundColor'; BorderColor3 = 'OutlineColor'; });
+		EZ:AddToRegistry(PickerFrameInner, { BackgroundColor3 = 'BackgroundColor'; BorderColor3 = 'OutlineColor'; });
+		EZ:AddToRegistry(Highlight, { BackgroundColor3 = 'AccentColor'; });
+		EZ:AddToRegistry(SatVibMapInner, { BackgroundColor3 = 'BackgroundColor'; BorderColor3 = 'OutlineColor'; });
 
-		Library:AddToRegistry(HueBoxInner, { BackgroundColor3 = 'MainColor'; BorderColor3 = 'OutlineColor'; });
-		Library:AddToRegistry(RgbBoxBase.Frame, { BackgroundColor3 = 'MainColor'; BorderColor3 = 'OutlineColor'; });
-		Library:AddToRegistry(RgbBox, { TextColor3 = 'FontColor', });
-		Library:AddToRegistry(HueBox, { TextColor3 = 'FontColor', });
+		EZ:AddToRegistry(HueBoxInner, { BackgroundColor3 = 'MainColor'; BorderColor3 = 'OutlineColor'; });
+		EZ:AddToRegistry(RgbBoxBase.Frame, { BackgroundColor3 = 'MainColor'; BorderColor3 = 'OutlineColor'; });
+		EZ:AddToRegistry(RgbBox, { TextColor3 = 'FontColor', });
+		EZ:AddToRegistry(HueBox, { TextColor3 = 'FontColor', });
 
 		local SequenceTable = {};
 
@@ -1629,7 +1659,7 @@ do
 			table.insert(SequenceTable, ColorSequenceKeypoint.new(Hue, Color3.fromHSV(Hue, 1, 1)));
 		end;
 
-		local HueSelectorGradient = Library:Create('UIGradient', {
+		local HueSelectorGradient = EZ:Create('UIGradient', {
 			Color = ColorSequence.new(SequenceTable);
 			Rotation = 90;
 			Parent = HueSelectorInner;
@@ -1661,10 +1691,10 @@ do
 			ColorPicker.Value = Color3.fromHSV(ColorPicker.Hue, ColorPicker.Sat, ColorPicker.Vib);
 			SatVibMap.BackgroundColor3 = Color3.fromHSV(ColorPicker.Hue, 1, 1);
 
-			Library:Create(DisplayFrame, {
+			EZ:Create(DisplayFrame, {
 				BackgroundColor3 = ColorPicker.Value;
 				BackgroundTransparency = ColorPicker.Transparency;
-				BorderColor3 = Library:GetDarkerColor(ColorPicker.Value);
+				BorderColor3 = EZ:GetDarkerColor(ColorPicker.Value);
 			});
 
 			if TransparencyBoxInner then
@@ -1678,8 +1708,8 @@ do
 			HueBox.Text = '#' .. ColorPicker.Value:ToHex()
 			RgbBox.Text = table.concat({ math.floor(ColorPicker.Value.R * 255), math.floor(ColorPicker.Value.G * 255), math.floor(ColorPicker.Value.B * 255) }, ', ')
 
-			Library:SafeCallback(ColorPicker.Callback, ColorPicker.Value);
-			Library:SafeCallback(ColorPicker.Changed, ColorPicker.Value);
+			EZ:SafeCallback(ColorPicker.Callback, ColorPicker.Value);
+			EZ:SafeCallback(ColorPicker.Changed, ColorPicker.Value);
 		end;
 
 		function ColorPicker:OnChanged(Func)
@@ -1688,20 +1718,20 @@ do
 		end;
 
 		function ColorPicker:Show()
-			for Frame, Val in next, Library.OpenedFrames do
+			for Frame, Val in next, EZ.OpenedFrames do
 				if Frame.Name == 'Color' then
 					Frame.Visible = false;
-					Library.OpenedFrames[Frame] = nil;
+					EZ.OpenedFrames[Frame] = nil;
 				end;
 			end;
 
 			PickerFrameOuter.Visible = true;
-			Library.OpenedFrames[PickerFrameOuter] = true;
+			EZ.OpenedFrames[PickerFrameOuter] = true;
 		end;
 
 		function ColorPicker:Hide()
 			PickerFrameOuter.Visible = false;
-			Library.OpenedFrames[PickerFrameOuter] = nil;
+			EZ.OpenedFrames[PickerFrameOuter] = nil;
 		end;
 
 		function ColorPicker:SetValue(HSV, Transparency)
@@ -1736,7 +1766,7 @@ do
 					RenderStepped:Wait();
 				end;
 
-				Library:AttemptSave();
+				EZ:AttemptSave();
 			end;
 		end);
 
@@ -1753,19 +1783,19 @@ do
 					RenderStepped:Wait();
 				end;
 
-				Library:AttemptSave();
+				EZ:AttemptSave();
 			end;
 		end);
 
 		DisplayFrame.InputBegan:Connect(function(Input)
-			if Input.UserInputType == Enum.UserInputType.MouseButton1 and not Library:MouseIsOverOpenedFrame() then
+			if Input.UserInputType == Enum.UserInputType.MouseButton1 and not EZ:MouseIsOverOpenedFrame() then
 				if PickerFrameOuter.Visible then
 					ColorPicker:Hide()
 				else
 					ContextMenu:Hide()
 					ColorPicker:Show()
 				end;
-			elseif Input.UserInputType == Enum.UserInputType.MouseButton2 and not Library:MouseIsOverOpenedFrame() then
+			elseif Input.UserInputType == Enum.UserInputType.MouseButton2 and not EZ:MouseIsOverOpenedFrame() then
 				ContextMenu:Show()
 				ColorPicker:Hide()
 			end
@@ -1786,12 +1816,12 @@ do
 						RenderStepped:Wait();
 					end;
 
-					Library:AttemptSave();
+					EZ:AttemptSave();
 				end;
 			end);
 		end;
 
-		Library:GiveSignal(InputService.InputBegan:Connect(function(Input)
+		EZ:GiveSignal(InputService.InputBegan:Connect(function(Input)
 			if Input.UserInputType == Enum.UserInputType.MouseButton1 then
 				local AbsPos, AbsSize = PickerFrameOuter.AbsolutePosition, PickerFrameOuter.AbsoluteSize;
 
@@ -1801,13 +1831,13 @@ do
 					ColorPicker:Hide();
 				end;
 
-				if not Library:IsMouseOverFrame(ContextMenu.Container) then
+				if not EZ:IsMouseOverFrame(ContextMenu.Container) then
 					ContextMenu:Hide()
 				end
 			end;
 
 			if Input.UserInputType == Enum.UserInputType.MouseButton2 and ContextMenu.Container.Visible then
-				if not Library:IsMouseOverFrame(ContextMenu.Container) and not Library:IsMouseOverFrame(DisplayFrame) then
+				if not EZ:IsMouseOverFrame(ContextMenu.Container) and not EZ:IsMouseOverFrame(DisplayFrame) then
 					ContextMenu:Hide()
 				end
 			end
@@ -1873,7 +1903,7 @@ do
 			Info.Mode = 'Toggle'
 		end
 
-		local PickOuter = Library:Create('Frame', {
+		local PickOuter = EZ:Create('Frame', {
 			BackgroundColor3 = Color3.new(0, 0, 0);
 			BorderColor3 = Color3.new(0, 0, 0);
 			Size = UDim2.new(0, 28, 0, 15);
@@ -1881,21 +1911,21 @@ do
 			Parent = ToggleLabel;
 		});
 
-		local PickInner = Library:Create('Frame', {
-			BackgroundColor3 = Library.BackgroundColor;
-			BorderColor3 = Library.OutlineColor;
+		local PickInner = EZ:Create('Frame', {
+			BackgroundColor3 = EZ.BackgroundColor;
+			BorderColor3 = EZ.OutlineColor;
 			BorderMode = Enum.BorderMode.Inset;
 			Size = UDim2.new(1, 0, 1, 0);
 			ZIndex = 7;
 			Parent = PickOuter;
 		});
 
-		Library:AddToRegistry(PickInner, {
+		EZ:AddToRegistry(PickInner, {
 			BackgroundColor3 = 'BackgroundColor';
 			BorderColor3 = 'OutlineColor';
 		});
 
-		local DisplayLabel = Library:CreateLabel({
+		local DisplayLabel = EZ:CreateLabel({
 			Size = UDim2.new(1, 0, 1, 0);
 			TextSize = 13;
 			Text = Info.Default;
@@ -1904,7 +1934,7 @@ do
 			Parent = PickInner;
 		});
 
-		local ModeSelectOuter = Library:Create('Frame', {
+		local ModeSelectOuter = EZ:Create('Frame', {
 			BorderColor3 = Color3.new(0, 0, 0);
 			Position = UDim2.fromOffset(ToggleLabel.AbsolutePosition.X + ToggleLabel.AbsoluteSize.X + 4, ToggleLabel.AbsolutePosition.Y + 1);
 			Size = UDim2.new(0, 60, 0, 45 + 2);
@@ -1917,33 +1947,33 @@ do
 			ModeSelectOuter.Position = UDim2.fromOffset(ToggleLabel.AbsolutePosition.X + ToggleLabel.AbsoluteSize.X + 4, ToggleLabel.AbsolutePosition.Y + 1);
 		end);
 
-		local ModeSelectInner = Library:Create('Frame', {
-			BackgroundColor3 = Library.BackgroundColor;
-			BorderColor3 = Library.OutlineColor;
+		local ModeSelectInner = EZ:Create('Frame', {
+			BackgroundColor3 = EZ.BackgroundColor;
+			BorderColor3 = EZ.OutlineColor;
 			BorderMode = Enum.BorderMode.Inset;
 			Size = UDim2.new(1, 0, 1, 0);
 			ZIndex = 15;
 			Parent = ModeSelectOuter;
 		});
 
-		Library:AddToRegistry(ModeSelectInner, {
+		EZ:AddToRegistry(ModeSelectInner, {
 			BackgroundColor3 = 'BackgroundColor';
 			BorderColor3 = 'OutlineColor';
 		});
 
-		Library:Create('UIListLayout', {
+		EZ:Create('UIListLayout', {
 			FillDirection = Enum.FillDirection.Vertical;
 			SortOrder = Enum.SortOrder.LayoutOrder;
 			Parent = ModeSelectInner;
 		});
 
-		local ContainerLabel = Library:CreateLabel({
+		local ContainerLabel = EZ:CreateLabel({
 			TextXAlignment = Enum.TextXAlignment.Left;
 			Size = UDim2.new(1, 0, 0, 18);
 			TextSize = 13;
 			Visible = false;
 			ZIndex = 110;
-			Parent = Library.KeybindContainer;
+			Parent = EZ.KeybindContainer;
 		},  true);
 
 		local Modes = Info.Modes or { 'Always', 'Toggle', 'Hold' };
@@ -1952,7 +1982,7 @@ do
 		for Idx, Mode in next, Modes do
 			local ModeButton = {};
 
-			local Label = Library:CreateLabel({
+			local Label = EZ:CreateLabel({
 				Active = false;
 				Size = UDim2.new(1, 0, 0, 15);
 				TextSize = 13;
@@ -1968,8 +1998,8 @@ do
 
 				KeyPicker.Mode = Mode;
 
-				Label.TextColor3 = Library.AccentColor;
-				Library.RegistryMap[Label].Properties.TextColor3 = 'AccentColor';
+				Label.TextColor3 = EZ.AccentColor;
+				EZ.RegistryMap[Label].Properties.TextColor3 = 'AccentColor';
 
 				ModeSelectOuter.Visible = false;
 			end;
@@ -1977,14 +2007,14 @@ do
 			function ModeButton:Deselect()
 				KeyPicker.Mode = nil;
 
-				Label.TextColor3 = Library.FontColor;
-				Library.RegistryMap[Label].Properties.TextColor3 = 'FontColor';
+				Label.TextColor3 = EZ.FontColor;
+				EZ.RegistryMap[Label].Properties.TextColor3 = 'FontColor';
 			end;
 
 			Label.InputBegan:Connect(function(Input)
 				if Input.UserInputType == Enum.UserInputType.MouseButton1 then
 					ModeButton:Select();
-					Library:AttemptSave();
+					EZ:AttemptSave();
 				end;
 			end);
 
@@ -2005,14 +2035,14 @@ do
 			ContainerLabel.Text = string.format('[%s] %s (%s)', KeyPicker.Value, Info.Text, ModeText);
 
 			ContainerLabel.Visible = true;
-			ContainerLabel.TextColor3 = State and Library.AccentColor or Library.FontColor;
+			ContainerLabel.TextColor3 = State and EZ.AccentColor or EZ.FontColor;
 
-			Library.RegistryMap[ContainerLabel].Properties.TextColor3 = State and 'AccentColor' or 'FontColor';
+			EZ.RegistryMap[ContainerLabel].Properties.TextColor3 = State and 'AccentColor' or 'FontColor';
 		end;
 
 		function KeyPicker:Update()
 			if not KeyPicker.NoUI then
-				local mode = Library.KeypickerListMode;
+				local mode = EZ.KeypickerListMode;
 				local State = KeyPicker:GetState();
 
 				if (mode == "Active" and KeyPicker.Parent.Type == "Toggle" and (not State or not KeyPicker.Parent.Value)) then
@@ -2029,7 +2059,7 @@ do
 			local YSize = 0
 			local XSize = 0
 
-			for _, Label in next, Library.KeybindContainer:GetChildren() do
+			for _, Label in next, EZ.KeybindContainer:GetChildren() do
 				if Label:IsA('TextLabel') and Label.Visible then
 					YSize = YSize + 18;
 					if (Label.TextBounds.X > XSize) then
@@ -2038,9 +2068,9 @@ do
 				end;
 			end;
 
-			Library.KeybindFrame.Size = UDim2.new(0, math.max(XSize + 10, 210), 0, YSize + 23)
+			EZ.KeybindFrame.Size = UDim2.new(0, math.max(XSize + 10, 210), 0, YSize + 23)
 
-			Library.KeybindFrame.Visible = Library.KeypickerListVisible and (YSize ~= 0);
+			EZ.KeybindFrame.Visible = EZ.KeypickerListVisible and (YSize ~= 0);
 		end;
 
 		function KeyPicker:OverrideState(State)
@@ -2100,7 +2130,7 @@ do
 
 		function KeyPicker:SetupConnection(Connection)
 			table.insert(KeyPicker.Connections, Connection);
-			Library:GiveSignal(Connection);
+			EZ:GiveSignal(Connection);
 		end;
 
 		function KeyPicker:Remove()
@@ -2148,8 +2178,8 @@ do
 				ParentObj:SetValue(not ParentObj.Value)
 			end
 
-			Library:SafeCallback(KeyPicker.Callback, KeyPicker.Toggled)
-			Library:SafeCallback(KeyPicker.Clicked, KeyPicker.Toggled)
+			EZ:SafeCallback(KeyPicker.Callback, KeyPicker.Toggled)
+			EZ:SafeCallback(KeyPicker.Clicked, KeyPicker.Toggled)
 		end
 
 		local Picking = false;
@@ -2160,7 +2190,7 @@ do
 		};
 
 		PickOuter.InputBegan:Connect(function(Input)
-			if Input.UserInputType == Enum.UserInputType.MouseButton1 and not Library:MouseIsOverOpenedFrame() then
+			if Input.UserInputType == Enum.UserInputType.MouseButton1 and not EZ:MouseIsOverOpenedFrame() then
 				Picking = true;
 
 				DisplayLabel.Text = '';
@@ -2201,14 +2231,14 @@ do
 					DisplayLabel.Text = Key;
 					KeyPicker.Value = Key;
 
-					Library:SafeCallback(KeyPicker.ChangedCallback, Input.KeyCode or Input.UserInputType)
-					Library:SafeCallback(KeyPicker.Changed, Input.KeyCode or Input.UserInputType)
+					EZ:SafeCallback(KeyPicker.ChangedCallback, Input.KeyCode or Input.UserInputType)
+					EZ:SafeCallback(KeyPicker.Changed, Input.KeyCode or Input.UserInputType)
 
-					Library:AttemptSave();
+					EZ:AttemptSave();
 
 					Event:Disconnect();
 				end);
-			elseif Input.UserInputType == Enum.UserInputType.MouseButton2 and not Library:MouseIsOverOpenedFrame() then
+			elseif Input.UserInputType == Enum.UserInputType.MouseButton2 and not EZ:MouseIsOverOpenedFrame() then
 				ModeSelectOuter.Visible = true;
 			end;
 		end);
@@ -2254,13 +2284,13 @@ do
 			end;
 		end))
 
-		if Library.FlagCopying then
-			local ContextMenu = Library:AddContextMenu(PickOuter);
+		if EZ.FlagCopying then
+			local ContextMenu = EZ:AddContextMenu(PickOuter);
 
 			ContextMenu:AddOption('Copy Flag', function()
 				pcall(setclipboard, KeyPicker.Idx);
 				task.wait();
-				Library:Notify('Copied flag to clipboard!', 2);
+				EZ:Notify('Copied flag to clipboard!', 2);
 				ContextMenu:Hide();
 			end);
 		end;
@@ -2287,7 +2317,7 @@ do
 		local Groupbox = self;
 		local Container = Groupbox.Container;
 
-		return Library:Create('Frame', {
+		return EZ:Create('Frame', {
 			BackgroundTransparency = 1;
 			Size = UDim2.new(1, 0, 0, Size);
 			ZIndex = 1;
@@ -2303,7 +2333,7 @@ do
 		local Groupbox = self;
 		local Container = Groupbox.Container;
 
-		local Outer = Library:Create('Frame', {
+		local Outer = EZ:Create('Frame', {
 			BackgroundColor3 = Color3.new(0, 0, 0);
 			BorderColor3 = Color3.new(0, 0, 0);
 			Size = UDim2.new(1, -4, 0, Info.Size or 100);
@@ -2311,16 +2341,16 @@ do
 			Parent = Container;
 		});
 
-		local Inner = Library:Create('Frame', {
-			BackgroundColor3 = Library.BackgroundColor;
-			BorderColor3 = Library.OutlineColor;
+		local Inner = EZ:Create('Frame', {
+			BackgroundColor3 = EZ.BackgroundColor;
+			BorderColor3 = EZ.OutlineColor;
 			BorderMode = Enum.BorderMode.Inset;
 			Size = UDim2.new(1, 0, 1, 0);
 			ZIndex = 6;
 			Parent = Outer;
 		});
 
-		Library:AddToRegistry(Inner, {
+		EZ:AddToRegistry(Inner, {
 			BackgroundColor3 = 'BackgroundColor';
 			BorderColor3 = 'OutlineColor';
 		});
@@ -2366,7 +2396,7 @@ do
 		local Groupbox = self;
 		local Container = Groupbox.Container;
 
-		local TextLabel = Library:CreateLabel({
+		local TextLabel = EZ:CreateLabel({
 			Size = UDim2.new(1, -4, 0, 15);
 			TextSize = 14;
 			Text = Text;
@@ -2378,10 +2408,10 @@ do
 		});
 
 		if DoesWrap then
-			local Y = select(2, Library:GetTextBounds(Text, Library.Font, 14, Vector2.new(TextLabel.AbsoluteSize.X, math.huge)))
+			local Y = select(2, EZ:GetTextBounds(Text, EZ.Font, 14, Vector2.new(TextLabel.AbsoluteSize.X, math.huge)))
 			TextLabel.Size = UDim2.new(1, -4, 0, Y)
 		else
-			Library:Create('UIListLayout', {
+			EZ:Create('UIListLayout', {
 				Padding = UDim.new(0, 4);
 				FillDirection = Enum.FillDirection.Horizontal;
 				HorizontalAlignment = Enum.HorizontalAlignment.Right;
@@ -2397,7 +2427,7 @@ do
 			TextLabel.Text = Text
 
 			if DoesWrap then
-				local Y = select(2, Library:GetTextBounds(Text, Library.Font, 14, Vector2.new(TextLabel.AbsoluteSize.X, math.huge)))
+				local Y = select(2, EZ:GetTextBounds(Text, EZ.Font, 14, Vector2.new(TextLabel.AbsoluteSize.X, math.huge)))
 				TextLabel.Size = UDim2.new(1, -4, 0, Y)
 			end
 
@@ -2450,23 +2480,23 @@ do
 		local Container = Groupbox.Container;
 
 		local function CreateBaseButton(Button)
-			local Outer = Library:Create('Frame', {
+			local Outer = EZ:Create('Frame', {
 				BackgroundColor3 = Color3.new(0, 0, 0);
 				BorderColor3 = Color3.new(0, 0, 0);
 				Size = UDim2.new(1, -4, 0, 20);
 				ZIndex = 5;
 			});
 
-			local Inner = Library:Create('Frame', {
-				BackgroundColor3 = Library.MainColor;
-				BorderColor3 = Library.OutlineColor;
+			local Inner = EZ:Create('Frame', {
+				BackgroundColor3 = EZ.MainColor;
+				BorderColor3 = EZ.OutlineColor;
 				BorderMode = Enum.BorderMode.Inset;
 				Size = UDim2.new(1, 0, 1, 0);
 				ZIndex = 6;
 				Parent = Outer;
 			});
 
-			local Label = Library:CreateLabel({
+			local Label = EZ:CreateLabel({
 				Size = UDim2.new(1, 0, 1, 0);
 				TextSize = 14;
 				Text = Button.Text;
@@ -2474,7 +2504,7 @@ do
 				Parent = Inner;
 			});
 
-			Library:Create('UIGradient', {
+			EZ:Create('UIGradient', {
 				Color = ColorSequence.new({
 					ColorSequenceKeypoint.new(0, Color3.new(1, 1, 1)),
 					ColorSequenceKeypoint.new(1, Color3.fromRGB(212, 212, 212))
@@ -2483,16 +2513,16 @@ do
 				Parent = Inner;
 			});
 
-			Library:AddToRegistry(Outer, {
+			EZ:AddToRegistry(Outer, {
 				BorderColor3 = 'Black';
 			});
 
-			Library:AddToRegistry(Inner, {
+			EZ:AddToRegistry(Inner, {
 				BackgroundColor3 = 'MainColor';
 				BorderColor3 = 'OutlineColor';
 			});
 
-			Library:OnHighlight(Outer, Outer,
+			EZ:OnHighlight(Outer, Outer,
 				{ BorderColor3 = 'OutlineColor' },
 				{ BorderColor3 = 'Black' }
 			);
@@ -2519,7 +2549,7 @@ do
 			end
 
 			local function ValidateClick(Input)
-				if Library:MouseIsOverOpenedFrame() then
+				if EZ:MouseIsOverOpenedFrame() then
 					return false
 				end
 
@@ -2535,30 +2565,30 @@ do
 				if Button.Locked then return end
 
 				if Button.DoubleClick then
-					Library:RemoveFromRegistry(Button.Label)
-					Library:AddToRegistry(Button.Label, { TextColor3 = 'RiskColor' })
+					EZ:RemoveFromRegistry(Button.Label)
+					EZ:AddToRegistry(Button.Label, { TextColor3 = 'RiskColor' })
 
-					Button.Label.TextColor3 = Library.RiskColor
+					Button.Label.TextColor3 = EZ.RiskColor
 					Button.Label.Text = 'Are you sure?'
 					Button.Locked = true
 
 					local clicked = WaitForEvent(Button.Outer.InputBegan, 0.5, ValidateClick)
 
-					Library:RemoveFromRegistry(Button.Label)
-					Library:AddToRegistry(Button.Label, { TextColor3 = 'FontColor' })
+					EZ:RemoveFromRegistry(Button.Label)
+					EZ:AddToRegistry(Button.Label, { TextColor3 = 'FontColor' })
 
-					Button.Label.TextColor3 = Library.FontColor
+					Button.Label.TextColor3 = EZ.FontColor
 					Button.Label.Text = Button.Text
 					task.defer(rawset, Button, 'Locked', false)
 
 					if clicked then
-						Library:SafeCallback(Button.Func)
+						EZ:SafeCallback(Button.Func)
 					end
 
 					return
 				end
 
-				Library:SafeCallback(Button.Func);
+				EZ:SafeCallback(Button.Func);
 			end)
 		end
 
@@ -2569,7 +2599,7 @@ do
 
 		function Button:AddTooltip(tooltip)
 			if type(tooltip) == 'string' then
-				Library:AddToolTip(tooltip, self.Outer)
+				EZ:AddToolTip(tooltip, self.Outer)
 			end
 			return self
 		end
@@ -2589,7 +2619,7 @@ do
 
 			function SubButton:AddTooltip(tooltip)
 				if type(tooltip) == 'string' then
-					Library:AddToolTip(tooltip, self.Outer)
+					EZ:AddToolTip(tooltip, self.Outer)
 				end
 				return SubButton
 			end
@@ -2621,7 +2651,7 @@ do
 		}
 
 		Groupbox:AddBlank(2);
-		local DividerOuter = Library:Create('Frame', {
+		local DividerOuter = EZ:Create('Frame', {
 			BackgroundColor3 = Color3.new(0, 0, 0);
 			BorderColor3 = Color3.new(0, 0, 0);
 			Size = UDim2.new(1, -4, 0, 5);
@@ -2629,20 +2659,20 @@ do
 			Parent = Container;
 		});
 
-		local DividerInner = Library:Create('Frame', {
-			BackgroundColor3 = Library.MainColor;
-			BorderColor3 = Library.OutlineColor;
+		local DividerInner = EZ:Create('Frame', {
+			BackgroundColor3 = EZ.MainColor;
+			BorderColor3 = EZ.OutlineColor;
 			BorderMode = Enum.BorderMode.Inset;
 			Size = UDim2.new(1, 0, 1, 0);
 			ZIndex = 6;
 			Parent = DividerOuter;
 		});
 
-		Library:AddToRegistry(DividerOuter, {
+		EZ:AddToRegistry(DividerOuter, {
 			BorderColor3 = 'Black';
 		});
 
-		Library:AddToRegistry(DividerInner, {
+		EZ:AddToRegistry(DividerInner, {
 			BackgroundColor3 = 'MainColor';
 			BorderColor3 = 'OutlineColor';
 		});
@@ -2667,7 +2697,7 @@ do
 		local Groupbox = self;
 		local Container = Groupbox.Container;
 
-		local InputLabel = Library:CreateLabel({
+		local InputLabel = EZ:CreateLabel({
 			Size = UDim2.new(1, 0, 0, 15);
 			TextSize = 14;
 			Text = Info.Text;
@@ -2678,7 +2708,7 @@ do
 
 		Groupbox:AddBlank(1);
 
-		local TextBoxOuter = Library:Create('Frame', {
+		local TextBoxOuter = EZ:Create('Frame', {
 			BackgroundColor3 = Color3.new(0, 0, 0);
 			BorderColor3 = Color3.new(0, 0, 0);
 			Size = UDim2.new(1, -4, 0, 20);
@@ -2686,30 +2716,30 @@ do
 			Parent = Container;
 		});
 
-		local TextBoxInner = Library:Create('Frame', {
-			BackgroundColor3 = Library.MainColor;
-			BorderColor3 = Library.OutlineColor;
+		local TextBoxInner = EZ:Create('Frame', {
+			BackgroundColor3 = EZ.MainColor;
+			BorderColor3 = EZ.OutlineColor;
 			BorderMode = Enum.BorderMode.Inset;
 			Size = UDim2.new(1, 0, 1, 0);
 			ZIndex = 6;
 			Parent = TextBoxOuter;
 		});
 
-		Library:AddToRegistry(TextBoxInner, {
+		EZ:AddToRegistry(TextBoxInner, {
 			BackgroundColor3 = 'MainColor';
 			BorderColor3 = 'OutlineColor';
 		});
 
-		Library:OnHighlight(TextBoxOuter, TextBoxOuter,
+		EZ:OnHighlight(TextBoxOuter, TextBoxOuter,
 			{ BorderColor3 = 'OutlineColor' },
 			{ BorderColor3 = 'Black' }
 		);
 
 		if type(Info.Tooltip) == 'string' then
-			Library:AddToolTip(Info.Tooltip, TextBoxOuter)
+			EZ:AddToolTip(Info.Tooltip, TextBoxOuter)
 		end
 
-		Library:Create('UIGradient', {
+		EZ:Create('UIGradient', {
 			Color = ColorSequence.new({
 				ColorSequenceKeypoint.new(0, Color3.new(1, 1, 1)),
 				ColorSequenceKeypoint.new(1, Color3.fromRGB(212, 212, 212))
@@ -2718,7 +2748,7 @@ do
 			Parent = TextBoxInner;
 		});
 
-		local Container = Library:Create('Frame', {
+		local Container = EZ:Create('Frame', {
 			BackgroundTransparency = 1;
 			ClipsDescendants = true;
 
@@ -2729,19 +2759,19 @@ do
 			Parent = TextBoxInner;
 		})
 
-		local Box = Library:Create('TextBox', {
+		local Box = EZ:Create('TextBox', {
 			BackgroundTransparency = 1;
 
 			Position = UDim2.fromOffset(0, 0),
 			Size = UDim2.fromScale(5, 1),
 
-			Font = Library.Font;
+			Font = EZ.Font;
 			PlaceholderColor3 = Color3.fromRGB(190, 190, 190);
 			PlaceholderText = Info.Placeholder or '';
 
 			ClearTextOnFocus = Info.Clear or false;
 			Text = Info.Default or '';
-			TextColor3 = Library.FontColor;
+			TextColor3 = EZ.FontColor;
 			TextSize = 14;
 			TextStrokeTransparency = 0;
 			TextXAlignment = Enum.TextXAlignment.Left;
@@ -2750,7 +2780,7 @@ do
 			Parent = Container;
 		});
 
-		Library:ApplyTextStroke(Box);
+		EZ:ApplyTextStroke(Box);
 
 		function Textbox:SetValue(Text)
 			if Info.MaxLength and #Text > Info.MaxLength then
@@ -2766,8 +2796,8 @@ do
 			Textbox.Value = Text;
 			Box.Text = Text;
 
-			Library:SafeCallback(Textbox.Callback, Textbox.Value);
-			Library:SafeCallback(Textbox.Changed, Textbox.Value);
+			EZ:SafeCallback(Textbox.Callback, Textbox.Value);
+			EZ:SafeCallback(Textbox.Changed, Textbox.Value);
 		end;
 
 		if Textbox.Finished then
@@ -2775,12 +2805,12 @@ do
 				if not enter then return end
 
 				Textbox:SetValue(Box.Text);
-				Library:AttemptSave();
+				EZ:AttemptSave();
 			end)
 		else
 			Box:GetPropertyChangedSignal('Text'):Connect(function()
 				Textbox:SetValue(Box.Text);
-				Library:AttemptSave();
+				EZ:AttemptSave();
 			end);
 		end
 
@@ -2817,7 +2847,7 @@ do
 		Box.FocusLost:Connect(Update)
 		Box.Focused:Connect(Update)
 
-		Library:AddToRegistry(Box, {
+		EZ:AddToRegistry(Box, {
 			TextColor3 = 'FontColor';
 		});
 
@@ -2826,13 +2856,13 @@ do
 			Func(Textbox.Value);
 		end;
 
-		if Library.FlagCopying then
-			local ContextMenu = Library:AddContextMenu(TextBoxOuter);
+		if EZ.FlagCopying then
+			local ContextMenu = EZ:AddContextMenu(TextBoxOuter);
 
 			ContextMenu:AddOption('Copy Flag', function()
 				pcall(setclipboard, Textbox.Idx);
 				task.wait();
-				Library:Notify('Copied flag to clipboard!', 2);
+				EZ:Notify('Copied flag to clipboard!', 2);
 				ContextMenu:Hide();
 			end);
 		end;
@@ -2877,7 +2907,7 @@ do
 		local Groupbox = self;
 		local Container = Groupbox.Container;
 
-		local ToggleOuter = Library:Create('Frame', {
+		local ToggleOuter = EZ:Create('Frame', {
 			BackgroundColor3 = Color3.new(0, 0, 0);
 			BorderColor3 = Color3.new(0, 0, 0);
 			Size = UDim2.new(0, 13, 0, 13);
@@ -2885,25 +2915,25 @@ do
 			Parent = Container;
 		});
 
-		Library:AddToRegistry(ToggleOuter, {
+		EZ:AddToRegistry(ToggleOuter, {
 			BorderColor3 = 'Black';
 		});
 
-		local ToggleInner = Library:Create('Frame', {
-			BackgroundColor3 = Library.MainColor;
-			BorderColor3 = Library.OutlineColor;
+		local ToggleInner = EZ:Create('Frame', {
+			BackgroundColor3 = EZ.MainColor;
+			BorderColor3 = EZ.OutlineColor;
 			BorderMode = Enum.BorderMode.Inset;
 			Size = UDim2.new(1, 0, 1, 0);
 			ZIndex = 6;
 			Parent = ToggleOuter;
 		});
 
-		Library:AddToRegistry(ToggleInner, {
+		EZ:AddToRegistry(ToggleInner, {
 			BackgroundColor3 = 'MainColor';
 			BorderColor3 = 'OutlineColor';
 		});
 
-		local ToggleLabel = Library:CreateLabel({
+		local ToggleLabel = EZ:CreateLabel({
 			Size = UDim2.new(0, 216, 1, 0);
 			Position = UDim2.new(1, 6, 0, 0);
 			TextSize = 14;
@@ -2913,7 +2943,7 @@ do
 			Parent = ToggleInner;
 		});
 
-		Library:Create('UIListLayout', {
+		EZ:Create('UIListLayout', {
 			Padding = UDim.new(0, 4);
 			FillDirection = Enum.FillDirection.Horizontal;
 			HorizontalAlignment = Enum.HorizontalAlignment.Right;
@@ -2921,14 +2951,14 @@ do
 			Parent = ToggleLabel;
 		});
 
-		local ToggleRegion = Library:Create('Frame', {
+		local ToggleRegion = EZ:Create('Frame', {
 			BackgroundTransparency = 1;
 			Size = UDim2.new(0, 170, 1, 0);
 			ZIndex = 8;
 			Parent = ToggleOuter;
 		});
 
-		Library:OnHighlight(ToggleRegion, ToggleOuter,
+		EZ:OnHighlight(ToggleRegion, ToggleOuter,
 			{ BorderColor3 = 'OutlineColor' },
 			{ BorderColor3 = 'Black' }
 		);
@@ -2938,15 +2968,15 @@ do
 		end;
 
 		if type(Info.Tooltip) == 'string' then
-			Library:AddToolTip(Info.Tooltip, ToggleRegion)
+			EZ:AddToolTip(Info.Tooltip, ToggleRegion)
 		end
 
 		function Toggle:Display()
-			ToggleInner.BackgroundColor3 = Toggle.Value and Library.AccentColor or Library.MainColor;
-			ToggleInner.BorderColor3 = Toggle.Value and Library.AccentColorDark or Library.OutlineColor;
+			ToggleInner.BackgroundColor3 = Toggle.Value and EZ.AccentColor or EZ.MainColor;
+			ToggleInner.BorderColor3 = Toggle.Value and EZ.AccentColorDark or EZ.OutlineColor;
 
-			Library.RegistryMap[ToggleInner].Properties.BackgroundColor3 = Toggle.Value and 'AccentColor' or 'MainColor';
-			Library.RegistryMap[ToggleInner].Properties.BorderColor3 = Toggle.Value and 'AccentColorDark' or 'OutlineColor';
+			EZ.RegistryMap[ToggleInner].Properties.BackgroundColor3 = Toggle.Value and 'AccentColor' or 'MainColor';
+			EZ.RegistryMap[ToggleInner].Properties.BorderColor3 = Toggle.Value and 'AccentColorDark' or 'OutlineColor';
 		end;
 
 		function Toggle:OnChanged(Func)
@@ -2980,14 +3010,14 @@ do
 				end;
 			end
 
-			Library:SafeCallback(Toggle.Callback, Toggle.Value);
-			Library:SafeCallback(Toggle.Changed, Toggle.Value);
+			EZ:SafeCallback(Toggle.Callback, Toggle.Value);
+			EZ:SafeCallback(Toggle.Changed, Toggle.Value);
 
 			for _, Func in next, Toggle.ChangedFuncs do
-				Library:SafeCallback(Func, Toggle.Value);
+				EZ:SafeCallback(Func, Toggle.Value);
 			end;
 
-			Library:UpdateDependencyBoxes();
+			EZ:UpdateDependencyBoxes();
 
 			Toggle.SettingValue = false;
 		end;
@@ -3016,33 +3046,33 @@ do
 
 		ToggleRegion.InputBegan:Connect(function(Input)
 
-			if Library.IsDragging then
+			if EZ.IsDragging then
 				return;
 			end;
 
-			if (Input.UserInputType == Enum.UserInputType.MouseButton1 and not Library:MouseIsOverOpenedFrame())
+			if (Input.UserInputType == Enum.UserInputType.MouseButton1 and not EZ:MouseIsOverOpenedFrame())
 				or Input.UserInputType == Enum.UserInputType.Touch then
 
 				Toggle:SetValue(not Toggle.Value)
-				Library:AttemptSave();
+				EZ:AttemptSave();
 			end;
 		end);
 
-		if Library.FlagCopying then
-			local ContextMenu = Library:AddContextMenu(ToggleOuter, ToggleRegion);
+		if EZ.FlagCopying then
+			local ContextMenu = EZ:AddContextMenu(ToggleOuter, ToggleRegion);
 
 			ContextMenu:AddOption('Copy Flag', function()
 				pcall(setclipboard, Toggle.Idx);
 				task.wait();
-				Library:Notify('Copied flag to clipboard!', 2);
+				EZ:Notify('Copied flag to clipboard!', 2);
 				ContextMenu:Hide();
 			end);
 		end;
 
 		if Toggle.Risky then
-			Library:RemoveFromRegistry(ToggleLabel)
-			ToggleLabel.TextColor3 = Library.RiskColor
-			Library:AddToRegistry(ToggleLabel, { TextColor3 = 'RiskColor' })
+			EZ:RemoveFromRegistry(ToggleLabel)
+			ToggleLabel.TextColor3 = EZ.RiskColor
+			EZ:AddToRegistry(ToggleLabel, { TextColor3 = 'RiskColor' })
 		end
 
 		Toggle:Display();
@@ -3060,7 +3090,7 @@ do
 
 		Toggles[Idx] = Toggle;
 
-		Library:UpdateDependencyBoxes();
+		EZ:UpdateDependencyBoxes();
 
 		return Toggle;
 	end;
@@ -3095,7 +3125,7 @@ do
 		end;
 
 		if not Info.Compact then
-			Library:CreateLabel({
+			EZ:CreateLabel({
 				Size = UDim2.new(1, 0, 0, 10);
 				Position = SliderParent and UDim2.new(1, 4, 0, -12) or UDim2.new();
 				TextSize = 14;
@@ -3109,7 +3139,7 @@ do
 			Groupbox:AddBlank(3);
 		end;
 
-		local SliderOuter = Library:Create('Frame', {
+		local SliderOuter = EZ:Create('Frame', {
 			BackgroundColor3 = Color3.new(0, 0, 0);
 			BorderColor3 = Color3.new(0, 0, 0);
 
@@ -3120,39 +3150,39 @@ do
 
 		Slider.Outer = SliderOuter;
 
-		Library:AddToRegistry(SliderOuter, {
+		EZ:AddToRegistry(SliderOuter, {
 			BorderColor3 = 'Black';
 		});
 
-		local SliderInner = Library:Create('Frame', {
-			BackgroundColor3 = Library.MainColor;
-			BorderColor3 = Library.OutlineColor;
+		local SliderInner = EZ:Create('Frame', {
+			BackgroundColor3 = EZ.MainColor;
+			BorderColor3 = EZ.OutlineColor;
 			BorderMode = Enum.BorderMode.Inset;
 			Size = UDim2.new(1, 0, 1, 0);
 			ZIndex = 6;
 			Parent = SliderOuter;
 		});
 
-		Library:AddToRegistry(SliderInner, {
+		EZ:AddToRegistry(SliderInner, {
 			BackgroundColor3 = 'MainColor';
 			BorderColor3 = 'OutlineColor';
 		});
 
-		local Fill = Library:Create('Frame', {
-			BackgroundColor3 = Library.AccentColor;
-			BorderColor3 = Library.AccentColorDark;
+		local Fill = EZ:Create('Frame', {
+			BackgroundColor3 = EZ.AccentColor;
+			BorderColor3 = EZ.AccentColorDark;
 			Size = UDim2.new(0, 0, 1, 0);
 			ZIndex = 7;
 			Parent = SliderInner;
 		});
 
-		Library:AddToRegistry(Fill, {
+		EZ:AddToRegistry(Fill, {
 			BackgroundColor3 = 'AccentColor';
 			BorderColor3 = 'AccentColorDark';
 		});
 
-		local HideBorderRight = Library:Create('Frame', {
-			BackgroundColor3 = Library.AccentColor;
+		local HideBorderRight = EZ:Create('Frame', {
+			BackgroundColor3 = EZ.AccentColor;
 			BorderSizePixel = 0;
 			Position = UDim2.new(1, 0, 0, 0);
 			Size = UDim2.new(0, 1, 1, 0);
@@ -3160,11 +3190,11 @@ do
 			Parent = Fill;
 		});
 
-		Library:AddToRegistry(HideBorderRight, {
+		EZ:AddToRegistry(HideBorderRight, {
 			BackgroundColor3 = 'AccentColor';
 		});
 
-		local DisplayLabel = Library:CreateLabel({
+		local DisplayLabel = EZ:CreateLabel({
 			Size = UDim2.new(1, 0, 1, 0);
 			TextSize = 14;
 			Text = 'Infinite';
@@ -3172,13 +3202,13 @@ do
 			Parent = SliderInner;
 		});
 
-		Library:OnHighlight(SliderOuter, SliderOuter,
+		EZ:OnHighlight(SliderOuter, SliderOuter,
 			{ BorderColor3 = 'AccentColor' },
 			{ BorderColor3 = 'Black' }
 		);
 
 		if type(Info.Tooltip) == 'string' then
-			Library:AddToolTip(Info.Tooltip, SliderOuter)
+			EZ:AddToolTip(Info.Tooltip, SliderOuter)
 		end
 
 		local get_count = function()
@@ -3193,8 +3223,8 @@ do
 		end;
 
 		function Slider:UpdateColors()
-			Fill.BackgroundColor3 = Library.AccentColor;
-			Fill.BorderColor3 = Library.AccentColorDark;
+			Fill.BackgroundColor3 = EZ.AccentColor;
+			Fill.BorderColor3 = EZ.AccentColorDark;
 		end;
 
 		local FillTween = nil;
@@ -3210,7 +3240,7 @@ do
 				DisplayLabel.Text = Slider.Value .. Suffix .. '/' .. Slider.Max .. Suffix;
 			end;
 
-			local Alpha = Library:MapValue(Slider.Value, Slider.Min, Slider.Max, 0, 1);
+			local Alpha = EZ:MapValue(Slider.Value, Slider.Min, Slider.Max, 0, 1);
 
 			if FillTween then
 				FillTween:Cancel();
@@ -3244,7 +3274,7 @@ do
 		end;
 
 		function Slider:GetValueFromXOffset(X)
-			return Round(Library:MapValue(X, 0, Slider.MaxSize, Slider.Min, Slider.Max)) + 0;
+			return Round(EZ:MapValue(X, 0, Slider.MaxSize, Slider.Min, Slider.Max)) + 0;
 		end;
 
 		function Slider:SetValue(Str)
@@ -3259,11 +3289,11 @@ do
 			Slider.Value = Num;
 			Slider:Display();
 
-			Library:SafeCallback(Slider.Callback, Slider.Value);
-			Library:SafeCallback(Slider.Changed, Slider.Value);
+			EZ:SafeCallback(Slider.Callback, Slider.Value);
+			EZ:SafeCallback(Slider.Changed, Slider.Value);
 
 			for _, Func in next, Slider.ChangedFuncs do
-				Library:SafeCallback(Func, Slider.Value);
+				EZ:SafeCallback(Func, Slider.Value);
 			end;
 		end;
 
@@ -3273,7 +3303,7 @@ do
 				if Info.Compact and info.Compact ~= true then
 					Info.Compact = false;
 
-					Library:CreateLabel({
+					EZ:CreateLabel({
 						Size = UDim2.new(1, 0, 0, 10);
 						Position = UDim2.new(0, 0, 0, -12);
 						TextSize = 14;
@@ -3291,20 +3321,20 @@ do
 		end
 
 		local function FireChanged(NewValue)
-			Library:SafeCallback(Slider.Callback, Slider.Value);
-			Library:SafeCallback(Slider.Changed, Slider.Value);
+			EZ:SafeCallback(Slider.Callback, Slider.Value);
+			EZ:SafeCallback(Slider.Changed, Slider.Value);
 
 			for _, Func in next, Slider.ChangedFuncs do
-				Library:SafeCallback(Func, NewValue);
+				EZ:SafeCallback(Func, NewValue);
 			end;
 		end;
 
 		SliderInner.InputBegan:Connect(function(Input)
-			if Library.IsDragging then
+			if EZ.IsDragging then
 				return;
 			end;
 
-			if Input.UserInputType == Enum.UserInputType.MouseButton1 and not Library:MouseIsOverOpenedFrame() then
+			if Input.UserInputType == Enum.UserInputType.MouseButton1 and not EZ:MouseIsOverOpenedFrame() then
 				local mPos = Mouse.X;
 				local gPos = Fill.Size.X.Offset;
 				local Diff = mPos - (Fill.AbsolutePosition.X + gPos);
@@ -3326,10 +3356,10 @@ do
 					RenderStepped:Wait();
 				end;
 
-				Library:AttemptSave();
+				EZ:AttemptSave();
 			end;
 
-			if Input.UserInputType == Enum.UserInputType.Touch and not Library:MouseIsOverOpenedFrame() then
+			if Input.UserInputType == Enum.UserInputType.Touch and not EZ:MouseIsOverOpenedFrame() then
 				local mPos = Input.Position.X;
 				local gPos = Fill.Size.X.Offset;
 				local Diff = mPos - (Fill.AbsolutePosition.X + gPos);
@@ -3364,17 +3394,17 @@ do
 					Conn:Disconnect();
 				end;
 
-				Library:AttemptSave();
+				EZ:AttemptSave();
 			end;
 		end);
 
-		if Library.FlagCopying then
-			local ContextMenu = Library:AddContextMenu(SliderOuter);
+		if EZ.FlagCopying then
+			local ContextMenu = EZ:AddContextMenu(SliderOuter);
 
 			ContextMenu:AddOption('Copy Flag', function()
 				pcall(setclipboard, Slider.Idx);
 				task.wait();
-				Library:Notify('Copied flag to clipboard!', 2);
+				EZ:Notify('Copied flag to clipboard!', 2);
 				ContextMenu:Hide();
 			end);
 		end;
@@ -3460,7 +3490,7 @@ do
 		local RelativeOffset = 0;
 
 		if not Info.Compact then
-			local DropdownLabel = Library:CreateLabel({
+			local DropdownLabel = EZ:CreateLabel({
 				Size = UDim2.new(1, 0, 0, 10);
 				TextSize = 14;
 				Text = Info.Text;
@@ -3479,7 +3509,7 @@ do
 			end;
 		end;
 
-		local DropdownOuter = Library:Create('Frame', {
+		local DropdownOuter = EZ:Create('Frame', {
 			BackgroundColor3 = Color3.new(0, 0, 0);
 			BorderColor3 = Color3.new(0, 0, 0);
 			Size = UDim2.new(1, -4, 0, 20);
@@ -3487,25 +3517,25 @@ do
 			Parent = Container;
 		});
 
-		Library:AddToRegistry(DropdownOuter, {
+		EZ:AddToRegistry(DropdownOuter, {
 			BorderColor3 = 'Black';
 		});
 
-		local DropdownInner = Library:Create('Frame', {
-			BackgroundColor3 = Library.MainColor;
-			BorderColor3 = Library.OutlineColor;
+		local DropdownInner = EZ:Create('Frame', {
+			BackgroundColor3 = EZ.MainColor;
+			BorderColor3 = EZ.OutlineColor;
 			BorderMode = Enum.BorderMode.Inset;
 			Size = UDim2.new(1, 0, 1, 0);
 			ZIndex = 6;
 			Parent = DropdownOuter;
 		});
 
-		Library:AddToRegistry(DropdownInner, {
+		EZ:AddToRegistry(DropdownInner, {
 			BackgroundColor3 = 'MainColor';
 			BorderColor3 = 'OutlineColor';
 		});
 
-		Library:Create('UIGradient', {
+		EZ:Create('UIGradient', {
 			Color = ColorSequence.new({
 				ColorSequenceKeypoint.new(0, Color3.new(1, 1, 1)),
 				ColorSequenceKeypoint.new(1, Color3.fromRGB(212, 212, 212))
@@ -3514,7 +3544,7 @@ do
 			Parent = DropdownInner;
 		});
 
-		local DropdownArrow = Library:CreateLabel({
+		local DropdownArrow = EZ:CreateLabel({
 			AnchorPoint = Vector2.new(0.5, 0.5);
 			BackgroundTransparency = 1;
 			Position = UDim2.new(1, -11, 0.5, 0);
@@ -3528,7 +3558,7 @@ do
 
 		local DropdownArrowTween = TweenInfo.new(0.22, Enum.EasingStyle.Quad, Enum.EasingDirection.Out);
 
-		local ItemClip = Library:Create('Frame', {
+		local ItemClip = EZ:Create('Frame', {
 			BackgroundTransparency = 1;
 			ClipsDescendants = true;
 			Position = UDim2.new(0, 5, 0, 0);
@@ -3537,7 +3567,7 @@ do
 			Parent = DropdownInner;
 		});
 
-		local ItemList = Library:CreateLabel({
+		local ItemList = EZ:CreateLabel({
 			Size = UDim2.new(1, 0, 1, 0);
 			TextSize = 14;
 			Text = '...';
@@ -3547,18 +3577,18 @@ do
 			Parent = ItemClip;
 		});
 
-		Library:OnHighlight(DropdownOuter, DropdownOuter,
+		EZ:OnHighlight(DropdownOuter, DropdownOuter,
 			{ BorderColor3 = 'OutlineColor' },
 			{ BorderColor3 = 'Black' }
 		);
 
 		if type(Info.Tooltip) == 'string' then
-			Library:AddToolTip(Info.Tooltip, DropdownOuter)
+			EZ:AddToolTip(Info.Tooltip, DropdownOuter)
 		end
 
 		local MAX_DROPDOWN_ITEMS = 8;
 
-		local ListOuter = Library:Create('Frame', {
+		local ListOuter = EZ:Create('Frame', {
 			BackgroundColor3 = Color3.new(0, 0, 0);
 			BorderColor3 = Color3.new(0, 0, 0);
 			ZIndex = 20;
@@ -3582,9 +3612,9 @@ do
 
 		DropdownOuter:GetPropertyChangedSignal('AbsolutePosition'):Connect(RecalculateListPosition);
 
-		local ListInner = Library:Create('Frame', {
-			BackgroundColor3 = Library.MainColor;
-			BorderColor3 = Library.OutlineColor;
+		local ListInner = EZ:Create('Frame', {
+			BackgroundColor3 = EZ.MainColor;
+			BorderColor3 = EZ.OutlineColor;
 			BorderMode = Enum.BorderMode.Inset;
 			BorderSizePixel = 0;
 			Size = UDim2.new(1, 0, 1, 0);
@@ -3592,12 +3622,12 @@ do
 			Parent = ListOuter;
 		});
 
-		Library:AddToRegistry(ListInner, {
+		EZ:AddToRegistry(ListInner, {
 			BackgroundColor3 = 'MainColor';
 			BorderColor3 = 'OutlineColor';
 		});
 
-		local Scrolling = Library:Create('ScrollingFrame', {
+		local Scrolling = EZ:Create('ScrollingFrame', {
 			BackgroundTransparency = 1;
 			BorderSizePixel = 0;
 			CanvasSize = UDim2.new(0, 0, 0, 0);
@@ -3608,15 +3638,15 @@ do
 			TopImage = 'rbxasset://textures/ui/Scroll/scroll-middle.png',
 			BottomImage = 'rbxasset://textures/ui/Scroll/scroll-middle.png',
 
-			ScrollBarThickness = Library.IsMobile and 15 or 3,
-			ScrollBarImageColor3 = Library.AccentColor,
+			ScrollBarThickness = EZ.IsMobile and 15 or 3,
+			ScrollBarImageColor3 = EZ.AccentColor,
 		});
 
-		Library:AddToRegistry(Scrolling, {
+		EZ:AddToRegistry(Scrolling, {
 			ScrollBarImageColor3 = 'AccentColor'
 		})
 
-		Library:Create('UIListLayout', {
+		EZ:Create('UIListLayout', {
 			Padding = UDim.new(0, 0);
 			FillDirection = Enum.FillDirection.Vertical;
 			SortOrder = Enum.SortOrder.LayoutOrder;
@@ -3673,9 +3703,9 @@ do
 
 				Count = Count + 1;
 
-				local Button = Library:Create('Frame', {
-					BackgroundColor3 = Library.MainColor;
-					BorderColor3 = Library.OutlineColor;
+				local Button = EZ:Create('Frame', {
+					BackgroundColor3 = EZ.MainColor;
+					BorderColor3 = EZ.OutlineColor;
 					BorderMode = Enum.BorderMode.Middle;
 					Size = UDim2.new(1, -1, 0, 20);
 					ZIndex = 23;
@@ -3683,12 +3713,12 @@ do
 					Parent = Scrolling;
 				});
 
-				Library:AddToRegistry(Button, {
+				EZ:AddToRegistry(Button, {
 					BackgroundColor3 = 'MainColor';
 					BorderColor3 = 'OutlineColor';
 				});
 
-				local ButtonLabel = Library:CreateLabel({
+				local ButtonLabel = EZ:CreateLabel({
 					Active = false;
 					Size = UDim2.new(1, -6, 1, 0);
 					Position = UDim2.new(0, 6, 0, 0);
@@ -3699,7 +3729,7 @@ do
 					Parent = Button;
 				});
 
-				Library:OnHighlight(Button, Button,
+				EZ:OnHighlight(Button, Button,
 					{ BorderColor3 = 'OutlineColor', ZIndex = 24 },
 					{ BorderColor3 = 'OutlineColor', ZIndex = 23 }
 				);
@@ -3719,8 +3749,8 @@ do
 						Selected = Dropdown.Value == Value;
 					end;
 
-					ButtonLabel.TextColor3 = Selected and Library.AccentColor or Library.FontColor;
-					Library.RegistryMap[ButtonLabel].Properties.TextColor3 = Selected and 'AccentColor' or 'FontColor';
+					ButtonLabel.TextColor3 = Selected and EZ.AccentColor or EZ.FontColor;
+					EZ.RegistryMap[ButtonLabel].Properties.TextColor3 = Selected and 'AccentColor' or 'FontColor';
 				end;
 
 				ButtonLabel.InputBegan:Connect(function(Input)
@@ -3756,10 +3786,10 @@ do
 							Table:UpdateButton();
 							Dropdown:Display();
 
-							Library:SafeCallback(Dropdown.Callback, Dropdown.Value);
-							Library:SafeCallback(Dropdown.Changed, Dropdown.Value);
+							EZ:SafeCallback(Dropdown.Callback, Dropdown.Value);
+							EZ:SafeCallback(Dropdown.Changed, Dropdown.Value);
 
-							Library:AttemptSave();
+							EZ:AttemptSave();
 						end;
 					end;
 				end);
@@ -3788,24 +3818,24 @@ do
 
 		function Dropdown:OpenDropdown()
 
-			if Library.IsMobile then
-				Library.CanDrag = false;
+			if EZ.IsMobile then
+				EZ.CanDrag = false;
 			end;
 
 			ListOuter.Visible = true;
-			Library.OpenedFrames[ListOuter] = true;
+			EZ.OpenedFrames[ListOuter] = true;
 			TweenService:Create(DropdownArrow, DropdownArrowTween, { Rotation = 90 }):Play();
 
 			RecalculateListSize();
 		end;
 
 		function Dropdown:CloseDropdown()
-			if Library.IsMobile then
-				Library.CanDrag = true;
+			if EZ.IsMobile then
+				EZ.CanDrag = true;
 			end;
 
 			ListOuter.Visible = false;
-			Library.OpenedFrames[ListOuter] = nil;
+			EZ.OpenedFrames[ListOuter] = nil;
 			TweenService:Create(DropdownArrow, DropdownArrowTween, { Rotation = 0 }):Play();
 		end;
 
@@ -3835,16 +3865,16 @@ do
 
 			Dropdown:BuildDropdownList();
 
-			Library:SafeCallback(Dropdown.Callback, Dropdown.Value);
-			Library:SafeCallback(Dropdown.Changed, Dropdown.Value);
+			EZ:SafeCallback(Dropdown.Callback, Dropdown.Value);
+			EZ:SafeCallback(Dropdown.Changed, Dropdown.Value);
 		end;
 
 		DropdownOuter.InputBegan:Connect(function(Input)
-			if Library.IsDragging then
+			if EZ.IsDragging then
 				return;
 			end;
 
-			if (Input.UserInputType == Enum.UserInputType.MouseButton1 and not Library:MouseIsOverOpenedFrame())
+			if (Input.UserInputType == Enum.UserInputType.MouseButton1 and not EZ:MouseIsOverOpenedFrame())
 				or Input.UserInputType == Enum.UserInputType.Touch then
 
 				if ListOuter.Visible then
@@ -3855,8 +3885,8 @@ do
 			end;
 		end);
 
-		Library:GiveSignal(InputService.InputBegan:Connect(function(Input)
-			if Library.IsDragging then
+		EZ:GiveSignal(InputService.InputBegan:Connect(function(Input)
+			if EZ.IsDragging then
 				return;
 			end;
 
@@ -3871,13 +3901,13 @@ do
 			end;
 		end));
 
-		if Library.FlagCopying then
-			local ContextMenu = Library:AddContextMenu(DropdownOuter);
+		if EZ.FlagCopying then
+			local ContextMenu = EZ:AddContextMenu(DropdownOuter);
 
 			ContextMenu:AddOption('Copy Flag', function()
 				pcall(setclipboard, Dropdown.Idx);
 				task.wait();
-				Library:Notify('Copied flag to clipboard!', 2);
+				EZ:Notify('Copied flag to clipboard!', 2);
 				ContextMenu:Hide();
 			end);
 		end;
@@ -3949,21 +3979,21 @@ do
 		local Groupbox = self;
 		local Container = Groupbox.Container;
 
-		local Holder = Library:Create('Frame', {
+		local Holder = EZ:Create('Frame', {
 			BackgroundTransparency = 1;
 			Size = UDim2.new(1, 0, 0, 0);
 			Visible = false;
 			Parent = Container;
 		});
 
-		local Frame = Library:Create('Frame', {
+		local Frame = EZ:Create('Frame', {
 			BackgroundTransparency = 1;
 			Size = UDim2.new(1, 0, 1, 0);
 			Visible = true;
 			Parent = Holder;
 		});
 
-		local Layout = Library:Create('UIListLayout', {
+		local Layout = EZ:Create('UIListLayout', {
 			FillDirection = Enum.FillDirection.Vertical;
 			SortOrder = Enum.SortOrder.LayoutOrder;
 			Parent = Frame;
@@ -4008,10 +4038,10 @@ do
 		end;
 
 		function Depbox:Remove()
-			local Index = table.find(Library.DependencyBoxes, Depbox);
+			local Index = table.find(EZ.DependencyBoxes, Depbox);
 
 			if Index then
-				table.remove(Library.DependencyBoxes, Index);
+				table.remove(EZ.DependencyBoxes, Index);
 			end;
 
 			table.clear(Depbox);
@@ -4023,7 +4053,7 @@ do
 
 		setmetatable(Depbox, BaseGroupbox);
 
-		table.insert(Library.DependencyBoxes, Depbox);
+		table.insert(EZ.DependencyBoxes, Depbox);
 
 		return Depbox;
 	end;
@@ -4036,7 +4066,7 @@ end;
 
 do
 
-	local NotificationOuter = Library:Create('Frame', {
+	local NotificationOuter = EZ:Create('Frame', {
 		BackgroundTransparency = 1;
 		AnchorPoint = Vector2.new(0.5, 0);
 		Position = UDim2.new(0.5, 0, 0.6, 0);
@@ -4046,9 +4076,9 @@ do
 		Parent = ScreenGui;
 	});
 
-	Library.NotificationOuter = NotificationOuter;
+	EZ.NotificationOuter = NotificationOuter;
 
-	Library.NotificationArea = Library:Create('Frame', {
+	EZ.NotificationArea = EZ:Create('Frame', {
 		BackgroundTransparency = 1;
 		Position = UDim2.new(0, 0, 0, 1);
 		Size = UDim2.new(1, 0, 1, 0);
@@ -4056,16 +4086,16 @@ do
 		Parent = NotificationOuter;
 	});
 
-	Library.NotificationLayout = Library:Create('UIListLayout', {
+	EZ.NotificationLayout = EZ:Create('UIListLayout', {
 		Padding = UDim.new(0, 4);
 		FillDirection = Enum.FillDirection.Vertical;
 		HorizontalAlignment = Enum.HorizontalAlignment.Center;
 		VerticalAlignment = Enum.VerticalAlignment.Top;
 		SortOrder = Enum.SortOrder.LayoutOrder;
-		Parent = Library.NotificationArea;
+		Parent = EZ.NotificationArea;
 	});
 
-	local WatermarkOuter = Library:Create('Frame', {
+	local WatermarkOuter = EZ:Create('Frame', {
 		BorderColor3 = Color3.new(0, 0, 0);
 		Position = UDim2.new(0, 100, 0, -25);
 		Size = UDim2.new(0, 213, 0, 20);
@@ -4074,20 +4104,20 @@ do
 		Parent = ScreenGui;
 	});
 
-	local WatermarkInner = Library:Create('Frame', {
-		BackgroundColor3 = Library.MainColor;
-		BorderColor3 = Library.AccentColor;
+	local WatermarkInner = EZ:Create('Frame', {
+		BackgroundColor3 = EZ.MainColor;
+		BorderColor3 = EZ.AccentColor;
 		BorderMode = Enum.BorderMode.Inset;
 		Size = UDim2.new(1, 0, 1, 0);
 		ZIndex = 201;
 		Parent = WatermarkOuter;
 	});
 
-	Library:AddToRegistry(WatermarkInner, {
+	EZ:AddToRegistry(WatermarkInner, {
 		BorderColor3 = 'AccentColor';
 	});
 
-	local InnerFrame = Library:Create('Frame', {
+	local InnerFrame = EZ:Create('Frame', {
 		BackgroundColor3 = Color3.new(1, 1, 1);
 		BorderSizePixel = 0;
 		Position = UDim2.new(0, 1, 0, 1);
@@ -4096,25 +4126,25 @@ do
 		Parent = WatermarkInner;
 	});
 
-	local Gradient = Library:Create('UIGradient', {
+	local Gradient = EZ:Create('UIGradient', {
 		Color = ColorSequence.new({
-			ColorSequenceKeypoint.new(0, Library:GetDarkerColor(Library.MainColor)),
-			ColorSequenceKeypoint.new(1, Library.MainColor),
+			ColorSequenceKeypoint.new(0, EZ:GetDarkerColor(EZ.MainColor)),
+			ColorSequenceKeypoint.new(1, EZ.MainColor),
 		});
 		Rotation = -90;
 		Parent = InnerFrame;
 	});
 
-	Library:AddToRegistry(Gradient, {
+	EZ:AddToRegistry(Gradient, {
 		Color = function()
 			return ColorSequence.new({
-				ColorSequenceKeypoint.new(0, Library:GetDarkerColor(Library.MainColor)),
-				ColorSequenceKeypoint.new(1, Library.MainColor),
+				ColorSequenceKeypoint.new(0, EZ:GetDarkerColor(EZ.MainColor)),
+				ColorSequenceKeypoint.new(1, EZ.MainColor),
 			});
 		end
 	});
 
-	local WatermarkLabel = Library:CreateLabel({
+	local WatermarkLabel = EZ:CreateLabel({
 		Position = UDim2.new(0, 5, 0, 0);
 		Size = UDim2.new(1, -4, 1, 0);
 		TextSize = 14;
@@ -4123,11 +4153,11 @@ do
 		Parent = InnerFrame;
 	});
 
-	Library.Watermark = WatermarkOuter;
-	Library.WatermarkText = WatermarkLabel;
-	Library:MakeDraggable(Library.Watermark);
+	EZ.Watermark = WatermarkOuter;
+	EZ.WatermarkText = WatermarkLabel;
+	EZ:MakeDraggable(EZ.Watermark);
 
-	local KeybindOuter = Library:Create('Frame', {
+	local KeybindOuter = EZ:Create('Frame', {
 		AnchorPoint = Vector2.new(0, 0.5);
 		BorderColor3 = Color3.new(0, 0, 0);
 		Position = UDim2.new(0, 10, 0.5, 0);
@@ -4137,33 +4167,33 @@ do
 		Parent = ScreenGui;
 	});
 
-	local KeybindInner = Library:Create('Frame', {
-		BackgroundColor3 = Library.MainColor;
-		BorderColor3 = Library.OutlineColor;
+	local KeybindInner = EZ:Create('Frame', {
+		BackgroundColor3 = EZ.MainColor;
+		BorderColor3 = EZ.OutlineColor;
 		BorderMode = Enum.BorderMode.Inset;
 		Size = UDim2.new(1, 0, 1, 0);
 		ZIndex = 101;
 		Parent = KeybindOuter;
 	});
 
-	Library:AddToRegistry(KeybindInner, {
+	EZ:AddToRegistry(KeybindInner, {
 		BackgroundColor3 = 'MainColor';
 		BorderColor3 = 'OutlineColor';
 	}, true);
 
-	local ColorFrame = Library:Create('Frame', {
-		BackgroundColor3 = Library.AccentColor;
+	local ColorFrame = EZ:Create('Frame', {
+		BackgroundColor3 = EZ.AccentColor;
 		BorderSizePixel = 0;
 		Size = UDim2.new(1, 0, 0, 2);
 		ZIndex = 102;
 		Parent = KeybindInner;
 	});
 
-	Library:AddToRegistry(ColorFrame, {
+	EZ:AddToRegistry(ColorFrame, {
 		BackgroundColor3 = 'AccentColor';
 	}, true);
 
-	local KeybindLabel = Library:CreateLabel({
+	local KeybindLabel = EZ:CreateLabel({
 		Size = UDim2.new(1, 0, 0, 20);
 		Position = UDim2.fromOffset(5, 2),
 		TextXAlignment = Enum.TextXAlignment.Left,
@@ -4173,7 +4203,7 @@ do
 		Parent = KeybindInner;
 	});
 
-	local KeybindContainer = Library:Create('Frame', {
+	local KeybindContainer = EZ:Create('Frame', {
 		BackgroundTransparency = 1;
 		Size = UDim2.new(1, 0, 1, -20);
 		Position = UDim2.new(0, 0, 0, 20);
@@ -4181,26 +4211,26 @@ do
 		Parent = KeybindInner;
 	});
 
-	Library:Create('UIListLayout', {
+	EZ:Create('UIListLayout', {
 		FillDirection = Enum.FillDirection.Vertical;
 		SortOrder = Enum.SortOrder.LayoutOrder;
 		Parent = KeybindContainer;
 	});
 
-	Library:Create('UIPadding', {
+	EZ:Create('UIPadding', {
 		PaddingLeft = UDim.new(0, 5),
 		Parent = KeybindContainer,
 	})
 
-	Library.KeybindFrame = KeybindOuter;
-	Library.KeybindInner = KeybindInner;
-	Library.KeybindContainer = KeybindContainer;
-	Library:MakeDraggable(KeybindOuter);
+	EZ.KeybindFrame = KeybindOuter;
+	EZ.KeybindInner = KeybindInner;
+	EZ.KeybindContainer = KeybindContainer;
+	EZ:MakeDraggable(KeybindOuter);
 
-	Library:UpdateNotifications();
+	EZ:UpdateNotifications();
 end;
 
-function Library:CreatePopout(Config)
+function EZ:CreatePopout(Config)
 	if type(Config.Title) ~= 'string' then
 		Config.Title = 'No title';
 	end;
@@ -4224,7 +4254,7 @@ function Library:CreatePopout(Config)
 
 	local Popout = {};
 
-	local Outer = Library:Create('Frame', {
+	local Outer = EZ:Create('Frame', {
 		AnchorPoint = Config.AnchorPoint or Vector2.zero;
 		BackgroundColor3 = Color3.new(0, 0, 0);
 		BorderSizePixel = 0;
@@ -4236,12 +4266,12 @@ function Library:CreatePopout(Config)
 	});
 
 	if not Config.RemoveTopbar then
-		Library:MakeDraggableOutline(Outer, 25);
+		EZ:MakeDraggableOutline(Outer, 25);
 	end;
 
-	local Inner = Library:Create('Frame', {
-		BackgroundColor3 = Library.MainColor;
-		BorderColor3 = Library.OutlineColor;
+	local Inner = EZ:Create('Frame', {
+		BackgroundColor3 = EZ.MainColor;
+		BorderColor3 = EZ.OutlineColor;
 		BorderMode = Enum.BorderMode.Inset;
 		Position = UDim2.new(0, 1, 0, 1);
 		Size = UDim2.new(1, -2, 1, -2);
@@ -4249,59 +4279,59 @@ function Library:CreatePopout(Config)
 		Parent = Outer;
 	});
 
-	Library:AddToRegistry(Inner, {
+	EZ:AddToRegistry(Inner, {
 		BackgroundColor3 = 'MainColor';
 		BorderColor3 = 'OutlineColor';
 	});
 
 	if not Config.RemoveTopbar then
-		Library:CreateLabel({
+		EZ:CreateLabel({
 			Position = UDim2.new(0, 0, 0, 0);
 			Size = UDim2.new(1, 0, 0, 25);
 			Text = Config.Title or '';
 			TextXAlignment = Enum.TextXAlignment.Center;
 			ZIndex = 1;
-			Font = Library.Font;
+			Font = EZ.Font;
 			Parent = Inner;
 		});
 
-		local VersionLabel = Library:Create('TextLabel', {
+		local VersionLabel = EZ:Create('TextLabel', {
 			BackgroundTransparency = 1;
-			Font = Library.Font;
-			TextColor3 = Library.AccentColor;
+			Font = EZ.Font;
+			TextColor3 = EZ.AccentColor;
 			TextSize = 16;
 			TextStrokeTransparency = 0;
 			Position = UDim2.new(0, -8, 0, 0);
 			Size = UDim2.new(1, 0, 0, 25);
-			Text = Config.Version or '';
+			Text = Config.Game or '';
 			RichText = true;
 			TextXAlignment = Enum.TextXAlignment.Right;
 			ZIndex = 1;
 			Parent = Inner;
 		});
 
-		Library:AddToRegistry(VersionLabel, { TextColor3 = 'AccentColor' });
+		EZ:AddToRegistry(VersionLabel, { TextColor3 = 'AccentColor' });
 	end;
 
 	local TopOffset = Config.RemoveTopbar and 8 or 25;
 	local HeightDelta = Config.RemoveTopbar and -16 or -33;
 
-	local BodyOuter = Library:Create('Frame', {
-		BackgroundColor3 = Library.BackgroundColor;
-		BorderColor3 = Library.OutlineColor;
+	local BodyOuter = EZ:Create('Frame', {
+		BackgroundColor3 = EZ.BackgroundColor;
+		BorderColor3 = EZ.OutlineColor;
 		Position = UDim2.new(0, 8, 0, TopOffset);
 		Size = UDim2.new(1, -16, 1, HeightDelta);
 		ZIndex = 1;
 		Parent = Inner;
 	});
 
-	Library:AddToRegistry(BodyOuter, {
+	EZ:AddToRegistry(BodyOuter, {
 		BackgroundColor3 = 'BackgroundColor';
 		BorderColor3 = 'OutlineColor';
 	});
 
-	local BodyInner = Library:Create('Frame', {
-		BackgroundColor3 = Library.BackgroundColor;
+	local BodyInner = EZ:Create('Frame', {
+		BackgroundColor3 = EZ.BackgroundColor;
 		BorderColor3 = Color3.new(0, 0, 0);
 		BorderMode = Enum.BorderMode.Inset;
 		Position = UDim2.new(0, 0, 0, 0);
@@ -4310,11 +4340,11 @@ function Library:CreatePopout(Config)
 		Parent = BodyOuter;
 	});
 
-	Library:AddToRegistry(BodyInner, { BackgroundColor3 = 'BackgroundColor' });
+	EZ:AddToRegistry(BodyInner, { BackgroundColor3 = 'BackgroundColor' });
 
-	local ContainerOuter = Library:Create('Frame', {
-		BackgroundColor3 = Library.BackgroundColor;
-		BorderColor3 = Library.OutlineColor;
+	local ContainerOuter = EZ:Create('Frame', {
+		BackgroundColor3 = EZ.BackgroundColor;
+		BorderColor3 = EZ.OutlineColor;
 		Position = UDim2.new(0, 8, 0, 8);
 		Size = UDim2.new(1, -16, 1, -16);
 		ZIndex = 2;
@@ -4322,14 +4352,14 @@ function Library:CreatePopout(Config)
 		Parent = BodyInner;
 	});
 
-	local Container = Library:Create('Frame', {
+	local Container = EZ:Create('Frame', {
 		BackgroundTransparency = 1;
 		Parent = ContainerOuter;
 		Size = UDim2.fromScale(1, 1);
 		Position = UDim2.fromOffset(2, 2);
 	});
 
-	Library:Create('UIListLayout', {
+	EZ:Create('UIListLayout', {
 		Padding = UDim.new(0, 0);
 		FillDirection = Enum.FillDirection.Vertical;
 		SortOrder = Enum.SortOrder.LayoutOrder;
@@ -4337,7 +4367,7 @@ function Library:CreatePopout(Config)
 		Parent = Container;
 	});
 
-	Library:AddToRegistry(ContainerOuter, {
+	EZ:AddToRegistry(ContainerOuter, {
 		BackgroundColor3 = 'BackgroundColor';
 		BorderColor3 = 'OutlineColor';
 	});
@@ -4390,16 +4420,16 @@ function Library:CreatePopout(Config)
 	return Popout;
 end
 
-function Library:SetWatermarkVisibility(Bool)
-	Library.Watermark.Visible = Bool;
+function EZ:SetWatermarkVisibility(Bool)
+	EZ.Watermark.Visible = Bool;
 end;
 
-function Library:SetWatermark(Text)
-	local X, Y = Library:GetTextBounds(Text, Library.Font, 14);
-	Library.Watermark.Size = UDim2.new(0, X + 15, 0, (Y * 1.5) + 3);
-	Library:SetWatermarkVisibility(true)
+function EZ:SetWatermark(Text)
+	local X, Y = EZ:GetTextBounds(Text, EZ.Font, 14);
+	EZ.Watermark.Size = UDim2.new(0, X + 15, 0, (Y * 1.5) + 3);
+	EZ:SetWatermarkVisibility(true)
 
-	Library.WatermarkText.Text = Text;
+	EZ.WatermarkText.Text = Text;
 end;
 
 local NotificationBarPosition = {
@@ -4417,24 +4447,24 @@ local NotificationBarSize = {
 };
 
 local function GetNotificationColors()
-	local Override = Library.NotificationStyle.OverrideColor;
+	local Override = EZ.NotificationStyle.OverrideColor;
 
 	if Override then
 		return Override();
 	end;
 
-	return Library.MainColor, Library.AccentColor, Library.OutlineColor, Library.FontColor;
+	return EZ.MainColor, EZ.AccentColor, EZ.OutlineColor, EZ.FontColor;
 end
 
 local NotificationTemplate = (function()
-	local Outer = Library:Create('Frame', {
+	local Outer = EZ:Create('Frame', {
 		BorderColor3 = Color3.new(0, 0, 0);
 		Position = UDim2.new(0, 100, 0, 10);
 		ClipsDescendants = true;
 		ZIndex = 100;
 	});
 
-	local Inner = Library:Create('Frame', {
+	local Inner = EZ:Create('Frame', {
 		Name = 'inner';
 		BorderMode = Enum.BorderMode.Inset;
 		Size = UDim2.new(1, 0, 1, 0);
@@ -4442,7 +4472,7 @@ local NotificationTemplate = (function()
 		Parent = Outer;
 	});
 
-	local Body = Library:Create('Frame', {
+	local Body = EZ:Create('Frame', {
 		Name = 'inner';
 		BackgroundColor3 = Color3.new(1, 1, 1);
 		BorderSizePixel = 0;
@@ -4452,12 +4482,12 @@ local NotificationTemplate = (function()
 		Parent = Inner;
 	});
 
-	Library:Create('UIGradient', {
+	EZ:Create('UIGradient', {
 		Rotation = -90;
 		Parent = Body;
 	});
 
-	Library:CreateLabel({
+	EZ:CreateLabel({
 		Name = 'label';
 		Position = UDim2.new(0, 4, 0, 0);
 		Size = UDim2.new(1, -4, 1, 0);
@@ -4467,7 +4497,7 @@ local NotificationTemplate = (function()
 		Parent = Body;
 	});
 
-	Library:Create('Frame', {
+	EZ:Create('Frame', {
 		Name = 'bar';
 		BorderSizePixel = 0;
 		ZIndex = 104;
@@ -4477,12 +4507,12 @@ local NotificationTemplate = (function()
 	return Outer;
 end)();
 
-function Library:Notify(Text, Time)
-	local XSize, YSize = Library:GetTextBounds(Text, Library.Font, 14);
+function EZ:Notify(Text, Time)
+	local XSize, YSize = EZ:GetTextBounds(Text, EZ.Font, 14);
 
 	YSize = YSize + 7
 
-	local Style = Library.NotificationStyle;
+	local Style = EZ.NotificationStyle;
 	local Transparency = Style.Transparency or 0;
 	local MainColor, AccentColor, OutlineColor, FontColor = GetNotificationColors();
 
@@ -4494,12 +4524,12 @@ function Library:Notify(Text, Time)
 	NotifyOuter.BackgroundTransparency = Transparency;
 	NotifyOuter.Size = UDim2.new(0, 0, 0, YSize);
 
-	Library.NotifyCounter = (Library.NotifyCounter or 0) + 1;
+	EZ.NotifyCounter = (EZ.NotifyCounter or 0) + 1;
 
 	if Style.SortOrder == 'Text Length' then
 		NotifyOuter.LayoutOrder = #Text;
 	else
-		NotifyOuter.LayoutOrder = -Library.NotifyCounter;
+		NotifyOuter.LayoutOrder = -EZ.NotifyCounter;
 	end;
 
 	local NotifyInner = NotifyOuter.inner;
@@ -4511,7 +4541,7 @@ function Library:Notify(Text, Time)
 	Body.BackgroundTransparency = Transparency;
 
 	Body.UIGradient.Color = ColorSequence.new({
-		ColorSequenceKeypoint.new(0, Library:GetDarkerColor(MainColor));
+		ColorSequenceKeypoint.new(0, EZ:GetDarkerColor(MainColor));
 		ColorSequenceKeypoint.new(1, MainColor);
 	});
 
@@ -4526,7 +4556,7 @@ function Library:Notify(Text, Time)
 	Bar.Size = NotificationBarSize[BarSide] or NotificationBarSize.Bottom;
 	Bar.Position = NotificationBarPosition[BarSide] or NotificationBarPosition.Bottom;
 
-	NotifyOuter.Parent = Library.NotificationArea;
+	NotifyOuter.Parent = EZ.NotificationArea;
 
 	pcall(NotifyOuter.TweenSize, NotifyOuter, UDim2.new(0, Width, 0, YSize), 'Out', 'Quad', 0.4, true);
 
@@ -4541,7 +4571,7 @@ function Library:Notify(Text, Time)
 	end);
 end;
 
-function Library:CreateWindow(...)
+function EZ:CreateWindow(...)
 	local Arguments = { ... }
 	local Config = { AnchorPoint = Vector2.zero }
 
@@ -4555,7 +4585,10 @@ function Library:CreateWindow(...)
 	if type(Config.Title) ~= 'string' then Config.Title = 'No title' end
 	if type(Config.TabPadding) ~= 'number' then Config.TabPadding = 8 end
 	if type(Config.MenuFadeTime) ~= 'number' then Config.MenuFadeTime = 0.2 end
-	Library.MenuFadeTime = Config.MenuFadeTime;
+	EZ.MenuFadeTime = Config.MenuFadeTime;
+
+	EZ.Game = Config.Game or 'Global';
+	EZ:EnsureFolders();
 
 	if typeof(Config.Position) ~= 'UDim2' then Config.Position = UDim2.fromOffset(175, 50) end
 	if typeof(Config.Size) ~= 'UDim2' then Config.Size = UDim2.fromOffset(550, 650) end
@@ -4570,7 +4603,7 @@ function Library:CreateWindow(...)
 		Tabs = {};
 	};
 
-	local Outer = Library:Create('Frame', {
+	local Outer = EZ:Create('Frame', {
 		AnchorPoint = Config.AnchorPoint,
 		BackgroundColor3 = Color3.new(0, 0, 0);
 		BorderSizePixel = 0;
@@ -4581,21 +4614,21 @@ function Library:CreateWindow(...)
 		Parent = ScreenGui;
 	});
 
-	Library.MainFrame = Outer;
+	EZ.MainFrame = Outer;
 
 	if Config.NoOutlineDrag then
-		Library:MakeDraggable(Outer, 25, true);
+		EZ:MakeDraggable(Outer, 25, true);
 	else
-		Library:MakeDraggableOutline(Outer, 25, true);
+		EZ:MakeDraggableOutline(Outer, 25, true);
 	end;
 
 	if Config.Resizable ~= false then
-		Library:MakeResizable(Outer, Config.MinSize);
+		EZ:MakeResizable(Outer, Config.MinSize);
 	end;
 
-	local Inner = Library:Create('Frame', {
-		BackgroundColor3 = Library.MainColor;
-		BorderColor3 = Library.OutlineColor;
+	local Inner = EZ:Create('Frame', {
+		BackgroundColor3 = EZ.MainColor;
+		BorderColor3 = EZ.OutlineColor;
 		BorderMode = Enum.BorderMode.Inset;
 		Position = UDim2.new(0, 1, 0, 0);
 		Size = UDim2.new(1, 0, 1, 0);
@@ -4603,12 +4636,12 @@ function Library:CreateWindow(...)
 		Parent = Outer;
 	});
 
-	Library:AddToRegistry(Inner, {
+	EZ:AddToRegistry(Inner, {
 		BackgroundColor3 = 'MainColor';
 		BorderColor3 = 'OutlineColor';
 	});
 
-	local WindowLabel = Library:CreateLabel({
+	local WindowLabel = EZ:CreateLabel({
 		Position = UDim2.new(0, 0, 0, 0);
 		Size = UDim2.new(1, 0, 0, 25);
 		Text = Config.Title or '';
@@ -4618,41 +4651,41 @@ function Library:CreateWindow(...)
 		Parent = Inner;
 	});
 
-	local VersionLabel = Library:Create('TextLabel', {
+	local VersionLabel = EZ:Create('TextLabel', {
 		BackgroundTransparency = 1;
-		Font = Library.Font;
-		TextColor3 = Library.AccentColor;
+		Font = EZ.Font;
+		TextColor3 = EZ.AccentColor;
 		TextSize = 16;
 		TextStrokeTransparency = 0;
 		Position = UDim2.new(0, -8, 0, 0);
 		Size = UDim2.new(1, 0, 0, 25);
-		Text = Config.Version or '';
+		Text = Config.Game or '';
 		RichText = true;
 		TextXAlignment = Enum.TextXAlignment.Right;
 		ZIndex = 1;
 		Parent = Inner;
 	});
 
-	Library:AddToRegistry(VersionLabel, {
+	EZ:AddToRegistry(VersionLabel, {
 		TextColor3 = 'AccentColor';
 	});
 
-	local MainSectionOuter = Library:Create('Frame', {
-		BackgroundColor3 = Library.BackgroundColor;
-		BorderColor3 = Library.OutlineColor;
+	local MainSectionOuter = EZ:Create('Frame', {
+		BackgroundColor3 = EZ.BackgroundColor;
+		BorderColor3 = EZ.OutlineColor;
 		Position = UDim2.new(0, 8, 0, 25);
 		Size = UDim2.new(1, -16, 1, -33);
 		ZIndex = 1;
 		Parent = Inner;
 	});
 
-	Library:AddToRegistry(MainSectionOuter, {
+	EZ:AddToRegistry(MainSectionOuter, {
 		BackgroundColor3 = 'BackgroundColor';
 		BorderColor3 = 'OutlineColor';
 	});
 
-	local MainSectionInner = Library:Create('Frame', {
-		BackgroundColor3 = Library.BackgroundColor;
+	local MainSectionInner = EZ:Create('Frame', {
+		BackgroundColor3 = EZ.BackgroundColor;
 		BorderColor3 = Color3.new(0, 0, 0);
 		BorderMode = Enum.BorderMode.Inset;
 		Position = UDim2.new(0, 0, 0, 0);
@@ -4661,13 +4694,13 @@ function Library:CreateWindow(...)
 		Parent = MainSectionOuter;
 	});
 
-	Library:AddToRegistry(MainSectionInner, {
+	EZ:AddToRegistry(MainSectionInner, {
 		BackgroundColor3 = 'BackgroundColor';
 	});
 
-	local TabArea = Library:Create('ScrollingFrame', {
+	local TabArea = EZ:Create('ScrollingFrame', {
 		BackgroundTransparency = 1;
-		BorderColor3 = Library.OutlineColor;
+		BorderColor3 = EZ.OutlineColor;
 		BorderSizePixel = 1;
 		Position = UDim2.new(0, 0, 0, 4);
 		Size = UDim2.new(1, -10, 0, 29);
@@ -4679,18 +4712,18 @@ function Library:CreateWindow(...)
 		Parent = MainSectionInner;
 	});
 
-	Library:AddToRegistry(TabArea, {
+	EZ:AddToRegistry(TabArea, {
 		BorderColor3 = 'OutlineColor';
 	});
 
-	Library:Create('UIPadding', {
+	EZ:Create('UIPadding', {
 		PaddingTop = UDim.new(0, 1);
 		PaddingLeft = UDim.new(0, 8);
 		PaddingRight = UDim.new(0, 8);
 		Parent = TabArea;
 	});
 
-	local TabListLayout = Library:Create('UIListLayout', {
+	local TabListLayout = EZ:Create('UIListLayout', {
 		Padding = UDim.new(0, Config.TabPadding);
 		FillDirection = Enum.FillDirection.Horizontal;
 		VerticalAlignment = Enum.VerticalAlignment.Center;
@@ -4698,9 +4731,9 @@ function Library:CreateWindow(...)
 		Parent = TabArea;
 	});
 
-	local TabContainer = Library:Create('Frame', {
-		BackgroundColor3 = Library.MainColor;
-		BorderColor3 = Library.OutlineColor;
+	local TabContainer = EZ:Create('Frame', {
+		BackgroundColor3 = EZ.MainColor;
+		BorderColor3 = EZ.OutlineColor;
 		BorderSizePixel = 2;
 		Position = UDim2.new(0, 8, 0, 38);
 		Size = UDim2.new(1, -16, 1, -47);
@@ -4708,13 +4741,13 @@ function Library:CreateWindow(...)
 		Parent = MainSectionInner;
 	});
 
-	Library:AddToRegistry(TabContainer, {
+	EZ:AddToRegistry(TabContainer, {
 		BackgroundColor3 = 'MainColor';
 		BorderColor3 = 'OutlineColor';
 	});
 
-	local TabContainerInner = Library:Create('Frame', {
-		BackgroundColor3 = Library.MainColor;
+	local TabContainerInner = EZ:Create('Frame', {
+		BackgroundColor3 = EZ.MainColor;
 		BorderColor3 = Color3.new(0, 0, 0);
 		Position = UDim2.new(0, 0, 0, 0);
 		Size = UDim2.new(1, 0, 1, 0);
@@ -4722,7 +4755,7 @@ function Library:CreateWindow(...)
 		Parent = TabContainer;
 	});
 
-	Library:AddToRegistry(TabContainerInner, {
+	EZ:AddToRegistry(TabContainerInner, {
 		BackgroundColor3 = 'MainColor';
 	});
 
@@ -4741,41 +4774,41 @@ function Library:CreateWindow(...)
 			Tabboxes = {};
 		};
 
-		local TabButtonWidth = Library:GetTextBounds(Name, Library.Font, 16);
+		local TabButtonWidth = EZ:GetTextBounds(Name, EZ.Font, 16);
 
-		local TabButton = Library:Create('Frame', {
-			BackgroundColor3 = Library.BackgroundColor;
-			BorderColor3 = Library.OutlineColor;
+		local TabButton = EZ:Create('Frame', {
+			BackgroundColor3 = EZ.BackgroundColor;
+			BorderColor3 = EZ.OutlineColor;
 			BorderSizePixel = 2;
 			Size = UDim2.new(0, TabButtonWidth + 8 + 4, 0.75, 0);
 			ZIndex = 1;
 			Parent = TabArea;
 		});
 
-		Library:AddToRegistry(TabButton, {
+		EZ:AddToRegistry(TabButton, {
 			BackgroundColor3 = 'BackgroundColor';
 			BorderColor3 = 'OutlineColor';
 		});
 
-		local TabButtonBorder = Library:Create('Frame', {
+		local TabButtonBorder = EZ:Create('Frame', {
 			BackgroundTransparency = 1;
-			BorderColor3 = Library.OutlineColor;
+			BorderColor3 = EZ.OutlineColor;
 			Size = UDim2.new(1, 0, 1, 0);
 			ZIndex = 2;
 			Parent = TabButton;
 		});
 
-		Library:Create('UIStroke', {
+		EZ:Create('UIStroke', {
 			Color = Color3.new(0, 0, 0);
 			Parent = TabButtonBorder;
 		});
 
-		Library:AddToRegistry(TabButtonBorder, {
+		EZ:AddToRegistry(TabButtonBorder, {
 			BorderColor3 = 'OutlineColor';
 		});
 
-		local TabAccent = Library:Create('Frame', {
-			BackgroundColor3 = Library.AccentColor;
+		local TabAccent = EZ:Create('Frame', {
+			BackgroundColor3 = EZ.AccentColor;
 			BorderSizePixel = 0;
 			Position = UDim2.new(0, 0, 0, 0);
 			Size = UDim2.new(1, 0, 0, 1);
@@ -4784,11 +4817,11 @@ function Library:CreateWindow(...)
 			Parent = TabButton;
 		});
 
-		Library:AddToRegistry(TabAccent, {
+		EZ:AddToRegistry(TabAccent, {
 			BackgroundColor3 = 'AccentColor';
 		});
 
-		local TabButtonLabel = Library:CreateLabel({
+		local TabButtonLabel = EZ:CreateLabel({
 			Position = UDim2.new(0, 0, 0, 0);
 			Size = UDim2.new(1, 0, 1, -1);
 			Text = Name;
@@ -4797,10 +4830,10 @@ function Library:CreateWindow(...)
 			Parent = TabButton;
 		});
 
-		local TabFrame = Library:Create('Frame', {
+		local TabFrame = EZ:Create('Frame', {
 			Name = 'TabFrame',
 			BackgroundTransparency = 1;
-			BorderColor3 = Library.OutlineColor;
+			BorderColor3 = EZ.OutlineColor;
 			BorderSizePixel = 1;
 			Position = UDim2.new(0, 0, 0, 0);
 			Size = UDim2.new(1, 0, 1, 0);
@@ -4809,13 +4842,13 @@ function Library:CreateWindow(...)
 			Parent = TabContainerInner;
 		});
 
-		Library:AddToRegistry(TabFrame, {
+		EZ:AddToRegistry(TabFrame, {
 			BorderColor3 = 'OutlineColor';
 		});
 
-		local WarningBox = Library:Create('Frame', {
-			BackgroundColor3 = Library.MainColor;
-			BorderColor3 = Library.OutlineColor;
+		local WarningBox = EZ:Create('Frame', {
+			BackgroundColor3 = EZ.MainColor;
+			BorderColor3 = EZ.OutlineColor;
 			BorderMode = Enum.BorderMode.Inset;
 			Position = UDim2.new(0, 7, 0, 7);
 			Size = UDim2.new(1, -10, 0, 10);
@@ -4824,12 +4857,12 @@ function Library:CreateWindow(...)
 			Parent = TabFrame;
 		});
 
-		Library:AddToRegistry(WarningBox, {
+		EZ:AddToRegistry(WarningBox, {
 			BackgroundColor3 = 'MainColor';
 			BorderColor3 = 'OutlineColor';
 		});
 
-		local WarningBoxContainer = Library:Create('Frame', {
+		local WarningBoxContainer = EZ:Create('Frame', {
 			BackgroundTransparency = 1;
 			Position = UDim2.new(0, 2, 0, 2);
 			Size = UDim2.new(1, -4, 1, -4);
@@ -4837,13 +4870,13 @@ function Library:CreateWindow(...)
 			Parent = WarningBox;
 		});
 
-		Library:Create('UIListLayout', {
+		EZ:Create('UIListLayout', {
 			FillDirection = Enum.FillDirection.Vertical;
 			SortOrder = Enum.SortOrder.LayoutOrder;
 			Parent = WarningBoxContainer;
 		});
 
-		local WarningBoxTitle = Library:CreateLabel({
+		local WarningBoxTitle = EZ:CreateLabel({
 			Size = UDim2.new(1, -4, 0, 18);
 			TextSize = 14;
 			Text = '';
@@ -4852,7 +4885,7 @@ function Library:CreateWindow(...)
 			Parent = WarningBoxContainer;
 		});
 
-		local WarningBoxText = Library:CreateLabel({
+		local WarningBoxText = EZ:CreateLabel({
 			Size = UDim2.new(1, -4, 0, 15);
 			TextSize = 14;
 			Text = '';
@@ -4863,7 +4896,7 @@ function Library:CreateWindow(...)
 			Parent = WarningBoxContainer;
 		});
 
-		local LeftSide = Library:Create('ScrollingFrame', {
+		local LeftSide = EZ:Create('ScrollingFrame', {
 			BackgroundTransparency = 1;
 			BorderSizePixel = 0;
 			Position = UDim2.new(0, 8 - 1, 0, 8 - 1);
@@ -4876,7 +4909,7 @@ function Library:CreateWindow(...)
 			Parent = TabFrame;
 		});
 
-		local RightSide = Library:Create('ScrollingFrame', {
+		local RightSide = EZ:Create('ScrollingFrame', {
 			BackgroundTransparency = 1;
 			BorderSizePixel = 0;
 			Position = UDim2.new(0.5, 4 + 1, 0, 8 - 1);
@@ -4889,7 +4922,7 @@ function Library:CreateWindow(...)
 			Parent = TabFrame;
 		});
 
-		Library:Create('UIListLayout', {
+		EZ:Create('UIListLayout', {
 			Padding = UDim.new(0, 8);
 			FillDirection = Enum.FillDirection.Vertical;
 			SortOrder = Enum.SortOrder.LayoutOrder;
@@ -4897,7 +4930,7 @@ function Library:CreateWindow(...)
 			Parent = LeftSide;
 		});
 
-		Library:Create('UIListLayout', {
+		EZ:Create('UIListLayout', {
 			Padding = UDim.new(0, 8);
 			FillDirection = Enum.FillDirection.Vertical;
 			SortOrder = Enum.SortOrder.LayoutOrder;
@@ -4911,13 +4944,13 @@ function Library:CreateWindow(...)
 			end);
 		end;
 
-		if Library.IsMobile then
+		if EZ.IsMobile then
 
 			local LastScroll = { Left = tick(), Right = tick() };
 
 			local function GuardScroll(Key)
 				return function()
-					Library.CanDrag = false;
+					EZ.CanDrag = false;
 
 					local Stamp = tick();
 					LastScroll[Key] = Stamp;
@@ -4925,7 +4958,7 @@ function Library:CreateWindow(...)
 					task.wait(0.15);
 
 					if LastScroll[Key] == Stamp then
-						Library.CanDrag = true;
+						EZ.CanDrag = true;
 					end;
 				end;
 			end;
@@ -4973,8 +5006,8 @@ function Library:CreateWindow(...)
 			if typeof(Info.Text) == 'string' then
 				WarningBoxText.Text = Info.Text;
 
-				local Y = select(2, Library:GetTextBounds(
-					Info.Text, Library.Font, 14,
+				local Y = select(2, EZ:GetTextBounds(
+					Info.Text, EZ.Font, 14,
 					Vector2.new(WarningBoxContainer.AbsoluteSize.X, math.huge)
 				));
 
@@ -4998,21 +5031,21 @@ function Library:CreateWindow(...)
 				Tab:HideTab();
 			end;
 
-			TabButton.BackgroundColor3 = Library.MainColor;
-			Library.RegistryMap[TabButton].Properties.BackgroundColor3 = 'MainColor';
-			TabButtonLabel.TextColor3 = Library.FontColor;
+			TabButton.BackgroundColor3 = EZ.MainColor;
+			EZ.RegistryMap[TabButton].Properties.BackgroundColor3 = 'MainColor';
+			TabButtonLabel.TextColor3 = EZ.FontColor;
 			TabAccent.Visible = true;
 			TabFrame.Visible = true;
 
-			Library.ActiveTab = Name;
+			EZ.ActiveTab = Name;
 
 			Tab:Resize();
 		end;
 
 		function Tab:HideTab()
-			TabButton.BackgroundColor3 = Library.BackgroundColor;
-			Library.RegistryMap[TabButton].Properties.BackgroundColor3 = 'BackgroundColor';
-			TabButtonLabel.TextColor3 = Library:GetDarkerColor(Library.FontColor);
+			TabButton.BackgroundColor3 = EZ.BackgroundColor;
+			EZ.RegistryMap[TabButton].Properties.BackgroundColor3 = 'BackgroundColor';
+			TabButtonLabel.TextColor3 = EZ:GetDarkerColor(EZ.FontColor);
 			TabAccent.Visible = false;
 			TabFrame.Visible = false;
 		end;
@@ -5024,7 +5057,7 @@ function Library:CreateWindow(...)
 
 		function Tab:Remove()
 			Window.Tabs[Name] = nil;
-			Library.TotalTabs = math.max(Library.TotalTabs - 1, 0);
+			EZ.TotalTabs = math.max(EZ.TotalTabs - 1, 0);
 
 			table.clear(Tab);
 
@@ -5035,22 +5068,22 @@ function Library:CreateWindow(...)
 		function Tab:AddGroupbox(Info)
 			local Groupbox = {};
 
-			local BoxOuter = Library:Create('Frame', {
-				BackgroundColor3 = Library.BackgroundColor;
-				BorderColor3 = Library.OutlineColor;
+			local BoxOuter = EZ:Create('Frame', {
+				BackgroundColor3 = EZ.BackgroundColor;
+				BorderColor3 = EZ.OutlineColor;
 				BorderMode = Enum.BorderMode.Inset;
 				Size = UDim2.new(1, 0, 0, 507 + 2);
 				ZIndex = 2;
 				Parent = Info.Side == 1 and LeftSide or RightSide;
 			});
 
-			Library:AddToRegistry(BoxOuter, {
+			EZ:AddToRegistry(BoxOuter, {
 				BackgroundColor3 = 'BackgroundColor';
 				BorderColor3 = 'OutlineColor';
 			});
 
-			local BoxInner = Library:Create('Frame', {
-				BackgroundColor3 = Library.BackgroundColor;
+			local BoxInner = EZ:Create('Frame', {
+				BackgroundColor3 = EZ.BackgroundColor;
 				BorderColor3 = Color3.new(0, 0, 0);
 
 				Size = UDim2.new(1, -2, 1, -2);
@@ -5059,23 +5092,23 @@ function Library:CreateWindow(...)
 				Parent = BoxOuter;
 			});
 
-			Library:AddToRegistry(BoxInner, {
+			EZ:AddToRegistry(BoxInner, {
 				BackgroundColor3 = 'BackgroundColor';
 			});
 
-			local Highlight = Library:Create('Frame', {
-				BackgroundColor3 = Library.AccentColor;
+			local Highlight = EZ:Create('Frame', {
+				BackgroundColor3 = EZ.AccentColor;
 				BorderSizePixel = 0;
 				Size = UDim2.new(1, 0, 0, 2);
 				ZIndex = 5;
 				Parent = BoxInner;
 			});
 
-			Library:AddToRegistry(Highlight, {
+			EZ:AddToRegistry(Highlight, {
 				BackgroundColor3 = 'AccentColor';
 			});
 
-			local GroupboxLabel = Library:CreateLabel({
+			local GroupboxLabel = EZ:CreateLabel({
 				Size = UDim2.new(1, 0, 0, 18);
 				Position = UDim2.new(0, 4, 0, 2);
 				TextSize = 14;
@@ -5085,7 +5118,7 @@ function Library:CreateWindow(...)
 				Parent = BoxInner;
 			});
 
-			local Container = Library:Create('Frame', {
+			local Container = EZ:Create('Frame', {
 				BackgroundTransparency = 1;
 				Position = UDim2.new(0, 4, 0, 20);
 				Size = UDim2.new(1, -4, 1, -20);
@@ -5093,7 +5126,7 @@ function Library:CreateWindow(...)
 				Parent = BoxInner;
 			});
 
-			Library:Create('UIListLayout', {
+			EZ:Create('UIListLayout', {
 				FillDirection = Enum.FillDirection.Vertical;
 				SortOrder = Enum.SortOrder.LayoutOrder;
 				Parent = Container;
@@ -5142,22 +5175,22 @@ function Library:CreateWindow(...)
 				Tabs = {};
 			};
 
-			local BoxOuter = Library:Create('Frame', {
-				BackgroundColor3 = Library.BackgroundColor;
-				BorderColor3 = Library.OutlineColor;
+			local BoxOuter = EZ:Create('Frame', {
+				BackgroundColor3 = EZ.BackgroundColor;
+				BorderColor3 = EZ.OutlineColor;
 				BorderMode = Enum.BorderMode.Inset;
 				Size = UDim2.new(1, 0, 0, 0);
 				ZIndex = 2;
 				Parent = Info.Side == 1 and LeftSide or RightSide;
 			});
 
-			Library:AddToRegistry(BoxOuter, {
+			EZ:AddToRegistry(BoxOuter, {
 				BackgroundColor3 = 'BackgroundColor';
 				BorderColor3 = 'OutlineColor';
 			});
 
-			local BoxInner = Library:Create('Frame', {
-				BackgroundColor3 = Library.BackgroundColor;
+			local BoxInner = EZ:Create('Frame', {
+				BackgroundColor3 = EZ.BackgroundColor;
 				BorderColor3 = Color3.new(0, 0, 0);
 
 				Size = UDim2.new(1, -2, 1, -2);
@@ -5166,13 +5199,13 @@ function Library:CreateWindow(...)
 				Parent = BoxOuter;
 			});
 
-			Library:AddToRegistry(BoxInner, {
+			EZ:AddToRegistry(BoxInner, {
 				BackgroundColor3 = 'BackgroundColor';
 			});
 
-			local TabboxButtons = Library:Create('Frame', {
+			local TabboxButtons = EZ:Create('Frame', {
 				BackgroundTransparency = 1;
-				BorderColor3 = Library.OutlineColor;
+				BorderColor3 = EZ.OutlineColor;
 				BorderSizePixel = 1;
 				Position = UDim2.new(0, 0, 0, 0);
 				Size = UDim2.new(1, 0, 0, 18);
@@ -5180,11 +5213,11 @@ function Library:CreateWindow(...)
 				Parent = BoxInner;
 			});
 
-			Library:AddToRegistry(TabboxButtons, {
+			EZ:AddToRegistry(TabboxButtons, {
 				BorderColor3 = 'OutlineColor';
 			});
 
-			Library:Create('UIListLayout', {
+			EZ:Create('UIListLayout', {
 				FillDirection = Enum.FillDirection.Horizontal;
 				HorizontalAlignment = Enum.HorizontalAlignment.Left;
 				SortOrder = Enum.SortOrder.LayoutOrder;
@@ -5201,19 +5234,19 @@ function Library:CreateWindow(...)
 			function Tabbox:AddTab(Name)
 				local Tab = {};
 
-				local Button = Library:Create('Frame', {
-					BackgroundColor3 = Library.MainColor;
+				local Button = EZ:Create('Frame', {
+					BackgroundColor3 = EZ.MainColor;
 					BorderColor3 = Color3.new(0, 0, 0);
 					Size = UDim2.new(0.5, 0, 1, 0);
 					ZIndex = 6;
 					Parent = TabboxButtons;
 				});
 
-				Library:AddToRegistry(Button, {
+				EZ:AddToRegistry(Button, {
 					BackgroundColor3 = 'MainColor';
 				});
 
-				local ButtonLabel = Library:CreateLabel({
+				local ButtonLabel = EZ:CreateLabel({
 					Size = UDim2.new(1, 0, 1, 0);
 					TextSize = 14;
 					Text = Name;
@@ -5222,8 +5255,8 @@ function Library:CreateWindow(...)
 					Parent = Button;
 				});
 
-				local TabAccent = Library:Create('Frame', {
-					BackgroundColor3 = Library.AccentColor;
+				local TabAccent = EZ:Create('Frame', {
+					BackgroundColor3 = EZ.AccentColor;
 					BorderSizePixel = 0;
 					Position = UDim2.new(0, 0, 0, 0);
 					Size = UDim2.new(1, 0, 0, 1);
@@ -5232,12 +5265,12 @@ function Library:CreateWindow(...)
 					Parent = Button;
 				});
 
-				Library:AddToRegistry(TabAccent, {
+				EZ:AddToRegistry(TabAccent, {
 					BackgroundColor3 = 'AccentColor';
 				});
 
-				local Block = Library:Create('Frame', {
-					BackgroundColor3 = Library.BackgroundColor;
+				local Block = EZ:Create('Frame', {
+					BackgroundColor3 = EZ.BackgroundColor;
 					BorderSizePixel = 0;
 					Position = UDim2.new(0, 0, 1, 0);
 					Size = UDim2.new(1, 0, 0, 1);
@@ -5246,13 +5279,13 @@ function Library:CreateWindow(...)
 					Parent = Button;
 				});
 
-				Library:AddToRegistry(Block, {
+				EZ:AddToRegistry(Block, {
 					BackgroundColor3 = 'BackgroundColor';
 				});
 
-				local Container = Library:Create('Frame', {
+				local Container = EZ:Create('Frame', {
 					BackgroundTransparency = 1;
-					BorderColor3 = Library.OutlineColor;
+					BorderColor3 = EZ.OutlineColor;
 					BorderSizePixel = 1;
 					Position = UDim2.new(0, 4, 0, 20);
 					Size = UDim2.new(1, -4, 1, -20);
@@ -5261,11 +5294,11 @@ function Library:CreateWindow(...)
 					Parent = BoxInner;
 				});
 
-				Library:AddToRegistry(Container, {
+				EZ:AddToRegistry(Container, {
 					BorderColor3 = 'OutlineColor';
 				});
 
-				Library:Create('UIListLayout', {
+				EZ:Create('UIListLayout', {
 					FillDirection = Enum.FillDirection.Vertical;
 					SortOrder = Enum.SortOrder.LayoutOrder;
 					Parent = Container;
@@ -5280,8 +5313,8 @@ function Library:CreateWindow(...)
 					Block.Visible = true;
 					TabAccent.Visible = true;
 
-					Button.BackgroundColor3 = Library.BackgroundColor;
-					Library.RegistryMap[Button].Properties.BackgroundColor3 = 'BackgroundColor';
+					Button.BackgroundColor3 = EZ.BackgroundColor;
+					EZ.RegistryMap[Button].Properties.BackgroundColor3 = 'BackgroundColor';
 
 					Tab:Resize();
 				end;
@@ -5291,8 +5324,8 @@ function Library:CreateWindow(...)
 					Block.Visible = false;
 					TabAccent.Visible = false;
 
-					Button.BackgroundColor3 = Library.MainColor;
-					Library.RegistryMap[Button].Properties.BackgroundColor3 = 'MainColor';
+					Button.BackgroundColor3 = EZ.MainColor;
+					EZ.RegistryMap[Button].Properties.BackgroundColor3 = 'MainColor';
 				end;
 
 				function Tab:Resize()
@@ -5324,7 +5357,7 @@ function Library:CreateWindow(...)
 				end;
 
 				Button.InputBegan:Connect(function(Input)
-					if (Input.UserInputType == Enum.UserInputType.MouseButton1 and not Library:MouseIsOverOpenedFrame())
+					if (Input.UserInputType == Enum.UserInputType.MouseButton1 and not EZ:MouseIsOverOpenedFrame())
 						or Input.UserInputType == Enum.UserInputType.Touch then
 						Tab:Show();
 						Tab:Resize();
@@ -5367,18 +5400,18 @@ function Library:CreateWindow(...)
 		end;
 
 		TabButton.InputBegan:Connect(function(Input)
-			if Library.IsDragging then
+			if EZ.IsDragging then
 				return;
 			end;
 
-			if (Input.UserInputType == Enum.UserInputType.MouseButton1 and not Library:MouseIsOverOpenedFrame())
+			if (Input.UserInputType == Enum.UserInputType.MouseButton1 and not EZ:MouseIsOverOpenedFrame())
 				or Input.UserInputType == Enum.UserInputType.Touch then
 
 				Tab:ShowTab();
 			end;
 		end);
 
-		Library.TotalTabs = Library.TotalTabs + 1;
+		EZ.TotalTabs = EZ.TotalTabs + 1;
 
 		if #TabContainerInner:GetChildren() == 1 then
 			Tab:ShowTab();
@@ -5390,13 +5423,13 @@ function Library:CreateWindow(...)
 		return Tab;
 	end;
 
-	local ModalElement = Library:Create('TextButton', {
+	local ModalElement = EZ:Create('TextButton', {
 		BackgroundTransparency = 1;
 		Size = UDim2.new(0, 0, 0, 0);
 		Visible = true;
 		Text = '';
 		Modal = false;
-		Parent = Library:Create("ScreenGui", {
+		Parent = EZ:Create("ScreenGui", {
 			Parent = CoreGui;
 		});
 	});
@@ -5405,21 +5438,21 @@ function Library:CreateWindow(...)
 	local Toggled = false;
 	local Fading = false;
 
-	function Library:Toggle()
+	function EZ:Toggle()
 		if Fading then
 			return;
 		end;
 
-		local FadeTime = Library.MenuFadeTime;
+		local FadeTime = EZ.MenuFadeTime;
 		Fading = true;
 		Toggled = (not Toggled);
 
-		Library.Visible = Toggled;
-		Library:FireEvent('VisibilityChanged', Toggled);
+		EZ.Visible = Toggled;
+		EZ:FireEvent('VisibilityChanged', Toggled);
 
 		ModalElement.Modal = Toggled;
 
-		Library:UpdateBackground('snap');
+		EZ:UpdateBackground('snap');
 
 		for _, Element in next, Options do
 			task.spawn(function()
@@ -5433,7 +5466,7 @@ function Library:CreateWindow(...)
 			end);
 		end;
 
-		if Toggled and Library.BlockInput then
+		if Toggled and EZ.BlockInput then
 			ContextActionService:BindAction(
 				'Freeze',
 				function()
@@ -5471,7 +5504,7 @@ function Library:CreateWindow(...)
 				local Shown = nil;
 
 				while Toggled and ScreenGui.Parent do
-					local Want = Library.ShowCustomCursor == true;
+					local Want = EZ.ShowCustomCursor == true;
 
 					if Want ~= Shown then
 						Shown = Want;
@@ -5485,7 +5518,7 @@ function Library:CreateWindow(...)
 						local mPos = InputService:GetMouseLocation();
 						local udim = UDim2.fromOffset(mPos.X, mPos.Y - guiservice:GetGuiInset().Y - 1);
 
-						Cursor.ImageColor3 = Library.AccentColor;
+						Cursor.ImageColor3 = EZ.AccentColor;
 						Cursor.Position, CursorOutline.Position = udim, udim - UDim2.fromOffset(1, 1);
 					end;
 
@@ -5534,44 +5567,41 @@ function Library:CreateWindow(...)
 		end;
 
 		Outer.Visible = Toggled;
-		Library:UpdateBackground('finalize');
+		EZ:UpdateBackground('finalize');
 
 		Fading = false;
 	end
 
-	function Library:SetVisible(Bool)
+	function EZ:SetVisible(Bool)
 		if Bool ~= Toggled then
-			Library:Toggle();
+			EZ:Toggle();
 		end;
 	end;
 
-	Library:GiveSignal(InputService.InputBegan:Connect(function(Input, Processed)
-		if type(Library.ToggleKeybind) == 'table' and Library.ToggleKeybind.Type == 'KeyPicker' then
-			if Input.UserInputType == Enum.UserInputType.Keyboard and Input.KeyCode.Name == Library.ToggleKeybind.Value then
-				task.spawn(Library.Toggle)
+	EZ:GiveSignal(InputService.InputBegan:Connect(function(Input, Processed)
+		if type(EZ.ToggleKeybind) == 'table' and EZ.ToggleKeybind.Type == 'KeyPicker' then
+			if Input.UserInputType == Enum.UserInputType.Keyboard and Input.KeyCode.Name == EZ.ToggleKeybind.Value then
+				task.spawn(EZ.Toggle)
 			end
 		elseif Input.KeyCode == Enum.KeyCode.RightControl or (Input.KeyCode == Enum.KeyCode.Insert and (not Processed)) then
-			task.spawn(Library.Toggle)
+			task.spawn(EZ.Toggle)
 		end
 	end))
 
-	if Config.AutoShow then task.spawn(Library.Toggle) end
+	if Config.AutoShow then task.spawn(EZ.Toggle) end
 
 	Window.Holder = Outer;
 
 	return Window;
 end;
 
-local EZ = Library
-
-local HttpService = cloneref(game:GetService('HttpService'));
+--[[ Save Manager ]]
 
 local SaveManager = {};
 
 do
-	SaveManager.Folder = '';
 	SaveManager.Ignore = {};
-	SaveManager.Library = nil;
+	SaveManager.Library = EZ;
 
 	SaveManager.Parser = {
 		Toggle = {
@@ -5636,36 +5666,12 @@ do
 		};
 	};
 
-	function SaveManager:SetLibrary(Library)
-		self.Library = Library;
-	end;
-
-	function SaveManager:SetFolder(Folder)
-		self.Folder = Folder;
-		self:BuildFolderTree();
-	end;
-
-	function SaveManager:BuildFolderTree()
-		local Paths = {
-			self.Folder,
-			self.Folder .. '/settings',
-			self.Folder .. '/themes',
-		};
-
-		for Index = 1, #Paths do
-			local Path = Paths[Index];
-
-			if not isfolder(Path) then
-				makefolder(Path);
-			end;
-		end;
+	function SaveManager:ConfigFolder()
+		return 'Elite Zone/' .. EZ.Game .. '/config';
 	end;
 
 	function SaveManager:CheckFolderTree()
-		if not isfolder(self.Folder) then
-			self:BuildFolderTree();
-			task.wait();
-		end;
+		EZ:EnsureFolders();
 	end;
 
 	function SaveManager:SetIgnoreIndexes(List)
@@ -5700,7 +5706,7 @@ do
 
 		self:CheckFolderTree();
 
-		local File = self.Folder .. '/settings/' .. Name .. '.json';
+		local File = self:ConfigFolder() .. '/' .. Name .. '.json';
 		local Data = { objects = {} };
 
 		for Idx, Object in next, Toggles do
@@ -5755,7 +5761,7 @@ do
 
 		self:CheckFolderTree();
 
-		local File = self.Folder .. '/settings/' .. Name .. '.json';
+		local File = self:ConfigFolder() .. '/' .. Name .. '.json';
 
 		if not isfile(File) then
 			return false, 'invalid file';
@@ -5783,7 +5789,7 @@ do
 			return false, 'no config file is selected';
 		end;
 
-		local File = self.Folder .. '/settings/' .. Name .. '.json';
+		local File = self:ConfigFolder() .. '/' .. Name .. '.json';
 
 		if not isfile(File) then
 			return false, 'invalid file';
@@ -5799,7 +5805,7 @@ do
 	end;
 
 	function SaveManager:RefreshConfigList()
-		local Files = listfiles(self.Folder .. '/settings');
+		local Files = listfiles(self:ConfigFolder());
 		local List = {};
 
 		for Index = 1, #Files do
@@ -5825,23 +5831,30 @@ do
 		return List;
 	end;
 
+	function SaveManager:GetAutoloadConfig()
+		local Cache = EZ:ReadCache();
+		return Cache.configs and Cache.configs[EZ.Game];
+	end;
+
 	function SaveManager:SaveAutoloadConfig(Name)
-		self:CheckFolderTree();
-		writefile(self.Folder .. '/settings/autoload.txt', Name);
+		local Cache = EZ:ReadCache();
+		Cache.configs = Cache.configs or {};
+		Cache.configs[EZ.Game] = Name;
+		EZ:WriteCache(Cache);
 	end;
 
 	function SaveManager:UnsetAutoloadConfig()
-		self:CheckFolderTree();
-		if isfile(self.Folder .. '/settings/autoload.txt') then
-			delfile(self.Folder .. '/settings/autoload.txt');
+		local Cache = EZ:ReadCache();
+		if Cache.configs then
+			Cache.configs[EZ.Game] = nil;
+			EZ:WriteCache(Cache);
 		end;
 	end;
 
 	function SaveManager:LoadAutoloadConfig()
-		self:CheckFolderTree();
+		local Name = self:GetAutoloadConfig();
 
-		if isfile(self.Folder .. '/settings/autoload.txt') then
-			local Name = readfile(self.Folder .. '/settings/autoload.txt');
+		if Name then
 			local Success, Err = self:Load(Name);
 
 			if not Success then
@@ -5855,13 +5868,10 @@ do
 	end;
 
 	function SaveManager:BuildConfigTab(Window)
-		assert(self.Library, 'Must set SaveManager.Library first!');
 		self:BuildConfigSection(Window:AddTab('settings'));
 	end;
 
 	function SaveManager:BuildConfigSection(Tab)
-		assert(self.Library, 'Must set SaveManager.Library first!');
-
 		local Section = Tab:AddRightGroupbox('Configuration');
 
 		Section:AddInput('SaveManager_ConfigName', { Text = 'Config name' });
@@ -5874,7 +5884,7 @@ do
 				return self.Library:Notify('Invalid config name (empty)', 2);
 			end;
 
-			if isfile(self.Folder .. '/settings/' .. Name .. '.json') then
+			if isfile(self:ConfigFolder() .. '/' .. Name .. '.json') then
 				return self.Library:Notify(string.format('Config %q already exists, use the overwrite button to replace it', Name), 3);
 			end;
 
@@ -5956,9 +5966,9 @@ do
 
 		SaveManager.AutoloadLabel = Section:AddLabel('Current autoload config: none', true);
 
-		if isfile(self.Folder .. '/settings/autoload.txt') then
-			local Name = readfile(self.Folder .. '/settings/autoload.txt');
-			SaveManager.AutoloadLabel:SetText('Current autoload config: ' .. Name);
+		local Autoload = self:GetAutoloadConfig();
+		if Autoload then
+			SaveManager.AutoloadLabel:SetText('Current autoload config: ' .. Autoload);
 		end;
 
 		Section:AddDivider();
@@ -6009,7 +6019,7 @@ do
 
 			self:CheckFolderTree();
 
-			local File = self.Folder .. '/settings/' .. Name .. '.json';
+			local File = self:ConfigFolder() .. '/' .. Name .. '.json';
 
 			if not isfile(File) then
 				return self.Library:Notify(string.format('Config %q does not exist', Name), 3);
@@ -6029,13 +6039,14 @@ do
 	end;
 end;
 
-getgenv().SaveManager = SaveManager;
+EZ.SaveManager = SaveManager;
+
+--[[ Theme Manager ]]
 
 local ThemeManager = {};
 
 do
-	ThemeManager.Folder = '';
-	ThemeManager.Library = nil;
+	ThemeManager.Library = EZ;
 	ThemeManager.DefaultTheme = 'Default';
 
 	local NonColorDefaults = {
@@ -6130,34 +6141,6 @@ do
 		return Options[Key] or Toggles[Key];
 	end;
 
-	function ThemeManager:SetLibrary(Library)
-		self.Library = Library;
-	end;
-
-	function ThemeManager:SetFolder(Folder)
-		self.Folder = Folder;
-		self:BuildFolderTree();
-	end;
-
-	function ThemeManager:BuildFolderTree()
-		local Paths = {};
-		local Parts = self.Folder:split('/');
-
-		for Index = 1, #Parts do
-			Paths[#Paths + 1] = table.concat(Parts, '/', 1, Index);
-		end;
-
-		table.insert(Paths, self.Folder .. '/themes');
-
-		for Index = 1, #Paths do
-			local Path = Paths[Index];
-
-			if not isfolder(Path) then
-				makefolder(Path);
-			end;
-		end;
-	end;
-
 	function ThemeManager:ApplyTheme(Name)
 		if not Name then
 			return;
@@ -6205,7 +6188,7 @@ do
 
 	function ThemeManager:LoadDefault()
 		local Name = self.DefaultTheme;
-		local Saved = isfile(self.Folder .. '/themes/default.txt') and readfile(self.Folder .. '/themes/default.txt');
+		local Saved = EZ:ReadCache().theme;
 
 		local IsBuiltIn = true;
 
@@ -6226,13 +6209,15 @@ do
 	end;
 
 	function ThemeManager:SaveDefault(Name)
-		writefile(self.Folder .. '/themes/default.txt', Name);
+		local Cache = EZ:ReadCache();
+		Cache.theme = Name;
+		EZ:WriteCache(Cache);
 	end;
 
 	function ThemeManager:ResetDefault()
-		if isfile(self.Folder .. '/themes/default.txt') then
-			delfile(self.Folder .. '/themes/default.txt');
-		end;
+		local Cache = EZ:ReadCache();
+		Cache.theme = nil;
+		EZ:WriteCache(Cache);
 	end;
 
 	function ThemeManager:GetCustomTheme(File)
@@ -6244,7 +6229,7 @@ do
 			File = File .. '.json';
 		end;
 
-		local Path = self.Folder .. '/themes/' .. File;
+		local Path = 'Elite Zone/themes/' .. File;
 
 		if not isfile(Path) then
 			return nil;
@@ -6282,7 +6267,7 @@ do
 			end;
 		end;
 
-		writefile(self.Folder .. '/themes/' .. File, HttpService:JSONEncode(Data));
+		writefile('Elite Zone/themes/' .. File, HttpService:JSONEncode(Data));
 	end;
 
 	function ThemeManager:Delete(File)
@@ -6294,7 +6279,7 @@ do
 			File = File .. '.json';
 		end;
 
-		local Path = self.Folder .. '/themes/' .. File;
+		local Path = 'Elite Zone/themes/' .. File;
 
 		if not isfile(Path) then
 			return false, 'invalid file';
@@ -6310,7 +6295,7 @@ do
 	end;
 
 	function ThemeManager:ReloadCustomThemes()
-		local Files = listfiles(self.Folder .. '/themes');
+		local Files = listfiles('Elite Zone/themes');
 		local List = {};
 
 		for Index = 1, #Files do
@@ -6337,13 +6322,10 @@ do
 	end;
 
 	function ThemeManager:CreateGroupBox(Tab)
-		assert(self.Library, 'Must set ThemeManager.Library first!');
 		return Tab:AddLeftTabbox();
 	end;
 
 	function ThemeManager:ApplyToTab(Tab)
-		assert(self.Library, 'Must set ThemeManager.Library first!');
-
 		local MenuBox = Tab:AddLeftTabbox();
 		self:BuildMenuTab(MenuBox:AddTab('Menu'));
 		self:BuildNotificationsTab(MenuBox:AddTab('Notifications'));
@@ -6352,12 +6334,10 @@ do
 	end;
 
 	function ThemeManager:ApplyToWindow(Window)
-		assert(self.Library, 'Must set ThemeManager.Library first!');
 		self:ApplyToTab(Window:AddTab('settings'));
 	end;
 
 	function ThemeManager:ApplyToGroupbox(Groupbox)
-		assert(self.Library, 'Must set ThemeManager.Library first!');
 		self:CreateThemeManager(Groupbox);
 	end;
 
@@ -6624,7 +6604,7 @@ do
 
 			local Display = Name:gsub('%.json$', '');
 
-			if isfile(self.Folder .. '/themes/' .. Display .. '.json') then
+			if isfile('Elite Zone/themes/' .. Display .. '.json') then
 				return self.Library:Notify(string.format('Theme %q already exists, use the overwrite button to replace it', Display), 3);
 			end;
 
@@ -6686,6 +6666,6 @@ do
 	end;
 end;
 
-getgenv().ThemeManager = ThemeManager;
+EZ.ThemeManager = ThemeManager;
 
 return EZ

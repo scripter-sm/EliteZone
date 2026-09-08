@@ -1,15 +1,8 @@
-local cloneref = cloneref or function(obj)
-	return obj
-end
-
-local HttpService = cloneref(game:GetService('HttpService'));
-
 local SaveManager = {};
 
 do
-	SaveManager.Folder = '';
 	SaveManager.Ignore = {};
-	SaveManager.Library = nil;
+	SaveManager.Library = EZ;
 
 	SaveManager.Parser = {
 		Toggle = {
@@ -74,36 +67,12 @@ do
 		};
 	};
 
-	function SaveManager:SetLibrary(Library)
-		self.Library = Library;
-	end;
-
-	function SaveManager:SetFolder(Folder)
-		self.Folder = Folder;
-		self:BuildFolderTree();
-	end;
-
-	function SaveManager:BuildFolderTree()
-		local Paths = {
-			self.Folder,
-			self.Folder .. '/settings',
-			self.Folder .. '/themes',
-		};
-
-		for Index = 1, #Paths do
-			local Path = Paths[Index];
-
-			if not isfolder(Path) then
-				makefolder(Path);
-			end;
-		end;
+	function SaveManager:ConfigFolder()
+		return 'Elite Zone/' .. EZ.Game .. '/config';
 	end;
 
 	function SaveManager:CheckFolderTree()
-		if not isfolder(self.Folder) then
-			self:BuildFolderTree();
-			task.wait();
-		end;
+		EZ:EnsureFolders();
 	end;
 
 	function SaveManager:SetIgnoreIndexes(List)
@@ -138,7 +107,7 @@ do
 
 		self:CheckFolderTree();
 
-		local File = self.Folder .. '/settings/' .. Name .. '.json';
+		local File = self:ConfigFolder() .. '/' .. Name .. '.json';
 		local Data = { objects = {} };
 
 		for Idx, Object in next, Toggles do
@@ -193,7 +162,7 @@ do
 
 		self:CheckFolderTree();
 
-		local File = self.Folder .. '/settings/' .. Name .. '.json';
+		local File = self:ConfigFolder() .. '/' .. Name .. '.json';
 
 		if not isfile(File) then
 			return false, 'invalid file';
@@ -221,7 +190,7 @@ do
 			return false, 'no config file is selected';
 		end;
 
-		local File = self.Folder .. '/settings/' .. Name .. '.json';
+		local File = self:ConfigFolder() .. '/' .. Name .. '.json';
 
 		if not isfile(File) then
 			return false, 'invalid file';
@@ -237,7 +206,7 @@ do
 	end;
 
 	function SaveManager:RefreshConfigList()
-		local Files = listfiles(self.Folder .. '/settings');
+		local Files = listfiles(self:ConfigFolder());
 		local List = {};
 
 		for Index = 1, #Files do
@@ -263,23 +232,30 @@ do
 		return List;
 	end;
 
+	function SaveManager:GetAutoloadConfig()
+		local Cache = EZ:ReadCache();
+		return Cache.configs and Cache.configs[EZ.Game];
+	end;
+
 	function SaveManager:SaveAutoloadConfig(Name)
-		self:CheckFolderTree();
-		writefile(self.Folder .. '/settings/autoload.txt', Name);
+		local Cache = EZ:ReadCache();
+		Cache.configs = Cache.configs or {};
+		Cache.configs[EZ.Game] = Name;
+		EZ:WriteCache(Cache);
 	end;
 
 	function SaveManager:UnsetAutoloadConfig()
-		self:CheckFolderTree();
-		if isfile(self.Folder .. '/settings/autoload.txt') then
-			delfile(self.Folder .. '/settings/autoload.txt');
+		local Cache = EZ:ReadCache();
+		if Cache.configs then
+			Cache.configs[EZ.Game] = nil;
+			EZ:WriteCache(Cache);
 		end;
 	end;
 
 	function SaveManager:LoadAutoloadConfig()
-		self:CheckFolderTree();
+		local Name = self:GetAutoloadConfig();
 
-		if isfile(self.Folder .. '/settings/autoload.txt') then
-			local Name = readfile(self.Folder .. '/settings/autoload.txt');
+		if Name then
 			local Success, Err = self:Load(Name);
 
 			if not Success then
@@ -293,13 +269,10 @@ do
 	end;
 
 	function SaveManager:BuildConfigTab(Window)
-		assert(self.Library, 'Must set SaveManager.Library first!');
 		self:BuildConfigSection(Window:AddTab('settings'));
 	end;
 
 	function SaveManager:BuildConfigSection(Tab)
-		assert(self.Library, 'Must set SaveManager.Library first!');
-
 		local Section = Tab:AddRightGroupbox('Configuration');
 
 		Section:AddInput('SaveManager_ConfigName', { Text = 'Config name' });
@@ -312,7 +285,7 @@ do
 				return self.Library:Notify('Invalid config name (empty)', 2);
 			end;
 
-			if isfile(self.Folder .. '/settings/' .. Name .. '.json') then
+			if isfile(self:ConfigFolder() .. '/' .. Name .. '.json') then
 				return self.Library:Notify(string.format('Config %q already exists, use the overwrite button to replace it', Name), 3);
 			end;
 
@@ -394,9 +367,9 @@ do
 
 		SaveManager.AutoloadLabel = Section:AddLabel('Current autoload config: none', true);
 
-		if isfile(self.Folder .. '/settings/autoload.txt') then
-			local Name = readfile(self.Folder .. '/settings/autoload.txt');
-			SaveManager.AutoloadLabel:SetText('Current autoload config: ' .. Name);
+		local Autoload = self:GetAutoloadConfig();
+		if Autoload then
+			SaveManager.AutoloadLabel:SetText('Current autoload config: ' .. Autoload);
 		end;
 
 		Section:AddDivider();
@@ -447,7 +420,7 @@ do
 
 			self:CheckFolderTree();
 
-			local File = self.Folder .. '/settings/' .. Name .. '.json';
+			local File = self:ConfigFolder() .. '/' .. Name .. '.json';
 
 			if not isfile(File) then
 				return self.Library:Notify(string.format('Config %q does not exist', Name), 3);
@@ -467,6 +440,4 @@ do
 	end;
 end;
 
-getgenv().SaveManager = SaveManager;
-
-return SaveManager;
+EZ.SaveManager = SaveManager;

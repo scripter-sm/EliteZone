@@ -1,14 +1,7 @@
-local cloneref = cloneref or function(obj)
-	return obj
-end
-
-local HttpService = cloneref(game:GetService('HttpService'));
-
 local ThemeManager = {};
 
 do
-	ThemeManager.Folder = '';
-	ThemeManager.Library = nil;
+	ThemeManager.Library = EZ;
 	ThemeManager.DefaultTheme = 'Default';
 
 	local NonColorDefaults = {
@@ -103,34 +96,6 @@ do
 		return Options[Key] or Toggles[Key];
 	end;
 
-	function ThemeManager:SetLibrary(Library)
-		self.Library = Library;
-	end;
-
-	function ThemeManager:SetFolder(Folder)
-		self.Folder = Folder;
-		self:BuildFolderTree();
-	end;
-
-	function ThemeManager:BuildFolderTree()
-		local Paths = {};
-		local Parts = self.Folder:split('/');
-
-		for Index = 1, #Parts do
-			Paths[#Paths + 1] = table.concat(Parts, '/', 1, Index);
-		end;
-
-		table.insert(Paths, self.Folder .. '/themes');
-
-		for Index = 1, #Paths do
-			local Path = Paths[Index];
-
-			if not isfolder(Path) then
-				makefolder(Path);
-			end;
-		end;
-	end;
-
 	function ThemeManager:ApplyTheme(Name)
 		if not Name then
 			return;
@@ -178,7 +143,7 @@ do
 
 	function ThemeManager:LoadDefault()
 		local Name = self.DefaultTheme;
-		local Saved = isfile(self.Folder .. '/themes/default.txt') and readfile(self.Folder .. '/themes/default.txt');
+		local Saved = EZ:ReadCache().theme;
 
 		local IsBuiltIn = true;
 
@@ -199,13 +164,15 @@ do
 	end;
 
 	function ThemeManager:SaveDefault(Name)
-		writefile(self.Folder .. '/themes/default.txt', Name);
+		local Cache = EZ:ReadCache();
+		Cache.theme = Name;
+		EZ:WriteCache(Cache);
 	end;
 
 	function ThemeManager:ResetDefault()
-		if isfile(self.Folder .. '/themes/default.txt') then
-			delfile(self.Folder .. '/themes/default.txt');
-		end;
+		local Cache = EZ:ReadCache();
+		Cache.theme = nil;
+		EZ:WriteCache(Cache);
 	end;
 
 	function ThemeManager:GetCustomTheme(File)
@@ -217,7 +184,7 @@ do
 			File = File .. '.json';
 		end;
 
-		local Path = self.Folder .. '/themes/' .. File;
+		local Path = 'Elite Zone/themes/' .. File;
 
 		if not isfile(Path) then
 			return nil;
@@ -255,7 +222,7 @@ do
 			end;
 		end;
 
-		writefile(self.Folder .. '/themes/' .. File, HttpService:JSONEncode(Data));
+		writefile('Elite Zone/themes/' .. File, HttpService:JSONEncode(Data));
 	end;
 
 	function ThemeManager:Delete(File)
@@ -267,7 +234,7 @@ do
 			File = File .. '.json';
 		end;
 
-		local Path = self.Folder .. '/themes/' .. File;
+		local Path = 'Elite Zone/themes/' .. File;
 
 		if not isfile(Path) then
 			return false, 'invalid file';
@@ -283,7 +250,7 @@ do
 	end;
 
 	function ThemeManager:ReloadCustomThemes()
-		local Files = listfiles(self.Folder .. '/themes');
+		local Files = listfiles('Elite Zone/themes');
 		local List = {};
 
 		for Index = 1, #Files do
@@ -310,13 +277,10 @@ do
 	end;
 
 	function ThemeManager:CreateGroupBox(Tab)
-		assert(self.Library, 'Must set ThemeManager.Library first!');
 		return Tab:AddLeftTabbox();
 	end;
 
 	function ThemeManager:ApplyToTab(Tab)
-		assert(self.Library, 'Must set ThemeManager.Library first!');
-
 		local MenuBox = Tab:AddLeftTabbox();
 		self:BuildMenuTab(MenuBox:AddTab('Menu'));
 		self:BuildNotificationsTab(MenuBox:AddTab('Notifications'));
@@ -325,12 +289,10 @@ do
 	end;
 
 	function ThemeManager:ApplyToWindow(Window)
-		assert(self.Library, 'Must set ThemeManager.Library first!');
 		self:ApplyToTab(Window:AddTab('settings'));
 	end;
 
 	function ThemeManager:ApplyToGroupbox(Groupbox)
-		assert(self.Library, 'Must set ThemeManager.Library first!');
 		self:CreateThemeManager(Groupbox);
 	end;
 
@@ -597,7 +559,7 @@ do
 
 			local Display = Name:gsub('%.json$', '');
 
-			if isfile(self.Folder .. '/themes/' .. Display .. '.json') then
+			if isfile('Elite Zone/themes/' .. Display .. '.json') then
 				return self.Library:Notify(string.format('Theme %q already exists, use the overwrite button to replace it', Display), 3);
 			end;
 
@@ -659,6 +621,4 @@ do
 	end;
 end;
 
-getgenv().ThemeManager = ThemeManager;
-
-return ThemeManager;
+EZ.ThemeManager = ThemeManager;
