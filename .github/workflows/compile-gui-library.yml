@@ -1,0 +1,39 @@
+name: Compile GUI Library
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: write
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Compile GUI Library
+      run: |
+        node Compiler/compile_gui_library.js
+
+    - name: Commit compiled GUI Library
+      if: github.event_name == 'push'
+      run: |
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        git add Dependencies/libraries/gui_library.lua
+        if git diff --cached --quiet; then
+          echo "No changes to commit"
+        else
+          git commit -m "build: auto-compile gui library."
+          git push
+        fi
