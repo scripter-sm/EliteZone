@@ -976,31 +976,6 @@ function EZ:GiveSignal(Signal)
 	table.insert(EZ.Signals, Signal)
 end
 
-function EZ:Unload()
-
-	for Idx = #EZ.Signals, 1, -1 do
-		local Connection = table.remove(EZ.Signals, Idx)
-		Connection:Disconnect()
-	end
-
-	if EZ.OnUnload then
-		EZ.OnUnload()
-	end
-
-	ContextActionService:UnbindAction('Freeze');
-
-	ScreenGui:Destroy()
-	OutlineGui:Destroy()
-	CursorGui:Destroy()
-	MenuDimGui:Destroy()
-	MenuBlur:Destroy()
-	MenuColor:Destroy()
-end
-
-function EZ:OnUnload(Callback)
-	EZ.OnUnload = Callback
-end
-
 function EZ:EnableFlagCopying(Bool)
 	EZ.FlagCopying = Bool;
 end
