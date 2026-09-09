@@ -33,37 +33,32 @@ The loader downloads and starts the latest version of Elite Zone.
 ## requirements
 
 > Please use a scripting utility with good UNCs.
-
-Different utilities implement these features differently, so crashes or missing functionality may be caused by the utility itself.
-
+> Different utilities implement these features differently, so crashes or missing functionality may be caused by the utility itself.
 > If your utility is missing some functionality or has poor UNCs support, don't expect Elite Zone to work properly.
 
 ## troubleshooting
 
 If something isn't working, try these first:
 
-1. Try another supported scripting utility.
-2. Make sure your utility has good UNC support.
-3. Update your utility to the latest version.
-4. Remove the `Elite Zone` folder from your workspace/files directory.
-5. Restart Game and run the loader again.
-6. Disable other scripts that could be causing conflicts.
+> 1. Try another supported scripting utility.
+> 2. Make sure your utility has good UNC support.
+> 3. Update your utility to the latest version.
+> 4. Remove the `Elite Zone` folder from your workspace/files directory.
+> 5. Restart Game and run the loader again.
+> 6. Disable other scripts that could be causing conflicts.
 
 If the issue continues, send the **exact error**, your scripting utility, and any useful details when asking for support. [in discord]
 
-## proprietary software
+## proprietary
 
-Elite Zone's original code, systems, features, and architecture belong to Elite Zone unless stated otherwise.
-
-`Loader.lua` and the software it loads are proprietary. They may also be distributed obfuscated or otherwise protected.
-
-Do not deobfuscate, dump, extract, reverse engineer for source recovery, redistribute, republish, or share proprietary Elite Zone code without permission.
+> Elite Zone's original code, systems, features, and architecture belong to Elite Zone unless stated otherwise.
+> `Loader.lua` and the script/software it loads are proprietary. They may also be distributed obfuscated or otherwise protected.
+> Do not deobfuscate, dump, extract, reverse engineer for source recovery, redistribute, republish, or share proprietary Elite Zone code without permission.
 
 ## third-party code
 
-Elite Zone includes a substantially rewritten and independently maintained component derived from the MIT-licensed [Linoria](https://github.com/violin-suzutsuki/LinoriaLib) project.
-
-Applicable third-party code remains under its original license.
+> Elite Zone includes a substantially rewritten and independently maintained component derived from the MIT-licensed [Linoria](https://github.com/violin-suzutsuki/LinoriaLib) project.
+> Applicable third-party code remains under its original license.
 
 Relevant components include:
 
@@ -75,15 +70,13 @@ See `LICENSE.md` for the complete licensing information.
 
 ## deprecated code
 
-`Deprecated/old_sources/gui/` is released under **CC0 1.0 Universal**.
-
-This is legacy code and is separate from the current Elite Zone implementation.
+> `Deprecated/old_sources/gui/` is released under **CC0 1.0 Universal**.
+> This is legacy code and is separate from the current Elite Zone implementation.
 
 ## third-party fonts
 
-The fonts inside `Dependencies/fonts/` belong to their respective creators and are covered by their own licenses.
-
-Elite Zone does not claim ownership of these fonts.
+> The fonts inside `Dependencies/fonts/` belong to their respective creators and are covered by their own licenses.
+> Elite Zone does not claim ownership of these fonts.
 
 ---
 
