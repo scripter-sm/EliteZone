@@ -4569,11 +4569,12 @@ function EZ:CreateWindow(...)
 	if typeof(Config.Size) ~= 'UDim2' then Config.Size = UDim2.fromOffset(550, 650) end
 
 	if EZ.IsMobile then
-		local ViewportY = workspace.CurrentCamera.ViewportSize.Y;
+		local Viewport = workspace.CurrentCamera.ViewportSize;
 		Config.Size = UDim2.fromOffset(
-			Config.Size.X.Offset,
-			math.clamp(math.floor(ViewportY - 20), EZ.MinSize.Y, Config.Size.Y.Offset)
+			math.max(EZ.MinSize.X, math.min(Config.Size.X.Offset, math.floor(Viewport.X - 40))),
+			math.max(EZ.MinSize.Y, math.floor(Viewport.Y - 40))
 		);
+		Config.Center = true;
 	end
 
 	if Config.Center then
