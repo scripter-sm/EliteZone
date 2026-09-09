@@ -1,64 +1,70 @@
-local IsScriptable = clonefunction(isscriptable);
-local SetScriptable = clonefunction(setscriptable);
-local SetScriptableCache = {};
+local isScriptable = clonefunction(isscriptable);
+local setScriptable = clonefunction(setscriptable);
+local setScriptableCache = {};
 
-local TextService = cloneref(game:GetService("TextService"));
+local textService = cloneref(game:GetService("TextService"));
 
-local Drawing = {};
+local drawing = {
+    Fonts = {
+        UI = 0,
+        System = 1,
+        Plex = 2,
+        Monospace = 3
+    }
+};
 
-local Renv = getrenv();
-local Genv = getgenv();
-local pi = Renv.math.pi;
-local huge = Renv.math.huge;
-local _assert = clonefunction(Renv.assert);
-local Color3New = clonefunction(Renv.Color3.new);
-local InstanceNew = clonefunction(Renv.Instance.new);
-local MathAtan2 = clonefunction(Renv.math.atan2);
-local MathClamp = clonefunction(Renv.math.clamp);
-local MathMax = clonefunction(Renv.math.max);
-local tick = Renv.tick or tick or os.clock;
-local _setmetatable = clonefunction(Renv.setmetatable);
-local StringFormat = clonefunction(Renv.string.format);
-local TypeOf = clonefunction(Renv.typeof);
-local TaskSpawn = clonefunction(Renv.task.spawn);
-local UdimNew = clonefunction(Renv.UDim.new);
-local Udim2FromOffset = clonefunction(Renv.UDim2.fromOffset);
-local Udim2New = clonefunction(Renv.UDim2.new);
-local Vector2New = clonefunction(Renv.Vector2.new);
-local destroy = clonefunction(game.Destroy);
-local GetTextBoundsAsync = clonefunction(TextService.GetTextBoundsAsync);
-local HttpGet = clonefunction(game.HttpGet);
-local WriteCustomAsset = writecustomasset and clonefunction(writecustomasset);
-local ProtectInstance = protectinstance and clonefunction(protectinstance);
+local renv = getrenv();
+local genv = getgenv();
+local pi = renv.math.pi;
+local huge = renv.math.huge;
+local _assert = clonefunction(renv.assert);
+local _color3new = clonefunction(renv.Color3.new);
+local _instancenew = clonefunction(renv.Instance.new);
+local _mathatan2 = clonefunction(renv.math.atan2);
+local _mathclamp = clonefunction(renv.math.clamp);
+local _mathmax = clonefunction(renv.math.max);
+local _setmetatable = clonefunction(renv.setmetatable);
+local _stringformat = clonefunction(renv.string.format);
+local _typeof = clonefunction(renv.typeof);
+local _taskspawn = clonefunction(renv.task.spawn);
+local _udimnew = clonefunction(renv.UDim.new);
+local _udim2fromoffset = clonefunction(renv.UDim2.fromOffset);
+local _udim2new = clonefunction(renv.UDim2.new);
+local _vector2new = clonefunction(renv.Vector2.new);
+local _destroy = clonefunction(game.Destroy);
+local _gettextboundsasync = clonefunction(textService.GetTextBoundsAsync);
+local _httpget = clonefunction(game.HttpGet);
+local _writecustomasset = writecustomasset and clonefunction(writecustomasset);
+local _protectinstance = protectinstance and clonefunction(protectinstance);
 
-local function create(ClassName, Properties, Children)
-    local Inst = InstanceNew(ClassName);
-    for i, v in Properties do
+local function create(className, properties, children)
+    local inst = _instancenew(className);
+    for i, v in properties do
         if i ~= "Parent" then
-            Inst[i] = v;
+            inst[i] = v;
         end
     end
-    if Children then
-        for i, v in Children do
-            v.Parent = Inst;
+    if children then
+        for i, v in children do
+            v.Parent = inst;
         end
     end
-    if ProtectInstance then
-        ProtectInstance(Inst);
+    if _protectinstance then
+        _protectinstance(inst);
     end
-    Inst.Parent = Properties.Parent;
-    return Inst;
+    inst.Parent = properties.Parent;
+    return inst;
 end
 
-do 
-    local Fonts = {
+do -- This may look completely useless, but it allows TextBounds to update without yielding and therefore breaking the metamethods.
+    local fonts = {
         Font.new("rbxasset://fonts/families/Arial.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal),
         Font.new("rbxasset://fonts/families/HighwayGothic.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal),
         Font.new("rbxasset://fonts/families/Roboto.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal),
         Font.new("rbxasset://fonts/families/Ubuntu.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
     };
 
-    for i, v in Fonts do
+    for i, v in fonts do
         game:GetService("TextService"):GetTextBoundsAsync(create("GetTextBoundsParams", {
             Text = "Hi",
             Size = 12,
@@ -69,7 +75,7 @@ do
 end
 
 do
-    local DrawingDirectory = create("ScreenGui", {
+    local drawingDirectory = create("ScreenGui", {
         DisplayOrder = 15,
         IgnoreGuiInset = true,
         Name = "drawingDirectory",
@@ -77,266 +83,266 @@ do
         ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     });
 
-    local function UpdatePosition(Frame, From, To, Thickness)
-        local Central = (From + To) / 2;
-        local Offset = To - From;
-        Frame.Position = Udim2FromOffset(Central.X, Central.Y);
-        Frame.Rotation = MathAtan2(Offset.Y, Offset.X) * 180 / pi;
-        Frame.Size = Udim2FromOffset(Offset.Magnitude, Thickness);
+    local function updatePosition(frame, from, to, thickness)
+        local central = (from + to) / 2;
+        local offset = to - from;
+        frame.Position = _udim2fromoffset(central.X, central.Y);
+        frame.Rotation = _mathatan2(offset.Y, offset.X) * 180 / pi;
+        frame.Size = _udim2fromoffset(offset.Magnitude, thickness);
     end
 
-    local ItemCounter = 0;
-    local Cache = {};
+    local itemCounter = 0;
+    local cache = {};
 
-    local Classes = {};
+    local classes = {};
     do
-        local Line = {};
+        local line = {};
 
-        function Line.new()
-            ItemCounter = ItemCounter + 1;
-            local id = ItemCounter;
+        function line.new()
+            itemCounter = itemCounter + 1;
+            local id = itemCounter;
 
-            local NewLine = _setmetatable({
-                InstanceId = id,
+            local newLine = _setmetatable({
+                _id = id,
                 __OBJECT_EXISTS = true,
-                Properties = {
-                    Color = Color3New(),
-                    From = Vector2New(),
+                _properties = {
+                    Color = _color3new(),
+                    From = _vector2new(),
                     Thickness = 1,
-                    To = Vector2New(),
+                    To = _vector2new(),
                     Transparency = 1,
                     Visible = false,
                     ZIndex = 0
                 },
-                Frame = create("Frame", {
+                _frame = create("Frame", {
                     Name = id,
-                    AnchorPoint = Vector2New(0.5, 0.5),
-                    BackgroundColor3 = Color3New(),
+                    AnchorPoint = _vector2new(0.5, 0.5),
+                    BackgroundColor3 = _color3new(),
                     BorderSizePixel = 0,
-                    Parent = DrawingDirectory,
-                    Position = Udim2New(),
-                    Size = Udim2New(),
+                    Parent = drawingDirectory,
+                    Position = _udim2new(),
+                    Size = _udim2new(),
                     Visible = false,
                     ZIndex = 0
                 })
-            }, Line);
+            }, line);
 
-            Cache[id] = NewLine;
-            return NewLine;
+            cache[id] = newLine;
+            return newLine;
         end
 
-        function Line:__index(k)
-            local Prop = self.Properties[k];
-            if Prop ~= nil then
-                return Prop;
+        function line:__index(k)
+            local prop = self._properties[k];
+            if prop ~= nil then
+                return prop;
             end
-            return Line[k];
+            return line[k];
         end
 
-        function Line:__newindex(k, v)
+        function line:__newindex(k, v)
             if self.__OBJECT_EXISTS == true then
-                local Props = self.Properties;
+                local props = self._properties;
 
-                if Props[k] == nil or Props[k] == v or typeof(Props[k]) ~= typeof(v) then
+                if props[k] == nil or props[k] == v or typeof(props[k]) ~= typeof(v) then
                     return;
                 end
 
-                Props[k] = v;
+                props[k] = v;
 
                 if k == "Color" then
-                    self.Frame.BackgroundColor3 = v;
+                    self._frame.BackgroundColor3 = v;
                 elseif k == "From" then
-                    self:UpdatePosition();
+                    self:_updatePosition();
                 elseif k == "Thickness" then
-                    self.Frame.Size = Udim2FromOffset(self.Frame.AbsoluteSize.X, MathMax(v, 0.1));
+                    self._frame.Size = _udim2fromoffset(self._frame.AbsoluteSize.X, _mathmax(v, 1));
                 elseif k == "To" then
-                    self:UpdatePosition();
+                    self:_updatePosition();
                 elseif k == "Transparency" then
-                    self.Frame.BackgroundTransparency = MathClamp(1 - v, 0, 1);
+                    self._frame.BackgroundTransparency = _mathclamp(1 - v, 0, 1);
                 elseif k == "Visible" then
-                    self.Frame.Visible = v;
+                    self._frame.Visible = v;
                 elseif k == "ZIndex" then
-                    self.Frame.ZIndex = v;
+                    self._frame.ZIndex = v;
                 end
             end
         end
 
-        function Line:__iter()
-            return next, self.Properties;
+        function line:__iter()
+            return next, self._properties;
         end
 
-        function Line:__tostring()
+        function line:__tostring()
             return "Drawing";
         end
 
-        function Line:Destroy()
-            Cache[self.InstanceId] = nil;
+        function line:Destroy()
+            cache[self._id] = nil;
             self.__OBJECT_EXISTS = false;
-            destroy(self.Frame);
+            _destroy(self._frame);
         end
 
-        function Line:UpdatePosition()
-            local Props = self.Properties;
-            UpdatePosition(self.Frame, Props.From, Props.To, Props.Thickness);
+        function line:_updatePosition()
+            local props = self._properties;
+            updatePosition(self._frame, props.From, props.To, props.Thickness);
         end
 
-        Line.Remove = Line.Destroy;
-        Classes.Line = Line;
+        line.Remove = line.Destroy;
+        classes.Line = line;
     end
 
     do
-        local Circle = {};
+        local circle = {};
 
-        function Circle.new()
-            ItemCounter = ItemCounter + 1;
-            local id = ItemCounter;
+        function circle.new()
+            itemCounter = itemCounter + 1;
+            local id = itemCounter;
 
-            local NewCircle = _setmetatable({
-                InstanceId = id,
+            local newCircle = _setmetatable({
+                _id = id,
                 __OBJECT_EXISTS = true,
-                Properties = {
-                    Color = Color3New(),
+                _properties = {
+                    Color = _color3new(),
                     Filled = false,
                     NumSides = 0,
-                    Position = Vector2New(),
+                    Position = _vector2new(),
                     Radius = 0,
                     Thickness = 1,
                     Transparency = 1,
                     Visible = false,
                     ZIndex = 0
                 },
-                Frame = create("Frame", {
+                _frame = create("Frame", {
                     Name = id,
-                    AnchorPoint = Vector2New(0.5, 0.5),
-                    BackgroundColor3 = Color3New(),
+                    AnchorPoint = _vector2new(0.5, 0.5),
+                    BackgroundColor3 = _color3new(),
                     BackgroundTransparency = 1,
                     BorderSizePixel = 0,
-                    Parent = DrawingDirectory,
-                    Position = Udim2New(),
-                    Size = Udim2New(),
+                    Parent = drawingDirectory,
+                    Position = _udim2new(),
+                    Size = _udim2new(),
                     Visible = false,
                     ZIndex = 0
                 }, {
                     create("UICorner", {
-                        Name = "Corner",
-                        CornerRadius = UdimNew(1, 0)
+                        Name = "_corner",
+                        CornerRadius = _udimnew(1, 0)
                     }),
                     create("UIStroke", {
-                        Name = "Stroke",
-                        Color = Color3New(),
+                        Name = "_stroke",
+                        Color = _color3new(),
                         Thickness = 1,
                     })
                 })
-            }, Circle);
+            }, circle);
 
-            Cache[id] = NewCircle;
-            return NewCircle;
+            cache[id] = newCircle;
+            return newCircle;
         end
 
-        function Circle:__index(k)
-            local Prop = self.Properties[k];
-            if Prop ~= nil then
-                return Prop;
+        function circle:__index(k)
+            local prop = self._properties[k];
+            if prop ~= nil then
+                return prop;
             end
-            return Circle[k];
+            return circle[k];
         end
 
-        function Circle:__newindex(k, v)
+        function circle:__newindex(k, v)
             if self.__OBJECT_EXISTS == true then
-                local Props = self.Properties;
-                if Props[k] == nil or Props[k] == v or typeof(Props[k]) ~= typeof(v) then
+                local props = self._properties;
+                if props[k] == nil or props[k] == v or typeof(props[k]) ~= typeof(v) then
                     return;
                 end
-                Props[k] = v;
+                props[k] = v;
                 if k == "Color" then
-                    self.Frame.BackgroundColor3 = v;
-                    self.Frame.Stroke.Color = v;
+                    self._frame.BackgroundColor3 = v;
+                    self._frame._stroke.Color = v;
                 elseif k == "Filled" then
-                    self.Frame.BackgroundTransparency = v and 1 - Props.Transparency or 1;
+                    self._frame.BackgroundTransparency = v and 1 - props.Transparency or 1;
                 elseif k == "Position" then
-                    self.Frame.Position = Udim2FromOffset(v.X, v.Y);
+                    self._frame.Position = _udim2fromoffset(v.X, v.Y);
                 elseif k == "Radius" then
-                    self:UpdateRadius();
+                    self:_updateRadius();
                 elseif k == "Thickness" then
-                    self.Frame.Stroke.Thickness = MathMax(v, 0.1);
-                    self:UpdateRadius();
+                    self._frame._stroke.Thickness = _mathmax(v, 1);
+                    self:_updateRadius();
                 elseif k == "Transparency" then
-                    self.Frame.Stroke.Transparency = 1 - v;
-                    if Props.Filled then
-                        self.Frame.BackgroundTransparency = 1 - v;
+                    self._frame._stroke.Transparency = 1 - v;
+                    if props.Filled then
+                        self._frame.BackgroundTransparency = 1 - v;
                     end
                 elseif k == "Visible" then
-                    self.Frame.Visible = v;
+                    self._frame.Visible = v;
                 elseif k == "ZIndex" then
-                    self.Frame.ZIndex = v;
+                    self._frame.ZIndex = v;
                 end
             end
         end
 
-        function Circle:__iter()
-            return next, self.Properties;
+        function circle:__iter()
+            return next, self._properties;
         end
 
-        function Circle:__tostring()
+        function circle:__tostring()
             return "Drawing";
         end
 
-        function Circle:Destroy()
-            Cache[self.InstanceId] = nil;
+        function circle:Destroy()
+            cache[self._id] = nil;
             self.__OBJECT_EXISTS = false;
-            destroy(self.Frame);
+            _destroy(self._frame);
         end
 
-        function Circle:UpdateRadius()
-            local Props = self.Properties;
-            local Diameter = (Props.Radius * 2) - (Props.Thickness * 2);
-            self.Frame.Size = Udim2FromOffset(Diameter, Diameter);
+        function circle:_updateRadius()
+            local props = self._properties;
+            local diameter = (props.Radius * 2) - (props.Thickness * 2);
+            self._frame.Size = _udim2fromoffset(diameter, diameter);
         end
 
-        Circle.Remove = Circle.Destroy;
-        Classes.Circle = Circle;
+        circle.Remove = circle.Destroy;
+        classes.Circle = circle;
     end
 
     do
-        local EnumToFont = {
-            [0] = Font.new("rbxasset://fonts/families/Arial.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal),
-            [1] = Font.new("rbxasset://fonts/families/HighwayGothic.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal),
-            [2] = Font.new("rbxasset://fonts/families/Roboto.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal),
-            [3] = Font.new("rbxasset://fonts/families/Ubuntu.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+        local enumToFont = {
+            [drawing.Fonts.UI] = Font.new("rbxasset://fonts/families/Arial.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal),
+            [drawing.Fonts.System] = Font.new("rbxasset://fonts/families/HighwayGothic.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal),
+            [drawing.Fonts.Plex] = Font.new("rbxasset://fonts/families/Roboto.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal),
+            [drawing.Fonts.Monospace] = Font.new("rbxasset://fonts/families/Ubuntu.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
         };
 
-        local Text = {};
+        local text = {};
 
-        function Text.new()
-            ItemCounter = ItemCounter + 1;
-            local id = ItemCounter;
+        function text.new()
+            itemCounter = itemCounter + 1;
+            local id = itemCounter;
 
-            local NewText = _setmetatable({
-                InstanceId = id,
+            local newText = _setmetatable({
+                _id = id,
                 __OBJECT_EXISTS = true,
-                Properties = {
+                _properties = {
                     Center = false,
-                    Color = Color3New(),
+                    Color = _color3new(),
                     Font = 0,
                     Outline = false,
-                    OutlineColor = Color3New(),
-                    Position = Vector2New(),
+                    OutlineColor = _color3new(),
+                    Position = _vector2new(),
                     Size = 12,
                     Text = "",
-                    TextBounds = Vector2New(),
+                    TextBounds = _vector2new(),
                     Transparency = 1,
                     Visible = false,
                     ZIndex = 0
                 },
-                Frame = create("TextLabel", {
+                _frame = create("TextLabel", {
                     Name = id,
                     BackgroundTransparency = 1,
-                    FontFace = EnumToFont[0],
-                    Parent = DrawingDirectory,
-                    Position = Udim2New(),
-                    Size = Udim2New(),
+                    FontFace = enumToFont[0],
+                    Parent = drawingDirectory,
+                    Position = _udim2new(),
+                    Size = _udim2new(),
                     Text = "",
-                    TextColor3 = Color3New(),
+                    TextColor3 = _color3new(),
                     TextSize = 12,
                     TextXAlignment = Enum.TextXAlignment.Left,
                     TextYAlignment = Enum.TextYAlignment.Top,
@@ -344,756 +350,689 @@ do
                     ZIndex = 0
                 }, {
                     create("UIStroke", {
-                        Name = "Stroke",
-                        Color = Color3New(),
+                        Name = "_stroke",
+                        Color = _color3new(),
                         Enabled = false,
                         Thickness = 1
                     })
                 })
-            }, Text);
+            }, text);
 
-            Cache[id] = NewText;
-            return NewText;
+            cache[id] = newText;
+            return newText;
         end
 
-        function Text:__index(k)
-            local Prop = self.Properties[k];
-            if Prop ~= nil then
-                return Prop;
+        function text:__index(k)
+            local prop = self._properties[k];
+            if prop ~= nil then
+                return prop;
             end
-            return Text[k];
+            return text[k];
         end
 
-        function Text:__newindex(k, v)
+        function text:__newindex(k, v)
             if self.__OBJECT_EXISTS == true then
-                local Props = self.Properties;
-                if k == "Font" then
-                    if (typeof(v) ~= "number" and typeof(v) ~= "Font") or Props.Font == v then
-                        return;
-                    end
-                elseif k == "TextBounds" or Props[k] == nil or Props[k] == v or typeof(Props[k]) ~= typeof(v) then
+                local props = self._properties;
+                if k == "TextBounds" or props[k] == nil or props[k] == v or typeof(props[k]) ~= typeof(v) then
                     return;
                 end
-                Props[k] = v;
+                props[k] = v;
                 if k == "Center" then
-                    self.Frame.TextXAlignment = v and Enum.TextXAlignment.Center or Enum.TextXAlignment.Left;
+                    self._frame.TextXAlignment = v and Enum.TextXAlignment.Center or Enum.TextXAlignment.Left;
                 elseif k == "Color" then
-                    self.Frame.TextColor3 = v;
+                    self._frame.TextColor3 = v;
                 elseif k == "Font" then
-                    self.Frame.FontFace = typeof(v) == "Font" and v or EnumToFont[v];
-                    self:UpdateTextBounds();
+                    self._frame.FontFace = enumToFont[v];
+                    self:_updateTextBounds();
                 elseif k == "Outline" then
-                    self.Frame.Stroke.Enabled = v;
+                    self._frame._stroke.Enabled = v;
                 elseif k == "OutlineColor" then
-                    self.Frame.Stroke.Color = v;
+                    self._frame._stroke.Color = v;
                 elseif k == "Position" then
-                    self.Frame.Position = Udim2FromOffset(v.X, v.Y);
+                    self._frame.Position = _udim2fromoffset(v.X, v.Y);
                 elseif k == "Size" then
-                    self.Frame.TextSize = v;
-                    self:UpdateTextBounds();
+                    self._frame.TextSize = v;
+                    self:_updateTextBounds();
                 elseif k == "Text" then
-                    self.Frame.Text = v;
-                    self:UpdateTextBounds();
+                    self._frame.Text = v;
+                    self:_updateTextBounds();
                 elseif k == "Transparency" then
-                    self.Frame.TextTransparency = 1 - v;
-                    self.Frame.Stroke.Transparency = 1 - v;
+                    self._frame.TextTransparency = 1 - v;
+                    self._frame._stroke.Transparency = 1 - v;
                 elseif k == "Visible" then
-                    self.Frame.Visible = v;
+                    self._frame.Visible = v;
                 elseif k == "ZIndex" then
-                    self.Frame.ZIndex = v;
+                    self._frame.ZIndex = v;
                 end
             end
         end
 
-        function Text:__iter()
-            return next, self.Properties;
+        function text:__iter()
+            return next, self._properties;
         end
 
-        function Text:__tostring()
+        function text:__tostring()
             return "Drawing";
         end
 
-        function Text:Destroy()
-            Cache[self.InstanceId] = nil;
+        function text:Destroy()
+            cache[self._id] = nil;
             self.__OBJECT_EXISTS = false;
-            destroy(self.Frame);
+            _destroy(self._frame);
         end
 
-        function Text:UpdateTextBounds()
-            local Props = self.Properties;
-            Props.TextBounds = GetTextBoundsAsync(TextService, create("GetTextBoundsParams", {
-                Text = Props.Text,
-                Size = Props.Size,
-                Font = typeof(Props.Font) == "Font" and Props.Font or EnumToFont[Props.Font],
+        function text:_updateTextBounds()
+            local props = self._properties;
+            props.TextBounds = _gettextboundsasync(textService, create("GetTextBoundsParams", {
+                Text = props.Text,
+                Size = props.Size,
+                Font = enumToFont[props.Font],
                 Width = huge
             }));
         end
 
-        Text.Remove = Text.Destroy;
-        Classes.Text = Text;
+        text.Remove = text.Destroy;
+        classes.Text = text;
     end
 
     do
-        local Square = {};
+        local square = {};
 
-        function Square.new()
-            ItemCounter = ItemCounter + 1;
-            local id = ItemCounter;
+        function square.new()
+            itemCounter = itemCounter + 1;
+            local id = itemCounter;
 
-            local NewSquare = _setmetatable({
-                InstanceId = id,
+            local newSquare = _setmetatable({
+                _id = id,
                 __OBJECT_EXISTS = true,
-                Properties = {
-                    Color = Color3New(),
+                _properties = {
+                    Color = _color3new(),
                     Filled = false,
-                    Position = Vector2New(),
-                    Size = Vector2New(),
+                    Position = _vector2new(),
+                    Size = _vector2new(),
                     Thickness = 1,
                     Transparency = 1,
                     Visible = false,
                     ZIndex = 0
                 },
-                Frame = create("Frame", {
-                    BackgroundColor3 = Color3New(),
+                _frame = create("Frame", {
+                    BackgroundColor3 = _color3new(),
                     BackgroundTransparency = 1,
                     BorderSizePixel = 0,
-                    Parent = DrawingDirectory,
-                    Position = Udim2New(),
-                    Size = Udim2New(),
+                    Parent = drawingDirectory,
+                    Position = _udim2new(),
+                    Size = _udim2new(),
                     Visible = false,
                     ZIndex = 0
                 }, {
                     create("UIStroke", {
-                        Name = "Stroke",
-                        Color = Color3New(),
+                        Name = "_stroke",
+                        Color = _color3new(),
                         Thickness = 1,
                         LineJoinMode = Enum.LineJoinMode.Miter;
                     })
                 })
-            }, Square);
+            }, square);
 
-            Cache[id] = NewSquare;
-            return NewSquare;
+            cache[id] = newSquare;
+            return newSquare;
         end
 
-        function Square:__index(k)
-            local Prop = self.Properties[k];
-            if Prop ~= nil then
-                return Prop;
+        function square:__index(k)
+            local prop = self._properties[k];
+            if prop ~= nil then
+                return prop;
             end
-            return Square[k];
+            return square[k];
         end
 
-        function Square:__newindex(k, v)
+        function square:__newindex(k, v)
             if self.__OBJECT_EXISTS == true then
-                local Props = self.Properties;
-                if Props[k] == nil or Props[k] == v or typeof(Props[k]) ~= typeof(v) then
+                local props = self._properties;
+                if props[k] == nil or props[k] == v or typeof(props[k]) ~= typeof(v) then
                     return;
                 end
-                Props[k] = v;
+                props[k] = v;
                 if k == "Color" then
-                    self.Frame.BackgroundColor3 = v;
-                    self.Frame.Stroke.Color = v;
+                    self._frame.BackgroundColor3 = v;
+                    self._frame._stroke.Color = v;
                 elseif k == "Filled" then
-                    self.Frame.BackgroundTransparency = v and 1 - Props.Transparency or 1;
+                    self._frame.BackgroundTransparency = v and 1 - props.Transparency or 1;
                 elseif k == "Position" then
-                    self:UpdateScale();
+                    self:_updateScale();
                 elseif k == "Size" then
-                    self:UpdateScale();
+                    self:_updateScale();
                 elseif k == "Thickness" then
-                    self.Frame.Stroke.Thickness = v;
-                    self:UpdateScale();
+                    self._frame._stroke.Thickness = v;
+                    self:_updateScale();
                 elseif k == "Transparency" then
-                    self.Frame.Stroke.Transparency = 1 - v;
-                    if Props.Filled then
-                        self.Frame.BackgroundTransparency = 1 - v;
+                    self._frame._stroke.Transparency = 1 - v;
+                    if props.Filled then
+                        self._frame.BackgroundTransparency = 1 - v;
                     end
                 elseif k == "Visible" then
-                    self.Frame.Visible = v;
+                    self._frame.Visible = v;
                 elseif k == "ZIndex" then
-                    self.Frame.ZIndex = v;
+                    self._frame.ZIndex = v;
                 end
             end
         end
 
-        function Square:__iter()
-            return next, self.Properties;
+        function square:__iter()
+            return next, self._properties;
         end
 
-        function Square:__tostring()
+        function square:__tostring()
             return "Drawing";
         end
 
-        function Square:Destroy()
-            Cache[self.InstanceId] = nil;
+        function square:Destroy()
+            cache[self._id] = nil;
             self.__OBJECT_EXISTS = false;
-            destroy(self.Frame);
+            _destroy(self._frame);
         end
 
-        function Square:UpdateScale()
-            local Props = self.Properties;
-            self.Frame.Position = Udim2FromOffset(Props.Position.X + Props.Thickness, Props.Position.Y + Props.Thickness);
-            local Thickness = Props.Thickness;
-            self.Frame.Size = Udim2FromOffset(Props.Size.X - Thickness * 2, Props.Size.Y - Thickness * 2);
+        function square:_updateScale()
+            local props = self._properties;
+            self._frame.Position = _udim2fromoffset(props.Position.X + props.Thickness, props.Position.Y + props.Thickness);
+            local thickness = props.Thickness;
+            self._frame.Size = _udim2fromoffset(props.Size.X - thickness * 2, props.Size.Y - thickness * 2);
         end
 
-        Square.Remove = Square.Destroy;
-        Classes.Square = Square;
+        square.Remove = square.Destroy;
+        classes.Square = square;
     end
 
     do
-        local Image = {};
+        local image = {};
 
-        function Image.new()
-            ItemCounter = ItemCounter + 1;
-            local id = ItemCounter;
+        function image.new()
+            itemCounter = itemCounter + 1;
+            local id = itemCounter;
 
-            local NewImage = _setmetatable({
-                InstanceId = id,
-                ImageId = 0,
+            local newImage = _setmetatable({
+                _id = id,
+                _imageId = 0,
                 __OBJECT_EXISTS = true,
-                Properties = {
-                    Color = Color3New(1, 1, 1),
+                _properties = {
+                    Color = _color3new(1, 1, 1),
                     Data = "",
-                    Position = Vector2New(),
+                    Position = _vector2new(),
                     Rounding = 0,
-                    Size = Vector2New(),
+                    Size = _vector2new(),
                     Transparency = 1,
                     Uri = "",
                     Visible = false,
                     ZIndex = 0
                 },
-                Frame = create("ImageLabel", {
+                _frame = create("ImageLabel", {
                     BackgroundTransparency = 1,
                     BorderSizePixel = 0,
                     Image = "",
-                    ImageColor3 = Color3New(1, 1, 1),
-                    Parent = DrawingDirectory,
-                    Position = Udim2New(),
-                    Size = Udim2New(),
+                    ImageColor3 = _color3new(1, 1, 1),
+                    Parent = drawingDirectory,
+                    Position = _udim2new(),
+                    Size = _udim2new(),
                     Visible = false,
                     ZIndex = 0
                 }, {
                     create("UICorner", {
-                        Name = "Corner",
-                        CornerRadius = UdimNew()
+                        Name = "_corner",
+                        CornerRadius = _udimnew()
                     })
                 })
-            }, Image);
+            }, image);
 
-            Cache[id] = NewImage;
-            return NewImage;
+            cache[id] = newImage;
+            return newImage;
         end
 
-        function Image:__index(k)
-            _assert(k ~= "Data", StringFormat("Attempt to read writeonly property '%s'", k));
+        function image:__index(k)
+            _assert(k ~= "Data", _stringformat("Attempt to read writeonly property '%s'", k));
             if k == "Loaded" then
-                return self.Frame.IsLoaded;
+                return self._frame.IsLoaded;
             end
-            local Prop = self.Properties[k];
-            if Prop ~= nil then
-                return Prop;
+            local prop = self._properties[k];
+            if prop ~= nil then
+                return prop;
             end
-            return Image[k];
+            return image[k];
         end
 
-        function Image:__newindex(k, v)
+        function image:__newindex(k, v)
             if self.__OBJECT_EXISTS == true then
-                local Props = self.Properties;
-                if Props[k] == nil or Props[k] == v or typeof(Props[k]) ~= typeof(v) then
+                local props = self._properties;
+                if props[k] == nil or props[k] == v or typeof(props[k]) ~= typeof(v) then
                     return;
                 end
-                Props[k] = v;
+                props[k] = v;
                 if k == "Color" then
-                    self.Frame.ImageColor3 = v;
+                    self._frame.ImageColor3 = v;
                 elseif k == "Data" then
-                    self:NewImage(v);
+                    self:_newImage(v);
                 elseif k == "Position" then
-                    self.Frame.Position = Udim2FromOffset(v.X, v.Y);
+                    self._frame.Position = _udim2fromoffset(v.X, v.Y);
                 elseif k == "Rounding" then
-                    self.Frame.Corner.CornerRadius = UdimNew(0, v);
+                    self._frame._corner.CornerRadius = _udimnew(0, v);
                 elseif k == "Size" then
-                    self.Frame.Size = Udim2FromOffset(v.X, v.Y);
+                    self._frame.Size = _udim2fromoffset(v.X, v.Y);
                 elseif k == "Transparency" then
-                    self.Frame.ImageTransparency = 1 - v;
+                    self._frame.ImageTransparency = 1 - v;
                 elseif k == "Uri" then
-                    self:NewImage(v, true);
+                    self:_newImage(v, true);
                 elseif k == "Visible" then
-                    self.Frame.Visible = v;
+                    self._frame.Visible = v;
                 elseif k == "ZIndex" then
-                    self.Frame.ZIndex = v;
+                    self._frame.ZIndex = v;
                 end
             end
         end
 
-        function Image:__iter()
-            return next, self.Properties;
+        function image:__iter()
+            return next, self._properties;
         end
 
-        function Image:__tostring()
+        function image:__tostring()
             return "Drawing";
         end
 
-        function Image:Destroy()
-            Cache[self.InstanceId] = nil;
+        function image:Destroy()
+            cache[self._id] = nil;
             self.__OBJECT_EXISTS = false;
-            destroy(self.Frame);
+            _destroy(self._frame);
         end
 
-        function Image:NewImage(Data, IsUri)
-            TaskSpawn(function() 
-                self.ImageId = self.ImageId + 1;
-                local Path = StringFormat("%s-%s.png", self.InstanceId, self.ImageId);
-                if IsUri then
-                    local NewData;
-                    while NewData == nil do
-                        local Success, Res = pcall(HttpGet, game, Data, true);
-                        if Success then
-                            NewData = Res;
-                        elseif string.find(string.lower(Res), "too many requests") then
+        function image:_newImage(data, isUri)
+            _taskspawn(function() -- this is fucked but u can't yield in a metamethod
+                self._imageId = self._imageId + 1;
+                local path = _stringformat("%s-%s.png", self._id, self._imageId);
+                if isUri then
+                    local newData;
+                    while newData == nil do
+                        local success, res = pcall(_httpget, game, data, true);
+                        if success then
+                            newData = res;
+                        elseif string.find(string.lower(res), "too many requests") then
                             task.wait(3);
                         else
-                            error(Res, 2);
+                            error(res, 2);
                             return;
                         end
                     end
-                    self.Properties.Data = Data;
+                    self._properties.Data = data;
                 else
-                    self.Properties.Uri = "";
+                    self._properties.Uri = "";
                 end
-                self.Frame.Image = WriteCustomAsset(Path, Data);
+                self._frame.Image = _writecustomasset(path, data);
             end);
         end
 
-        Image.Remove = Image.Destroy;
-        Classes.Image = Image;
+        image.Remove = image.Destroy;
+        classes.Image = image;
     end
 
     do
-        local Triangle = {};
+        local triangle = {};
 
-        function Triangle.new()
-            ItemCounter = ItemCounter + 1;
-            local id = ItemCounter;
+        function triangle.new()
+            itemCounter = itemCounter + 1;
+            local id = itemCounter;
 
-            local NewTriangle = _setmetatable({
-                InstanceId = id,
+            local newTriangle = _setmetatable({
+                _id = id,
                 __OBJECT_EXISTS = true,
-                Scanlines = {},
-                Properties = {
-                    Color = Color3New(),
+                _properties = {
+                    Color = _color3new(),
                     Filled = false,
-                    PointA = Vector2New(),
-                    PointB = Vector2New(),
-                    PointC = Vector2New(),
+                    PointA = _vector2new(),
+                    PointB = _vector2new(),
+                    PointC = _vector2new(),
                     Thickness = 1,
                     Transparency = 1,
                     Visible = false,
                     ZIndex = 0
                 },
-                Frame = create("Frame", {
+                _frame = create("Frame", {
                     BackgroundTransparency = 1,
-                    Parent = DrawingDirectory,
-                    Size = Udim2New(1, 0, 1, 0),
+                    Parent = drawingDirectory,
+                    Size = _udim2new(1, 0, 1, 0),
                     Visible = false,
                     ZIndex = 0
                 }, {
                     create("Frame", {
-                        Name = "Line1",
-                        AnchorPoint = Vector2New(0.5, 0.5),
-                        BackgroundColor3 = Color3New(),
+                        Name = "_line1",
+                        AnchorPoint = _vector2new(0.5, 0.5),
+                        BackgroundColor3 = _color3new(),
                         BorderSizePixel = 0,
-                        Position = Udim2New(),
-                        Size = Udim2New(),
+                        Position = _udim2new(),
+                        Size = _udim2new(),
                         ZIndex = 0
                     }),
                     create("Frame", {
-                        Name = "Line2",
-                        AnchorPoint = Vector2New(0.5, 0.5),
-                        BackgroundColor3 = Color3New(),
+                        Name = "_line2",
+                        AnchorPoint = _vector2new(0.5, 0.5),
+                        BackgroundColor3 = _color3new(),
                         BorderSizePixel = 0,
-                        Position = Udim2New(),
-                        Size = Udim2New(),
+                        Position = _udim2new(),
+                        Size = _udim2new(),
                         ZIndex = 0
                     }),
                     create("Frame", {
-                        Name = "Line3",
-                        AnchorPoint = Vector2New(0.5, 0.5),
-                        BackgroundColor3 = Color3New(),
+                        Name = "_line3",
+                        AnchorPoint = _vector2new(0.5, 0.5),
+                        BackgroundColor3 = _color3new(),
                         BorderSizePixel = 0,
-                        Position = Udim2New(),
-                        Size = Udim2New(),
+                        Position = _udim2new(),
+                        Size = _udim2new(),
                         ZIndex = 0
                     })
                 })
-            }, Triangle);
+            }, triangle);
 
-            Cache[id] = NewTriangle;
-            return NewTriangle;
+            cache[id] = newTriangle;
+            return newTriangle;
         end
 
-        function Triangle:__index(k)
-            local Prop = self.Properties[k];
-            if Prop ~= nil then
-                return Prop;
+        function triangle:__index(k)
+            local prop = self._properties[k];
+            if prop ~= nil then
+                return prop;
             end
-            return Triangle[k];
+            return triangle[k];
         end
 
-        function Triangle:__newindex(k, v)
+        function triangle:__newindex(k, v)
             if self.__OBJECT_EXISTS == true then
-                local Props, Frame = self.Properties, self.Frame;
-                if Props[k] == nil or Props[k] == v or typeof(Props[k]) ~= typeof(v) then
+                local props, frame = self._properties, self._frame;
+                if props[k] == nil or props[k] == v or typeof(props[k]) ~= typeof(v) then
                     return;
                 end
-                Props[k] = v;
+                props[k] = v;
                 if k == "Color" then
-                    Frame.Line1.BackgroundColor3 = v;
-                    Frame.Line2.BackgroundColor3 = v;
-                    Frame.Line3.BackgroundColor3 = v;
-                    for _, Sl in ipairs(self.Scanlines) do Sl.BackgroundColor3 = v end
+                    frame._line1.BackgroundColor3 = v;
+                    frame._line2.BackgroundColor3 = v;
+                    frame._line3.BackgroundColor3 = v;
                 elseif k == "Filled" then
-                    self:CalculateFill()
+                    -- TODO
                 elseif k == "PointA" then
-                    self:UpdateVertices({
-                        { Frame.Line1, Props.PointA, Props.PointB },
-                        { Frame.Line3, Props.PointC, Props.PointA }
+                    self:_updateVertices({
+                        { frame._line1, props.PointA, props.PointB },
+                        { frame._line3, props.PointC, props.PointA }
                     });
-                    if Props.Filled then
-                        self:CalculateFill();
+                    if props.Filled then
+                        self:_calculateFill();
                     end
                 elseif k == "PointB" then
-                    self:UpdateVertices({
-                        { Frame.Line1, Props.PointA, Props.PointB },
-                        { Frame.Line2, Props.PointB, Props.PointC }
+                    self:_updateVertices({
+                        { frame._line1, props.PointA, props.PointB },
+                        { frame._line2, props.PointB, props.PointC }
                     });
-                    if Props.Filled then
-                        self:CalculateFill();
+                    if props.Filled then
+                        self:_calculateFill();
                     end
                 elseif k == "PointC" then
-                    self:UpdateVertices({
-                        { Frame.Line2, Props.PointB, Props.PointC },
-                        { Frame.Line3, Props.PointC, Props.PointA }
+                    self:_updateVertices({
+                        { frame._line2, props.PointB, props.PointC },
+                        { frame._line3, props.PointC, props.PointA }
                     });
-                    if Props.Filled then
-                        self:CalculateFill();
+                    if props.Filled then
+                        self:_calculateFill();
                     end
                 elseif k == "Thickness" then
-                    local Thickness = MathMax(v, 0.1);
-                    Frame.Line1.Size = Udim2FromOffset(Frame.Line1.AbsoluteSize.X, Thickness);
-                    Frame.Line2.Size = Udim2FromOffset(Frame.Line2.AbsoluteSize.X, Thickness);
-                    Frame.Line3.Size = Udim2FromOffset(Frame.Line3.AbsoluteSize.X, Thickness);
+                    local thickness = _mathmax(v, 1);
+                    frame._line1.Size = _udim2fromoffset(frame._line1.AbsoluteSize.X, thickness);
+                    frame._line2.Size = _udim2fromoffset(frame._line2.AbsoluteSize.X, thickness);
+                    frame._line3.Size = _udim2fromoffset(frame._line3.AbsoluteSize.X, thickness);
                 elseif k == "Transparency" then
-                    Frame.Line1.BackgroundTransparency = 1 - v;
-                    Frame.Line2.BackgroundTransparency = 1 - v;
-                    Frame.Line3.BackgroundTransparency = 1 - v;
-                    for _, Sl in ipairs(self.Scanlines) do Sl.BackgroundTransparency = 1 - v end
+                    frame._line1.BackgroundTransparency = 1 - v;
+                    frame._line2.BackgroundTransparency = 1 - v;
+                    frame._line3.BackgroundTransparency = 1 - v;
                 elseif k == "Visible" then
-                    self.Frame.Visible = v;
-                    for _, Sl in ipairs(self.Scanlines) do Sl.Visible = v end
+                    self._frame.Visible = v;
                 elseif k == "ZIndex" then
-                    self.Frame.ZIndex = v;
-                    for _, Sl in ipairs(self.Scanlines) do Sl.ZIndex = v end
+                    self._frame.ZIndex = v;
                 end
             end
         end
 
-        function Triangle:__iter()
-            return next, self.Properties;
+        function triangle:__iter()
+            return next, self._properties;
         end
 
-        function Triangle:__tostring()
+        function triangle:__tostring()
             return "Drawing";
         end
 
-        function Triangle:Destroy()
-            Cache[self.InstanceId] = nil;
+        function triangle:Destroy()
+            cache[self._id] = nil;
             self.__OBJECT_EXISTS = false;
-            for _, Sl in ipairs(self.Scanlines) do destroy(Sl) end
-            destroy(self.Frame);
+            _destroy(self._frame);
         end
 
-        function Triangle:UpdateVertices(Vertices)
-            local Thickness = self.Properties.Thickness;
-            for i, v in Vertices do
-                UpdatePosition(v[1], v[2], v[3], Thickness);
-            end
-        end
-
-        function Triangle:CalculateFill()
-            local Props = self.Properties
-            local Scanlines = self.Scanlines
-            if not Props.Filled then
-                for _, Sl in ipairs(Scanlines) do Sl.Visible = false end
-                return
-            end
-            local A, B, C = Props.PointA, Props.PointB, Props.PointC
-            local Verts = {{X=A.X,Y=A.Y},{X=B.X,Y=B.Y},{X=C.X,Y=C.Y}}
-            table.sort(Verts, function(a, b) return a.Y < b.Y end)
-            local V1, V2, V3 = Verts[1], Verts[2], Verts[3]
-            local YMin = math.floor(V1.Y)
-            local YMax = math.ceil(V3.Y)
-            local Height = YMax - YMin
-            local Color = Props.Color
-            local BgTrans = 1 - Props.Transparency
-            local Vis = Props.Visible
-            local Zi = Props.ZIndex
-            while #Scanlines < Height + 1 do
-                local Sl = InstanceNew("Frame")
-                Sl.BorderSizePixel = 0
-                Sl.AnchorPoint = Vector2New(0, 0)
-                Sl.BackgroundColor3 = Color
-                Sl.BackgroundTransparency = BgTrans
-                Sl.ZIndex = Zi
-                Sl.Parent = self.Frame
-                Scanlines[#Scanlines + 1] = Sl
-            end
-            local function EdgeX(Ya, Yb, Xa, Xb, y)
-                if Ya == Yb then return Xa end
-                return Xa + (y - Ya) / (Yb - Ya) * (Xb - Xa)
-            end
-            local SlIdx = 0
-            for y = YMin, YMax do
-                local XL, XR
-                if y <= V2.Y then
-                    XL = EdgeX(V1.Y, V2.Y, V1.X, V2.X, y)
-                    XR = EdgeX(V1.Y, V3.Y, V1.X, V3.X, y)
-                else
-                    XL = EdgeX(V2.Y, V3.Y, V2.X, V3.X, y)
-                    XR = EdgeX(V1.Y, V3.Y, V1.X, V3.X, y)
-                end
-                if XL > XR then XL, XR = XR, XL end
-                local w = XR - XL
-                if w > 0 then
-                    SlIdx = SlIdx + 1
-                    local Sl = Scanlines[SlIdx]
-                    Sl.BackgroundColor3 = Color
-                    Sl.BackgroundTransparency = BgTrans
-                    Sl.ZIndex = Zi
-                    Sl.Position = Udim2FromOffset(XL, y)
-                    Sl.Size = Udim2FromOffset(w, 1)
-                    Sl.Visible = Vis
-                end
-            end
-            for i = SlIdx + 1, #Scanlines do
-                Scanlines[i].Visible = false
+        function triangle:_updateVertices(vertices)
+            local thickness = self._properties.Thickness;
+            for i, v in vertices do
+                updatePosition(v[1], v[2], v[3], thickness);
             end
         end
 
-        Triangle.Remove = Triangle.Destroy;
-        Classes.Triangle = Triangle;
+        function triangle:_calculateFill()
+
+        end
+
+        triangle.Remove = triangle.Destroy;
+        classes.Triangle = triangle;
     end
 
     do
-        local Quad = {};
+        local quad = {};
 
-        function Quad.new()
-            ItemCounter = ItemCounter + 1;
-            local id = ItemCounter;
+        function quad.new()
+            itemCounter = itemCounter + 1;
+            local id = itemCounter;
 
-            local NewQuad = _setmetatable({
-                InstanceId = id,
+            local newQuad = _setmetatable({
+                _id = id,
                 __OBJECT_EXISTS = true,
-                Properties = {
-                    Color = Color3New(),
+                _properties = {
+                    Color = _color3new(),
                     Filled = false,
-                    PointA = Vector2New(),
-                    PointB = Vector2New(),
-                    PointC = Vector2New(),
-                    PointD = Vector2New(),
+                    PointA = _vector2new(),
+                    PointB = _vector2new(),
+                    PointC = _vector2new(),
+                    PointD = _vector2new(),
                     Thickness = 1,
                     Transparency = 1,
                     Visible = false,
                     ZIndex = 0
                 },
-                Frame = create("Frame", {
+                _frame = create("Frame", {
                     BackgroundTransparency = 1,
-                    Parent = DrawingDirectory,
-                    Size = Udim2New(1, 0, 1, 0),
+                    Parent = drawingDirectory,
+                    Size = _udim2new(1, 0, 1, 0),
                     Visible = false,
                     ZIndex = 0
                 }, {
                     create("Frame", {
-                        Name = "Line1",
-                        AnchorPoint = Vector2New(0.5, 0.5),
-                        BackgroundColor3 = Color3New(),
+                        Name = "_line1",
+                        AnchorPoint = _vector2new(0.5, 0.5),
+                        BackgroundColor3 = _color3new(),
                         BorderSizePixel = 0,
-                        Position = Udim2New(),
-                        Size = Udim2New(),
+                        Position = _udim2new(),
+                        Size = _udim2new(),
                         ZIndex = 0
                     }),
                     create("Frame", {
-                        Name = "Line2",
-                        AnchorPoint = Vector2New(0.5, 0.5),
-                        BackgroundColor3 = Color3New(),
+                        Name = "_line2",
+                        AnchorPoint = _vector2new(0.5, 0.5),
+                        BackgroundColor3 = _color3new(),
                         BorderSizePixel = 0,
-                        Position = Udim2New(),
-                        Size = Udim2New(),
+                        Position = _udim2new(),
+                        Size = _udim2new(),
                         ZIndex = 0
                     }),
                     create("Frame", {
-                        Name = "Line3",
-                        AnchorPoint = Vector2New(0.5, 0.5),
-                        BackgroundColor3 = Color3New(),
+                        Name = "_line3",
+                        AnchorPoint = _vector2new(0.5, 0.5),
+                        BackgroundColor3 = _color3new(),
                         BorderSizePixel = 0,
-                        Position = Udim2New(),
-                        Size = Udim2New(),
+                        Position = _udim2new(),
+                        Size = _udim2new(),
                         ZIndex = 0
                     }),
                     create("Frame", {
-                        Name = "Line4",
-                        AnchorPoint = Vector2New(0.5, 0.5),
-                        BackgroundColor3 = Color3New(),
+                        Name = "_line4",
+                        AnchorPoint = _vector2new(0.5, 0.5),
+                        BackgroundColor3 = _color3new(),
                         BorderSizePixel = 0,
-                        Position = Udim2New(),
-                        Size = Udim2New(),
+                        Position = _udim2new(),
+                        Size = _udim2new(),
                         ZIndex = 0
                     })
                 })
-            }, Quad);
+            }, quad);
 
-            Cache[id] = NewQuad;
-            return NewQuad;
+            cache[id] = newQuad;
+            return newQuad;
         end
 
-        function Quad:__index(k)
-            local Prop = self.Properties[k];
-            if Prop ~= nil then
-                return Prop;
+        function quad:__index(k)
+            local prop = self._properties[k];
+            if prop ~= nil then
+                return prop;
             end
-            return Quad[k];
+            return quad[k];
         end
 
-        function Quad:__newindex(k, v)
+        function quad:__newindex(k, v)
             if self.__OBJECT_EXISTS == true then
-                local Props, Frame = self.Properties, self.Frame;
-                if Props[k] == nil or Props[k] == v or typeof(Props[k]) ~= typeof(v) then
+                local props, frame = self._properties, self._frame;
+                if props[k] == nil or props[k] == v or typeof(props[k]) ~= typeof(v) then
                     return;
                 end
-                Props[k] = v;
+                props[k] = v;
                 if k == "Color" then
-                    Frame.Line1.BackgroundColor3 = v;
-                    Frame.Line2.BackgroundColor3 = v;
-                    Frame.Line3.BackgroundColor3 = v;
-                    Frame.Line4.BackgroundColor3 = v;
+                    frame._line1.BackgroundColor3 = v;
+                    frame._line2.BackgroundColor3 = v;
+                    frame._line3.BackgroundColor3 = v;
+                    frame._line4.BackgroundColor3 = v;
                 elseif k == "Filled" then
+                    -- TODO
                 elseif k == "PointA" then
-                    self:UpdateVertices({
-                        { Frame.Line1, Props.PointA, Props.PointB },
-                        { Frame.Line4, Props.PointD, Props.PointA }
+                    self:_updateVertices({
+                        { frame._line1, props.PointA, props.PointB },
+                        { frame._line4, props.PointD, props.PointA }
                     });
-                    if Props.Filled then
-                        self:CalculateFill();
+                    if props.Filled then
+                        self:_calculateFill();
                     end
                 elseif k == "PointB" then
-                    self:UpdateVertices({
-                        { Frame.Line1, Props.PointA, Props.PointB },
-                        { Frame.Line2, Props.PointB, Props.PointC }
+                    self:_updateVertices({
+                        { frame._line1, props.PointA, props.PointB },
+                        { frame._line2, props.PointB, props.PointC }
                     });
-                    if Props.Filled then
-                        self:CalculateFill();
+                    if props.Filled then
+                        self:_calculateFill();
                     end
                 elseif k == "PointC" then
-                    self:UpdateVertices({
-                        { Frame.Line2, Props.PointB, Props.PointC },
-                        { Frame.Line3, Props.PointC, Props.PointD }
+                    self:_updateVertices({
+                        { frame._line2, props.PointB, props.PointC },
+                        { frame._line3, props.PointC, props.PointD }
                     });
-                    if Props.Filled then
-                        self:CalculateFill();
+                    if props.Filled then
+                        self:_calculateFill();
                     end
                 elseif k == "PointD" then
-                    self:UpdateVertices({
-                        { Frame.Line3, Props.PointC, Props.PointD },
-                        { Frame.Line4, Props.PointD, Props.PointA }
+                    self:_updateVertices({
+                        { frame._line3, props.PointC, props.PointD },
+                        { frame._line4, props.PointD, props.PointA }
                     });
-                    if Props.Filled then
-                        self:CalculateFill();
+                    if props.Filled then
+                        self:_calculateFill();
                     end
                 elseif k == "Thickness" then
-                    local Thickness = MathMax(v, 0.1);
-                    Frame.Line1.Size = Udim2FromOffset(Frame.Line1.AbsoluteSize.X, Thickness);
-                    Frame.Line2.Size = Udim2FromOffset(Frame.Line2.AbsoluteSize.X, Thickness);
-                    Frame.Line3.Size = Udim2FromOffset(Frame.Line3.AbsoluteSize.X, Thickness);
-                    Frame.Line4.Size = Udim2FromOffset(Frame.Line4.AbsoluteSize.X, Thickness);
+                    local thickness = _mathmax(v, 1);
+                    frame._line1.Size = _udim2fromoffset(frame._line1.AbsoluteSize.X, thickness);
+                    frame._line2.Size = _udim2fromoffset(frame._line2.AbsoluteSize.X, thickness);
+                    frame._line3.Size = _udim2fromoffset(frame._line3.AbsoluteSize.X, thickness);
+                    frame._line4.Size = _udim2fromoffset(frame._line3.AbsoluteSize.X, thickness);
                 elseif k == "Transparency" then
-                    Frame.Line1.BackgroundTransparency = 1 - v;
-                    Frame.Line2.BackgroundTransparency = 1 - v;
-                    Frame.Line3.BackgroundTransparency = 1 - v;
-                    Frame.Line4.BackgroundTransparency = 1 - v;
+                    frame._line1.BackgroundTransparency = 1 - v;
+                    frame._line2.BackgroundTransparency = 1 - v;
+                    frame._line3.BackgroundTransparency = 1 - v;
+                    frame._line4.BackgroundTransparency = 1 - v;
                 elseif k == "Visible" then
-                    self.Frame.Visible = v;
+                    self._frame.Visible = v;
                 elseif k == "ZIndex" then
-                    self.Frame.ZIndex = v;
+                    self._frame.ZIndex = v;
                 end
             end
         end
 
-        function Quad:__iter()
-            return next, self.Properties;
+        function quad:__iter()
+            return next, self._properties;
         end
 
-        function Quad:__tostring()
+        function quad:__tostring()
             return "Drawing";
         end
 
-        function Quad:Destroy()
-            Cache[self.InstanceId] = nil;
+        function quad:Destroy()
+            cache[self._id] = nil;
             self.__OBJECT_EXISTS = false;
-            destroy(self.Frame);
+            _destroy(self._frame);
         end
 
-        function Quad:UpdateVertices(Vertices)
-            local Thickness = self.Properties.Thickness;
-            for i, v in Vertices do
-                UpdatePosition(v[1], v[2], v[3], Thickness);
+        function quad:_updateVertices(vertices)
+            local thickness = self._properties.Thickness;
+            for i, v in vertices do
+                updatePosition(v[1], v[2], v[3], thickness);
             end
         end
 
-        function Quad:CalculateFill()
+        function quad:_calculateFill()
 
         end
 
-        Quad.Remove = Quad.Destroy;
-        Classes.Quad = Quad;
+        quad.Remove = quad.Destroy;
+        classes.Quad = quad;
     end
 
-    Drawing.new = newcclosure(function(x)
-        return _assert(Classes[x], StringFormat("Invalid drawing type '%s'", x)).new();
+    drawing.new = newcclosure(function(x)
+        return _assert(classes[x], _stringformat("Invalid drawing type '%s'", x)).new();
     end);
 
-    Drawing.clear = newcclosure(function()
-        for i, v in Cache do
+    drawing.clear = newcclosure(function()
+        for i, v in cache do
             if v.__OBJECT_EXISTS then
                 v:Destroy();
             end
         end
     end);
 
-    Drawing.Cache = Cache;
+    drawing.cache = cache;
 end
 
-setreadonly(Drawing, true);
+setreadonly(drawing, true);
+setreadonly(drawing.Fonts, true);
 
-Genv.Drawing = Drawing;
-Genv.Cleardrawcache = Drawing.clear;
+genv.Drawing = drawing;
+genv.cleardrawcache = drawing.clear;
 
-Genv.Isrenderobj = newcclosure(function(x)
+genv.isrenderobj = newcclosure(function(x)
     return tostring(x) == "Drawing";
 end);
 
-local IsRenderObj = clonefunction(Isrenderobj);
+local _isrenderobj = clonefunction(isrenderobj);
 
-Genv.Getrenderproperty = newcclosure(function(x, y)
-    _assert(IsRenderObj(x), StringFormat("invalid argument #1 to 'getrenderproperty' (Drawing expected, got %s)", TypeOf(x)));
+genv.getrenderproperty = newcclosure(function(x, y)
+    _assert(_isrenderobj(x), _stringformat("invalid argument #1 to 'getrenderproperty' (Drawing expected, got %s)", _typeof(x)));
     return x[y];
 end);
 
-Genv.Setrenderproperty = newcclosure(function(x, y, z)
-    _assert(IsRenderObj(x), StringFormat("invalid argument #1 to 'setrenderproperty' (Drawing expected, got %s)", TypeOf(x)));
+genv.setrenderproperty = newcclosure(function(x, y, z)
+    _assert(_isrenderobj(x), _stringformat("invalid argument #1 to 'setrenderproperty' (Drawing expected, got %s)", _typeof(x)));
     x[y] = z;
 end);
 
-Genv.DrawingLoaded = true;
-
-return Drawing;
-
+genv.drawingLoaded = true;
