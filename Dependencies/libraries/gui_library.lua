@@ -5580,6 +5580,8 @@ function EZ:CreateWindow(...)
 	return Window;
 end;
 
+EZ.Version = "v3.8"
+
 --[[ Save Manager ]]
 
 local SaveManager = {};

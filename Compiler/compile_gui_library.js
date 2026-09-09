@@ -17,6 +17,7 @@ const compiled = [
     `-- This file was compiled by Elite Zone's Compiler. [${version}]`,
     '--[[ Library ]]',
     read(path.join(gui_path, 'library.lua')),
+    `EZ.Version = ${JSON.stringify(version)}`,
     '--[[ Save Manager ]]',
     read(path.join(gui_path, 'save_manager.lua')),
     '--[[ Theme Manager ]]',
