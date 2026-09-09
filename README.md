@@ -40,12 +40,12 @@ The loader downloads and starts the latest version of Elite Zone.
 
 If something isn't working, try these first:
 
-> 1. Try another supported scripting utility.
-> 2. Make sure your utility has good UNC support.
-> 3. Update your utility to the latest version.
-> 4. Remove the `Elite Zone` folder from your workspace/files directory.
-> 5. Restart Game and run the loader again.
-> 6. Disable other scripts that could be causing conflicts.
+1. Try another supported scripting utility.
+2. Make sure your utility has good UNC support.
+3. Update your utility to the latest version.
+4. Remove the `Elite Zone` folder from your workspace/files directory.
+5. Restart Game and run the loader again.
+6. Disable other scripts that could be causing conflicts.
 
 If the issue continues, send the **exact error**, your scripting utility, and any useful details when asking for support. [in discord]
 
