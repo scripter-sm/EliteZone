@@ -4569,7 +4569,7 @@ function EZ:CreateWindow(...)
 		local w = math.max(EZ.MinSize.X, math.min(Config.Size.X.Offset, math.floor(Area.X - 40)));
 		local h = math.max(EZ.MinSize.Y, math.floor(Area.Y - 40));
 		Config.Size = UDim2.fromOffset(w, h);
-		Config.Position = UDim2.fromOffset(math.floor((Area.X - w) / 2), math.floor((Area.Y - h) / 2));
+		Config.Position = UDim2.fromOffset(math.floor((Area.X - w) / 2), 20);
 		Config.Center = false;
 	end
 
