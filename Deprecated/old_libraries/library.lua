@@ -1,13 +1,13 @@
 --[[
 
-Originally used by Elite Zone v2 – v3.9.
+Originally used by Elite Zone v2 – v3.8.
 
 This library is a fork of Linoria.
 
 Licensed under the MIT License.
 Feel free to use, modify, and distribute it.
 
-© Elite Zone · 2026
+Copyright © 2021 violin-suzutsuki
 
 ]]
 
