@@ -66,7 +66,7 @@ Relevant components include:
 * `Dependencies/libraries/gui_library.lua`
 * `Deprecated/old_libraries/library.lua`
 
-See `LICENSE.md` for the complete licensing information.
+> See `LICENSE.md` for the complete licensing information.
 
 ## deprecated code
 
