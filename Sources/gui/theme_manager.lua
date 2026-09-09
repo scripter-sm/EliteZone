@@ -282,7 +282,9 @@ do
 
 	function ThemeManager:ApplyToTab(Tab)
 		local MenuBox = Tab:AddLeftTabbox();
-		self:BuildMenuTab(MenuBox:AddTab('Menu'));
+		if not self.Library.IsMobile then
+			self:BuildMenuTab(MenuBox:AddTab('Menu'));
+		end;
 		self:BuildNotificationsTab(MenuBox:AddTab('Notifications'));
 
 		self:CreateThemeManager(Tab:AddLeftTabbox());

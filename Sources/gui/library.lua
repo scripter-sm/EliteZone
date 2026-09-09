@@ -1878,6 +1878,7 @@ do
 			BackgroundColor3 = Color3.new(0, 0, 0);
 			BorderColor3 = Color3.new(0, 0, 0);
 			Size = UDim2.new(0, 28, 0, 15);
+			Visible = not EZ.IsMobile;
 			ZIndex = 6;
 			Parent = ToggleLabel;
 		});
@@ -2041,7 +2042,7 @@ do
 
 			EZ.KeybindFrame.Size = UDim2.new(0, math.max(XSize + 10, 210), 0, YSize + 23)
 
-			EZ.KeybindFrame.Visible = EZ.KeypickerListVisible and (YSize ~= 0);
+			EZ.KeybindFrame.Visible = EZ.KeypickerListVisible and (YSize ~= 0) and not EZ.IsMobile;
 		end;
 
 		function KeyPicker:OverrideState(State)
