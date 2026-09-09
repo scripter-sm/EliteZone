@@ -7,7 +7,7 @@ do
 	local NonColorDefaults = {
 		Background_Color = '000000';
 		Background_Transparency = 0.7;
-		Background_Blur = 15;
+		Background_Blur = EZ.IsMobile and 0 or 15;
 		Background_Contrast = 0;
 		Background_Saturation = 0;
 		Background_Brightness = 0;
