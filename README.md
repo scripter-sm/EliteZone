@@ -12,11 +12,9 @@
   <a href="https://elite-zone.xyz">
     <img src="https://raw.githubusercontent.com/scripter-sm/EliteZone/main/README/website.png" width="32">
   </a>
-  &nbsp;&nbsp;
   <a href="https://discord.gg/JGwx7yq6HQ">
     <img src="https://raw.githubusercontent.com/scripter-sm/EliteZone/main/README/discord.png" width="32">
   </a>
-  &nbsp;&nbsp;
   <a href="https://www.youtube.com/@Elite-Zone-EZ">
     <img src="https://raw.githubusercontent.com/scripter-sm/EliteZone/main/README/youtube.png" width="32">
   </a>
