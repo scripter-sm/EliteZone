@@ -1,35 +1,82 @@
-Elite Zone License
+# Elite Zone License
 
-Copyright (c) 2026 Elite Zone
+Copyright © 2026 Elite Zone
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of the contents of this repository and associated files (the "Software"), to
-use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, subject to the following conditions:
+## Proprietary Elite Zone Code
 
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
+Unless otherwise stated, all original code and modifications created by
+Elite Zone are proprietary.
 
-Portions of the Software may contain code derived from third-party projects,
-including the MIT-licensed Linoria library. Such portions remain subject to
-their respective licenses, and nothing in this license overrides or restricts
-the rights granted by those licenses.
+This includes `Loader.lua`, the Elite Zone software loaded or executed by
+`Loader.lua`, and other original Elite Zone code that is not explicitly
+identified as third-party or otherwise licensed.
 
-The contents loaded through `Loader.lua`, including protected, obfuscated, or
-otherwise inaccessible source code, are excluded from the permissions granted
-above. Such contents may be used as intended by Elite Zone, but may not be
-deobfuscated, decrypted, extracted, reverse engineered for the purpose of
-recovering source code, redistributed, republished, or otherwise made
-available in source or substantially equivalent form.
+The Elite Zone software may be distributed in protected or obfuscated
+form through third-party protection services, including Luarmor. Such
+protection does not change the ownership of the underlying software.
 
-This license does not apply to `old-library.bak`. `old-library.bak` is a fork
-of the MIT-licensed Linoria library and remains subject to the original
-Linoria MIT License.
+No permission is granted to deobfuscate, decrypt, dump, extract,
+reverse engineer for the purpose of recovering source code, redistribute,
+republish, sublicense, or otherwise make the proprietary Elite Zone
+software or its source code available without explicit permission from
+Elite Zone.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-ELITE ZONE OR ITS COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
-IN THE SOFTWARE.
+## Third-Party Code
+
+Certain files and directories contain code derived from or distributed
+under third-party licenses.
+
+### MIT License
+
+The following components contain code derived from or distributed under
+the MIT License:
+
+* `Sources/gui/`
+* `Dependencies/libraries/gui_library.lua`
+* `Deprecated/old_libraries/library.lua`
+
+These components remain subject to the original MIT License and its
+copyright and permission notices.
+
+Copyright © 2021 violin-suzutsuki
+
+Nothing in this license is intended to restrict the rights granted by
+the MIT License to those components.
+
+### CC0 1.0
+
+`Deprecated/old_sources/gui/` is released under CC0 1.0 Universal and
+remains subject to the terms of CC0 1.0.
+
+### Third-Party Fonts
+
+The `Dependencies/fonts/` directory contains third-party fonts.
+
+These fonts are not owned by Elite Zone and are not covered by the
+proprietary Elite Zone license. Each font remains subject to its own
+copyright and applicable license terms.
+
+Nothing in this license grants additional rights to the fonts beyond
+those provided by their respective licenses.
+
+## License Scope
+
+This license applies to original Elite Zone code owned by Elite Zone.
+
+It does not replace, modify, or restrict any rights granted by applicable
+third-party licenses.
+
+Where a third-party license grants permissions that are broader than
+those granted by this license, those permissions remain available for
+the applicable third-party component.
+
+## Disclaimer
+
+THE PROPRIETARY ELITE ZONE CODE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+
+IN NO EVENT SHALL ELITE ZONE OR ITS COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
