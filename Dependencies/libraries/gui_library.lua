@@ -159,7 +159,7 @@ local EZ = {
 
 	IsMobile = (function()
 		local Ok, Touch = pcall(function()
-			return InputService.TouchEnabled and not InputService.KeyboardEnabled;
+			return InputService.TouchEnabled or (getgenv and getgenv().mobile) or false;
 		end);
 		return Ok and Touch or false;
 	end)();
@@ -4567,6 +4567,14 @@ function EZ:CreateWindow(...)
 
 	if typeof(Config.Position) ~= 'UDim2' then Config.Position = UDim2.fromOffset(175, 50) end
 	if typeof(Config.Size) ~= 'UDim2' then Config.Size = UDim2.fromOffset(550, 650) end
+
+	if EZ.IsMobile then
+		local ViewportY = workspace.CurrentCamera.ViewportSize.Y;
+		Config.Size = UDim2.fromOffset(
+			Config.Size.X.Offset,
+			math.clamp(math.floor(ViewportY - 20), EZ.MinSize.Y, Config.Size.Y.Offset)
+		);
+	end
 
 	if Config.Center then
 
