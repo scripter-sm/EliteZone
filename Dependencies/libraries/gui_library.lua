@@ -193,8 +193,8 @@ function EZ:EnsureFolders()
 	ensurefolder('Elite Zone');
 	ensurefolder('Elite Zone/cache');
 	ensurefolder('Elite Zone/themes');
-	ensurefolder('Elite Zone/' .. self.Game);
-	ensurefolder('Elite Zone/' .. self.Game .. '/config');
+	ensurefolder('Elite Zone/' .. self.Game:lower());
+	ensurefolder('Elite Zone/' .. self.Game:lower() .. '/config');
 end
 
 function EZ:ReadCache()
@@ -5654,7 +5654,7 @@ do
 	};
 
 	function SaveManager:ConfigFolder()
-		return 'Elite Zone/' .. EZ.Game .. '/config';
+		return 'Elite Zone/' .. EZ.Game:lower() .. '/config';
 	end;
 
 	function SaveManager:CheckFolderTree()

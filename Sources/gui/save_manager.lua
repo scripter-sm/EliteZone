@@ -68,7 +68,7 @@ do
 	};
 
 	function SaveManager:ConfigFolder()
-		return 'Elite Zone/' .. EZ.Game .. '/config';
+		return 'Elite Zone/' .. EZ.Game:lower() .. '/config';
 	end;
 
 	function SaveManager:CheckFolderTree()
