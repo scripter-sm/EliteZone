@@ -1,5 +1,5 @@
 -- This file was compiled by Elite Zone's Compiler. [v3.8]
---Library Version (Used for caching purposes.) v0.6
+--Library Version (Used for caching purposes.) v0.7
 
 --[[ Library ]]
 
