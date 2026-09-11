@@ -3646,13 +3646,13 @@ do
 
 		function Dropdown:GetActiveValues()
 			if Info.Multi then
-				local T = {};
+				local count = 0;
 
 				for Value, Bool in next, Dropdown.Value do
-					table.insert(T, Value);
+					count += 1;
 				end;
 
-				return T;
+				return count;
 			else
 				return Dropdown.Value and 1 or 0;
 			end;
