@@ -3,8 +3,10 @@ name: Compile GUI Library
 on:
   push:
     branches: [ main ]
+    paths: [ 'Sources/gui/**' ]
   pull_request:
     branches: [ main ]
+    paths: [ 'Sources/gui/**' ]
 
 permissions:
   contents: write
@@ -30,7 +32,7 @@ jobs:
       run: |
         git config --local user.email "github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
-        git add Dependencies/libraries/gui_library.lua
+        git add Dependencies/libraries/gui_library.lua Dependencies/library_version.dat
         if git diff --cached --quiet; then
           echo "No changes to commit"
         else
