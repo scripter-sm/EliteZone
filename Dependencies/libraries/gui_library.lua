@@ -1,5 +1,5 @@
 -- This file was compiled by Elite Zone's Compiler. [v3.8]
---Library Version (Used for caching purposes.) v0.2
+--Library Version (Used for caching purposes.) v0.3
 
 --[[ Library ]]
 
@@ -4138,6 +4138,7 @@ do
 
 	local KeybindOuter = EZ:Create('Frame', {
 		AnchorPoint = Vector2.new(0, 0.5);
+		BackgroundTransparency = 1;
 		BorderColor3 = Color3.new(0, 0, 0);
 		Position = UDim2.new(0, 10, 0.5, 0);
 		Size = UDim2.new(0, 210, 0, 20);
