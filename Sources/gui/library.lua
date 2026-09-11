@@ -737,13 +737,8 @@ function EZ:UpdateKeybindMenu()
 	EZ._KeybindFaded = T > 0;
 
 	for _, Desc in next, EZ.KeybindInner:GetDescendants() do
-		if Desc:IsA('Frame') then
-			if Desc ~= EZ.KeybindContainer then
-				Desc.BackgroundTransparency = T;
-			end;
-		elseif Desc:IsA('TextLabel') then
-			Desc.TextTransparency = T;
-			Desc.TextStrokeTransparency = T;
+		if Desc:IsA('Frame') and Desc ~= EZ.KeybindContainer then
+			Desc.BackgroundTransparency = T;
 		end;
 	end;
 end;
