@@ -12,10 +12,6 @@ do
 		Background_Saturation = 0;
 		Background_Brightness = 0;
 
-		KeybindMenu = true;
-		KeybindMenuTransparency = 100;
-		KeybindMenuMode = 'Toggled';
-
 		NotificationClips = true;
 		NotificationClipsDistance = 200;
 		NotificationPositionX = 50;
@@ -84,8 +80,6 @@ do
 
 		'Background_Color', 'Background_Transparency', 'Background_Blur',
 		'Background_Contrast', 'Background_Saturation', 'Background_Brightness',
-
-		'KeybindMenu', 'KeybindMenuTransparency', 'KeybindMenuMode',
 
 		'NotificationClips', 'NotificationClipsDistance',
 		'NotificationPositionX', 'NotificationPositionY', 'NotificationTransparency',

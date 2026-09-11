@@ -93,7 +93,6 @@ do
 			'Background_Color', 'Background_Transparency', 'Background_Blur',
 			'Background_Contrast', 'Background_Saturation', 'Background_Brightness',
 
-			'KeybindMenu', 'KeybindMenuTransparency', 'KeybindMenuMode',
 			'NotificationClips', 'NotificationClipsDistance',
 			'NotificationPositionX', 'NotificationPositionY', 'NotificationTransparency',
 			'NotificationAnchorStyle', 'NotificationBarStyle', 'NotificationStyleSortOrder',
