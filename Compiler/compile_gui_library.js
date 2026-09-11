@@ -42,8 +42,7 @@ const library_version = bump_library_version();
 const compiled = [
     `-- This file was compiled by Elite Zone's Compiler. [${version}]`,
     `--Library Version (Used for caching purposes.) ${library_version}`,
-    body,
-].join('\n\n') + '\n';
+].join('\n') + '\n\n' + body + '\n';
 
 fs.mkdirSync(path.dirname(output_path), { recursive: true });
 fs.writeFileSync(output_path, compiled, 'utf8');
