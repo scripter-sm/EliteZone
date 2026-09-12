@@ -3555,7 +3555,7 @@ do
 			EZ:AddToolTip(Info.Tooltip, DropdownOuter)
 		end
 
-		local MAX_DROPDOWN_ITEMS = 8;
+		local Max_dropdown_items = 8;
 
 		local ListOuter = EZ:Create('Frame', {
 			BackgroundColor3 = Color3.new(0, 0, 0);
@@ -3572,7 +3572,7 @@ do
 		local function RecalculateListSize(YSize)
 			ListOuter.Size = UDim2.fromOffset(
 				DropdownOuter.AbsoluteSize.X + 0.5,
-				YSize or math.clamp(#Dropdown.Values * 20, 0, MAX_DROPDOWN_ITEMS * 20) + 1
+				YSize or math.clamp(#Dropdown.Values * 20, 0, Max_dropdown_items * 20) + 1
 			);
 		end;
 
@@ -3774,7 +3774,7 @@ do
 			Scrolling.Visible = false;
 			Scrolling.Visible = true;
 
-			RecalculateListSize(math.clamp(Count * 20, 0, MAX_DROPDOWN_ITEMS * 20) + 1);
+			RecalculateListSize(math.clamp(Count * 20, 0, Max_dropdown_items * 20) + 1);
 		end;
 
 		function Dropdown:SetValues(NewValues)
