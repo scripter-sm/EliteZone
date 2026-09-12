@@ -1,5 +1,5 @@
 -- This file was compiled by Elite Zone's Compiler. [v3.8]
---Library Version (Used for caching purposes.) v0.9
+--Library Version (Used for caching purposes.) v1.0
 
 --[[ Library ]]
 
@@ -898,8 +898,8 @@ function EZ:IsMouseOverFrame(Frame)
 	end;
 end;
 
-function EZ:UpdateDependencyBoxes()
-	for _, Depbox in next, EZ.DependencyBoxes do
+function EZ:UpdateDependencyBoxes(Element)
+	for _, Depbox in next, (Element and Element.DependencyBoxes or EZ.DependencyBoxes) do
 		Depbox:Update();
 	end;
 end;
@@ -2991,7 +2991,7 @@ do
 				EZ:SafeCallback(Func, Toggle.Value);
 			end;
 
-			EZ:UpdateDependencyBoxes();
+			EZ:UpdateDependencyBoxes(Toggle);
 
 			Toggle.SettingValue = false;
 		end;
@@ -3841,7 +3841,7 @@ do
 
 			EZ:SafeCallback(Dropdown.Callback, Dropdown.Value);
 			EZ:SafeCallback(Dropdown.Changed, Dropdown.Value);
-			EZ:UpdateDependencyBoxes();
+			EZ:UpdateDependencyBoxes(Dropdown);
 		end;
 
 		DropdownOuter.InputBegan:Connect(function(Input)
@@ -4006,6 +4006,10 @@ do
 				assert(type(Dependency) == 'table', 'SetupDependencies: Dependency is not of type `table`.');
 				assert(Dependency[1], 'SetupDependencies: Dependency is missing element argument.');
 				assert(Dependency[2] ~= nil, 'SetupDependencies: Dependency is missing value argument.');
+
+				local Element = Dependency[1];
+				Element.DependencyBoxes = Element.DependencyBoxes or {};
+				table.insert(Element.DependencyBoxes, Depbox);
 			end;
 
 			Depbox.Dependencies = Dependencies;
@@ -4017,6 +4021,15 @@ do
 
 			if Index then
 				table.remove(EZ.DependencyBoxes, Index);
+			end;
+
+			for _, Dependency in next, Depbox.Dependencies do
+				local Element = Dependency[1];
+				local ElementIndex = table.find(Element.DependencyBoxes, Depbox);
+
+				if ElementIndex then
+					table.remove(Element.DependencyBoxes, ElementIndex);
+				end;
 			end;
 
 			table.clear(Depbox);
