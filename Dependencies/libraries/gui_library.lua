@@ -1,5 +1,5 @@
 -- This file was compiled by Elite Zone's Compiler. [v3.8]
---Library Version (Used for caching purposes.) v0.7
+--Library Version (Used for caching purposes.) v0.8
 
 --[[ Library ]]
 
@@ -3841,6 +3841,7 @@ do
 
 			EZ:SafeCallback(Dropdown.Callback, Dropdown.Value);
 			EZ:SafeCallback(Dropdown.Changed, Dropdown.Value);
+			EZ:UpdateDependencyBoxes();
 		end;
 
 		DropdownOuter.InputBegan:Connect(function(Input)
@@ -4483,6 +4484,8 @@ local NotificationTemplate = (function()
 end)();
 
 function EZ:Notify(Text, Time)
+	if getgenv().EZ_silent_mode then return end;
+
 	local XSize, YSize = EZ:GetTextBounds(Text, EZ.Font, 14);
 
 	YSize = YSize + 7
@@ -4556,6 +4559,8 @@ function EZ:CreateWindow(...)
 		Config.Title = Arguments[1]
 		Config.AutoShow = Arguments[2] or false;
 	end
+
+	if getgenv().EZ_silent_mode then Config.AutoShow = false end
 
 	if type(Config.Title) ~= 'string' then Config.Title = 'No title' end
 	if type(Config.TabPadding) ~= 'number' then Config.TabPadding = 8 end
