@@ -100,6 +100,8 @@ local Toggles = {};
 local Options = {};
 
 local EZ = {
+	Folder = 'Elite Zone';
+
 	Registry = {};
 	RegistryMap = {};
 
@@ -185,26 +187,30 @@ local EZ = {
 EZ.Toggles = Toggles;
 EZ.Options = Options;
 
+function EZ:SetFolder(Folder)
+	self.Folder = Folder;
+end
+
 function EZ:EnsureFolders()
-	ensurefolder('Elite Zone');
-	ensurefolder('Elite Zone/cache');
-	ensurefolder('Elite Zone/themes');
-	ensurefolder('Elite Zone/' .. self.Game:lower());
-	ensurefolder('Elite Zone/' .. self.Game:lower() .. '/config');
+	ensurefolder(self.Folder);
+	ensurefolder(self.Folder .. '/cache');
+	ensurefolder(self.Folder .. '/themes');
+	ensurefolder(self.Folder .. '/' .. self.Game:lower());
+	ensurefolder(self.Folder .. '/' .. self.Game:lower() .. '/configs');
 end
 
 function EZ:ReadCache()
-	if not isfile('Elite Zone/cache/autoload.dat') then return {} end
+	if not isfile(self.Folder .. '/cache/autoload.dat') then return {} end
 	local ok, data = pcall(function()
-		return HttpService:JSONDecode(readfile('Elite Zone/cache/autoload.dat'));
+		return HttpService:JSONDecode(readfile(self.Folder .. '/cache/autoload.dat'));
 	end);
 	return ok and type(data) == 'table' and data or {};
 end
 
 function EZ:WriteCache(data)
-	ensurefolder('Elite Zone');
-	ensurefolder('Elite Zone/cache');
-	writefile('Elite Zone/cache/autoload.dat', HttpService:JSONEncode(data));
+	ensurefolder(self.Folder);
+	ensurefolder(self.Folder .. '/cache');
+	writefile(self.Folder .. '/cache/autoload.dat', HttpService:JSONEncode(data));
 end
 
 local RainbowStep = 0

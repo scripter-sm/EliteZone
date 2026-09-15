@@ -178,7 +178,7 @@ do
 			File = File .. '.json';
 		end;
 
-		local Path = 'Elite Zone/themes/' .. File;
+		local Path = self.Library.Folder .. '/themes/' .. File;
 
 		if not isfile(Path) then
 			return nil;
@@ -216,7 +216,7 @@ do
 			end;
 		end;
 
-		writefile('Elite Zone/themes/' .. File, HttpService:JSONEncode(Data));
+		writefile(self.Library.Folder .. '/themes/' .. File, HttpService:JSONEncode(Data));
 	end;
 
 	function ThemeManager:Delete(File)
@@ -228,7 +228,7 @@ do
 			File = File .. '.json';
 		end;
 
-		local Path = 'Elite Zone/themes/' .. File;
+		local Path = self.Library.Folder .. '/themes/' .. File;
 
 		if not isfile(Path) then
 			return false, 'invalid file';
@@ -244,7 +244,7 @@ do
 	end;
 
 	function ThemeManager:ReloadCustomThemes()
-		local Files = listfiles('Elite Zone/themes');
+		local Files = listfiles(self.Library.Folder .. '/themes');
 		local List = {};
 
 		for Index = 1, #Files do
@@ -555,7 +555,7 @@ do
 
 			local Display = Name:gsub('%.json$', '');
 
-			if isfile('Elite Zone/themes/' .. Display .. '.json') then
+			if isfile(self.Library.Folder .. '/themes/' .. Display .. '.json') then
 				return self.Library:Notify(string.format('Theme %q already exists, use the overwrite button to replace it', Display), 3);
 			end;
 
