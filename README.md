@@ -30,6 +30,8 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/scripter-sm/EliteZone
 
 The loader downloads and starts the latest version of Elite Zone.
 
+See [Usages/library_usage.lua](Usages/library_usage.lua) to understand how to use the GUI library - it covers every element type, including nested ones (sub-buttons, nested dependency boxes, tabboxes, attached color/key pickers).
+
 ## requirements
 
 > Please use a scripting utility with good UNCs.
