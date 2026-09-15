@@ -1,13 +1,8 @@
-local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/scripter-sm/EliteZone/refs/heads/main/Dependencies/libraries/gui_library.lua"))()
+local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/scripter-sm/EliteZone/refs/heads/main/Dependencies/libraries/gui_library.lua"))()
 
 -- unlike Linoria, Elite Zone does not put these on getgenv() - grab them off the library table instead.
-local Toggles = Library.Toggles
-local Options = Library.Options
-local SaveManager = Library.SaveManager
-local ThemeManager = Library.ThemeManager
-
-local Window = Library:CreateWindow({
-    --[[ 
+local window = library:CreateWindow({
+    --[[
          Position and Size are also valid options here,
          but you do not need to define them unless you are changing them.
     ]]
@@ -27,38 +22,37 @@ local Window = Library:CreateWindow({
    i strongly recommend decoupling UI code from logic code. i.e. Create your UI elements FIRST, and THEN setup :OnChanged functions later.
 ]]
 
-local Tabs = {
-    Main = Window:AddTab('Main'),
-    ['UI Settings'] = Window:AddTab('UI Settings'),
+local tabs = {
+    main = window:AddTab('main'),
 }
 
 -- groupbox and tabbox inherit the same element functions
 -- except Tabboxes you have to call the functions on a tab (Tabbox:AddTab(name))
-local LeftGroupBox = Tabs.Main:AddLeftGroupbox('Groupbox')
+local left_groupbox = tabs.main:AddLeftGroupbox('Groupbox')
 
 -- We can also get our Main tab via the following code:
--- local LeftGroupBox = Window.Tabs.Main:AddLeftGroupbox('Groupbox')
+-- local left_groupbox = window.Tabs.Main:AddLeftGroupbox('Groupbox')
 
 -- Groupbox:AddToggle
 -- Arguments: Idx, Info
-LeftGroupBox:AddToggle('MyToggle', {
+left_groupbox:AddToggle('my_toggle', {
     Text = 'This is a toggle',
     Default = true,
     Tooltip = 'This is a tooltip', -- shown when you hover over the toggle
 
-    Callback = function(Value)
-        print('[cb] MyToggle changed to:', Value)
+    Callback = function(value)
+        print('[cb] MyToggle changed to:', value)
     end,
 })
 
--- Fetching a toggle object for later use:
--- Toggles.MyToggle.Value
+-- fetching a toggle object for later use:
+-- library.Toggles.my_toggle.Value
 
-Toggles.MyToggle:OnChanged(function()
-    print('MyToggle changed to:', Toggles.MyToggle.Value)
+library.Toggles.my_toggle:OnChanged(function()
+    print('MyToggle changed to:', library.Toggles.my_toggle.Value)
 end)
 
-Toggles.MyToggle:SetValue(false)
+library.Toggles.my_toggle:SetValue(false)
 
 --[[
     Groupbox:AddButton
@@ -69,9 +63,9 @@ Toggles.MyToggle:SetValue(false)
         Tooltip = string,
     }
 
-    You can call :AddButton on a button to add a nested sub-button!
+    you can call :AddButton on a button to add a nested sub-button!
 ]]
-local MyButton = LeftGroupBox:AddButton({
+local my_button = left_groupbox:AddButton({
     Text = 'Button',
     Func = function()
         print('You clicked a button!')
@@ -80,7 +74,7 @@ local MyButton = LeftGroupBox:AddButton({
     Tooltip = 'This is the main button',
 })
 
-MyButton:AddButton({
+my_button:AddButton({
     Text = 'Sub button',
     Func = function()
         print('You clicked a sub button!')
@@ -91,11 +85,11 @@ MyButton:AddButton({
 
 -- Groupbox:AddLabel
 -- Arguments: Text, DoesWrap
-LeftGroupBox:AddLabel('This is a label')
-LeftGroupBox:AddLabel('This is a label\n\nwhich wraps its text!', true)
+left_groupbox:AddLabel('This is a label')
+left_groupbox:AddLabel('This is a label\n\nwhich wraps its text!', true)
 
 -- Groupbox:AddDivider
-LeftGroupBox:AddDivider()
+left_groupbox:AddDivider()
 
 --[[
     Groupbox:AddSlider
@@ -104,7 +98,7 @@ LeftGroupBox:AddDivider()
     Text, Default, Min, Max, Rounding must be specified.
     Suffix, Increment and Compact are optional.
 ]]
-LeftGroupBox:AddSlider('MySlider', {
+left_groupbox:AddSlider('my_slider', {
     Text = 'This is my slider!',
     Default = 0,
     Min = 0,
@@ -112,19 +106,19 @@ LeftGroupBox:AddSlider('MySlider', {
     Rounding = 1,
     Compact = false,
 
-    Callback = function(Value)
-        print('[cb] MySlider was changed! New value:', Value)
+    Callback = function(value)
+        print('[cb] MySlider was changed! New value:', value)
     end,
 })
 
-Options.MySlider:OnChanged(function()
-    print('MySlider was changed! New value:', Options.MySlider.Value)
+library.Options.my_slider:OnChanged(function()
+    print('MySlider was changed! New value:', library.Options.my_slider.Value)
 end)
 
-Options.MySlider:SetValue(3)
+library.Options.my_slider:SetValue(3)
 
 -- Groupbox:AddInput
-LeftGroupBox:AddInput('MyTextbox', {
+left_groupbox:AddInput('my_textbox', {
     Default = 'My textbox!',
     Numeric = false,
     Finished = false, -- only calls callback when you press enter
@@ -133,17 +127,17 @@ LeftGroupBox:AddInput('MyTextbox', {
     Tooltip = 'This is a tooltip',
     Placeholder = 'Placeholder text',
 
-    Callback = function(Value)
-        print('[cb] Text updated. New text:', Value)
+    Callback = function(value)
+        print('[cb] Text updated. New text:', value)
     end,
 })
 
-Options.MyTextbox:OnChanged(function()
-    print('Text updated. New text:', Options.MyTextbox.Value)
+library.Options.my_textbox:OnChanged(function()
+    print('Text updated. New text:', library.Options.my_textbox.Value)
 end)
 
 -- Groupbox:AddDropdown
-LeftGroupBox:AddDropdown('MyDropdown', {
+left_groupbox:AddDropdown('my_dropdown', {
     Values = { 'This', 'is', 'a', 'dropdown' },
     Default = 1, -- number index of the value / string
     Multi = false,
@@ -151,19 +145,19 @@ LeftGroupBox:AddDropdown('MyDropdown', {
     Text = 'A dropdown',
     Tooltip = 'This is a tooltip',
 
-    Callback = function(Value)
-        print('[cb] Dropdown got changed. New value:', Value)
+    Callback = function(value)
+        print('[cb] Dropdown got changed. New value:', value)
     end,
 })
 
-Options.MyDropdown:OnChanged(function()
-    print('Dropdown got changed. New value:', Options.MyDropdown.Value)
+library.Options.my_dropdown:OnChanged(function()
+    print('Dropdown got changed. New value:', library.Options.my_dropdown.Value)
 end)
 
-Options.MyDropdown:SetValue('This')
+library.Options.my_dropdown:SetValue('This')
 
--- Multi dropdowns
-LeftGroupBox:AddDropdown('MyMultiDropdown', {
+-- multi dropdowns
+left_groupbox:AddDropdown('my_multi_dropdown', {
     Values = { 'This', 'is', 'a', 'dropdown' },
     Default = 1,
     Multi = true,
@@ -171,159 +165,161 @@ LeftGroupBox:AddDropdown('MyMultiDropdown', {
     Text = 'A multi dropdown',
     Tooltip = 'This is a tooltip',
 
-    Callback = function(Value)
-        print('[cb] Multi dropdown got changed:', Value)
+    Callback = function(value)
+        print('[cb] Multi dropdown got changed:', value)
     end,
 })
 
-Options.MyMultiDropdown:OnChanged(function()
+library.Options.my_multi_dropdown:OnChanged(function()
     print('Multi dropdown got changed:')
-    for key, value in next, Options.MyMultiDropdown.Value do
+    for key, value in next, library.Options.my_multi_dropdown.Value do
         print(key, value) -- e.g. This, true
     end
 end)
 
-Options.MyMultiDropdown:SetValue({
+library.Options.my_multi_dropdown:SetValue({
     This = true,
     is = true,
 })
 
 -- Label:AddColorPicker / Toggle:AddColorPicker
--- You can attach a ColorPicker (and a KeyPicker) to a Label or a Toggle
-LeftGroupBox:AddLabel('Color'):AddColorPicker('ColorPicker', {
+-- you can attach a ColorPicker (and a KeyPicker) to a Label or a Toggle
+left_groupbox:AddLabel('Color'):AddColorPicker('color_picker', {
     Default = Color3.new(0, 1, 0),
     Title = 'Some color', -- custom title shown when the picker is opened
     Transparency = 0, -- omit to disable transparency changing
 
-    Callback = function(Value)
-        print('[cb] Color changed!', Value)
+    Callback = function(value)
+        print('[cb] Color changed!', value)
     end,
 })
 
-Options.ColorPicker:OnChanged(function()
-    print('Color changed!', Options.ColorPicker.Value)
-    print('Transparency changed!', Options.ColorPicker.Transparency)
+library.Options.color_picker:OnChanged(function()
+    print('Color changed!', library.Options.color_picker.Value)
+    print('Transparency changed!', library.Options.color_picker.Transparency)
 end)
 
-Options.ColorPicker:SetValueRGB(Color3.fromRGB(0, 255, 140))
+library.Options.color_picker:SetValueRGB(Color3.fromRGB(0, 255, 140))
 
 -- Label:AddKeyPicker
-LeftGroupBox:AddLabel('Keybind'):AddKeyPicker('KeyPicker', {
+left_groupbox:AddLabel('Keybind'):AddKeyPicker('key_picker', {
     -- SyncToggleState only works when attached to a toggle - it keeps the keybind
     -- state and the toggle state in sync (e.g. a keybind used to toggle flyhack).
-    Default = 'MB2',
+    Default = '...',
     SyncToggleState = false,
 
-    Mode = 'Toggle', -- Modes: Always, Toggle, Hold
+    Mode = 'Always', -- Modes: Always, Toggle, Hold
 
-    Text = 'Auto lockpick safes',
+    Text = 'keybind test',
     NoUI = false, -- hide from the keybind menu
 
-    Callback = function(Value) -- fired when the keybind is pressed, Value is true/false
-        print('[cb] Keybind clicked!', Value)
+    Callback = function(value) -- fired when the keybind is pressed, Value is true/false
+        print('someone clicked the keybind', value)
     end,
 
-    ChangedCallback = function(New) -- fired when the bound key itself changes
-        print('[cb] Keybind changed!', New)
+    ChangedCallback = function(new) -- fired when the bound key itself changes
+        print('why did u changed keybind bro', new)
     end,
 })
 
-Options.KeyPicker:OnClick(function()
-    print('Keybind clicked!', Options.KeyPicker:GetState())
+library.Options.key_picker:OnClick(function()
+    print('umm u clicked keybind?', library.Options.key_picker:GetState())
 end)
 
-Options.KeyPicker:OnChanged(function()
-    print('Keybind changed!', Options.KeyPicker.Value)
+library.Options.key_picker:OnChanged(function()
+    print('why did u changed keybind bro', library.Options.key_picker.Value)
 end)
 
-Options.KeyPicker:SetValue({ 'MB2', 'Toggle' })
+library.Options.key_picker:SetValue({ '...', 'Toggle' })
 
--- Long text label to demonstrate UI scrolling behaviour.
-local LeftGroupBox2 = Tabs.Main:AddLeftGroupbox('Groupbox #2')
-LeftGroupBox2:AddLabel('Oh no...\nThis label spans multiple lines!\n\nWe\'re gonna run out of UI space...\nJust kidding! Scroll down!\n\n\nHello from below!', true)
+-- long text label to demonstrate UI scrolling behaviour.
+local left_groupbox2 = tabs.main:AddLeftGroupbox('Groupbox #2')
+left_groupbox2:AddLabel('Oh no...\nThis label spans multiple lines!\n\nWe\'re gonna run out of UI space...\nJust kidding! Scroll down!\n\n\n\n\n\n\n\n\nHello from below!', true)
 
--- Tabboxes work the same as Groupboxes, except you call the element functions on Tabbox:AddTab(name)
-local TabBox = Tabs.Main:AddRightTabbox()
+-- tabboxes work the same as groupboxes, except you call the element functions on Tabbox:AddTab(name)
+local tab_box = tabs.main:AddRightTabbox()
 
-local Tab1 = TabBox:AddTab('Tab 1')
-Tab1:AddToggle('Tab1Toggle', { Text = 'Tab1 Toggle' })
+local tab1 = tab_box:AddTab('Tab 1')
+tab1:AddToggle('tab1_toggle', { Text = 'Tab1 Toggle' })
 
-local Tab2 = TabBox:AddTab('Tab 2')
-Tab2:AddToggle('Tab2Toggle', { Text = 'Tab2 Toggle' })
+local tab2 = tab_box:AddTab('Tab 2')
+tab2:AddToggle('tab2_toggle', { Text = 'Tab2 Toggle' })
 
--- Dependency boxes let you show/hide elements depending on another element's state.
+-- dependency boxes let you show/hide elements depending on another element's state.
 -- e.g. a 'Feature Enabled' toggle, and you only want to show its sliders/dropdowns while it's enabled.
-local RightGroupbox = Tabs.Main:AddRightGroupbox('Groupbox #3')
-RightGroupbox:AddToggle('ControlToggle', { Text = 'Dependency box toggle' })
+local right_groupbox = tabs.main:AddRightGroupbox('Groupbox #3')
+right_groupbox:AddToggle('control_toggle', { Text = 'Dependency box toggle' })
 
-local Depbox = RightGroupbox:AddDependencyBox()
-Depbox:AddDropdown('DepboxDropdown', { Text = 'Dropdown', Default = 1, Values = { 'a', 'b', 'c' } })
-Depbox:AddToggle('DepboxToggle', { Text = 'Sub-dependency box toggle' })
+local depbox = right_groupbox:AddDependencyBox()
+depbox:AddDropdown('depbox_dropdown', { Text = 'Dropdown', Default = 1, Values = { 'a', 'b', 'c' } })
+depbox:AddToggle('depbox_toggle', { Text = 'Sub-dependency box toggle' })
 
--- Dependency boxes nest fine - a nested box automatically also depends on its parent box being visible
-local SubDepbox = Depbox:AddDependencyBox()
-SubDepbox:AddSlider('DepboxSlider', { Text = 'Slider', Default = 50, Min = 0, Max = 100, Rounding = 0 })
+-- dependency boxes nest fine - a nested box automatically also depends on its parent box being visible
+local sub_depbox = depbox:AddDependencyBox()
+sub_depbox:AddSlider('depbox_slider', { Text = 'Slider', Default = 50, Min = 0, Max = 100, Rounding = 0 })
 
-Depbox:SetupDependencies({
-    { Toggles.ControlToggle, true }, -- pass `false` if a feature should only show when the toggle is off
+depbox:SetupDependencies({
+    { library.Toggles.control_toggle, true }, -- pass `false` if a feature should only show when the toggle is off
 })
 
-SubDepbox:SetupDependencies({
-    { Options.DepboxDropdown, 'b' }, -- dependencies can also key off a dropdown's value
-    { Toggles.DepboxToggle, true },
+sub_depbox:SetupDependencies({
+    { library.Options.depbox_dropdown, 'b' }, -- dependencies can also key off a dropdown's value
+    { library.Toggles.depbox_toggle, true },
 })
 
--- Library functions
-Library:SetWatermarkVisibility(true)
+-- a dependency box can also key directly off a dropdown, with no toggle involved
+right_groupbox:AddDropdown('mode_dropdown', { Text = 'Mode', Default = 1, Values = { 'basic', 'advanced' } })
 
--- Example of a dynamically-updating watermark with fps and ping
-local FrameTimer = tick()
-local FrameCounter = 0
-local FPS = 60
+local advanced_depbox = right_groupbox:AddDependencyBox()
+advanced_depbox:AddSlider('advanced_slider', { Text = 'Advanced slider', Default = 0, Min = 0, Max = 10, Rounding = 0 })
+
+advanced_depbox:SetupDependencies({
+    { library.Options.mode_dropdown, 'advanced' },
+})
+
+
+--[[
+example of a watermark
+
+library:SetWatermarkVisibility(true)
+local frame_timer = tick()
+local frame_counter = 0
+local fps = 60
 
 game:GetService('RunService').RenderStepped:Connect(function()
-    FrameCounter += 1
+    frame_counter += 1
 
-    if (tick() - FrameTimer) >= 1 then
-        FPS = FrameCounter
-        FrameTimer = tick()
-        FrameCounter = 0
+    if (tick() - frame_timer) >= 1 then
+        fps = frame_counter
+        frame_timer = tick()
+        frame_counter = 0
     end
 
-    Library:SetWatermark(('Elite Zone demo | %s fps | %s ms'):format(
-        math.floor(FPS),
+    library:SetWatermark(('Example Hub | %s fps | %s ms'):format(
+        math.floor(fps),
         math.floor(game:GetService('Stats').Network.ServerStatsItem['Data Ping']:GetValue())
     ))
 end)
+]]
 
-Library:Notify('Elite Zone example script loaded', 5)
+library:Notify('Library Example Loaded', 5)
 
-Library.KeybindFrame.Visible = true
+library.KeybindFrame.Visible = true
 
--- UI Settings
-local MenuGroup = Tabs['UI Settings']:AddLeftGroupbox('Menu')
-MenuGroup:AddLabel('Menu bind'):AddKeyPicker('MenuKeybind', { Default = 'End', NoUI = true, Text = 'Menu keybind' })
+-- Library:SetFolder sets where config, theme and cache is created.
+library:SetFolder('Example Hub')
 
-Library.ToggleKeybind = Options.MenuKeybind -- gives the menu a custom open/close keybind
+-- ignore keys that are used by ThemeManager - we don't want configs saving themes.
+library.SaveManager:IgnoreThemeSettings()
 
--- SaveManager (configs) and ThemeManager (themes) are already wired to this window,
--- no addon loading or SetLibrary calls needed - just set the folder they should save into.
+--[[
+   ignore our menu keybind too - probably don't want every config using a different menu key.
+   library.SaveManager:SetIgnoreIndexes({ 'menu_keybind' }) 
+   commented out because i switched to "library.SaveManager:BuildConfigTab(window)" rather than custom tab, but using method u can make config ignore some stuff.
+]]
 
--- Library:SetFolder changes where BOTH the config and theme folders are created.
--- This example creates: "Elite Zone/global/configs/" and "Elite Zone/themes/"
-Library:SetFolder('Elite Zone')
+library.ThemeManager:ApplyToWindow(window)
+library.SaveManager:BuildConfigTab(window)
 
--- Ignore keys that are used by ThemeManager - we don't want configs saving themes.
-SaveManager:IgnoreThemeSettings()
-
--- Ignore our menu keybind too - probably don't want every config using a different menu key.
-SaveManager:SetIgnoreIndexes({ 'MenuKeybind' })
-
--- Builds the config section (create/load/save/delete/autoload/import/export) on this tab
-SaveManager:BuildConfigSection(Tabs['UI Settings'])
-
--- Builds the theme section (built-in themes + custom theme saving) on this tab
-ThemeManager:ApplyToTab(Tabs['UI Settings'])
-
--- Loads the config marked to autoload, if any
-SaveManager:LoadAutoloadConfig()
+-- loads the config marked to autoload, if any
+library.SaveManager:LoadAutoloadConfig()
