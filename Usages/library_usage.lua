@@ -1,32 +1,38 @@
--- Example script showing how to use every element type Elite Zone's GUI library exposes.
--- Load Elite Zone through Loader.lua as usual, then Library/Toggles/Options/SaveManager/ThemeManager
--- are already sitting on getgenv() for you - nothing needs to be required or loaded separately.
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/scripter-sm/EliteZone/refs/heads/main/Dependencies/libraries/gui_library.lua"))()
+
+-- unlike Linoria, Elite Zone does not put these on getgenv() - grab them off the library table instead.
+local Toggles = Library.Toggles
+local Options = Library.Options
+local SaveManager = Library.SaveManager
+local ThemeManager = Library.ThemeManager
 
 local Window = Library:CreateWindow({
-    -- Set Center to true if you want the menu to appear in the center
-    -- Set AutoShow to true if you want the menu to appear when it is created
-    -- Position and Size are also valid options here
-    -- but you do not need to define them unless you are changing them :)
+    --[[ 
+         Position and Size are also valid options here,
+         but you do not need to define them unless you are changing them.
+    ]]
 
-    Title = 'Example menu',
-    Game = 'Global', -- used for the per-game configs subfolder, see SaveManager below
-    Center = true,
-    AutoShow = true,
-    TabPadding = 8,
-    MenuFadeTime = 0.2,
+    Title = 'Example Hub',
+    Game = 'Global', -- used for the per-game configs subfolder, savemanager saves folders like this Title/Game/configs and themes like this Title/themes.
+    Center = true, --set Center to true, if u want the menu to appear in the center.
+    AutoShow = true, --set AutoShow to true, if you want the menu to appear when ever script is runned. if not enabled than you gotta toggle menu through keybind or icon on mobile.
+  --TabPadding = 8,
+  --MenuFadeTime = 0.2,
 })
 
--- CALLBACK NOTE:
--- Passing in callback functions via the initial element parameters (i.e. Callback = function(Value)...) works
--- HOWEVER, using Toggles/Options.INDEX:OnChanged(function(Value) ... ) is the RECOMMENDED way to do this.
--- I strongly recommend decoupling UI code from logic code. i.e. Create your UI elements FIRST, and THEN setup :OnChanged functions later.
+--[[
+   callback note:
+   passing in callback functions via the initial element parameters (i.e. Callback = function(Value)...) works
+   however, using Toggles/Options.INDEX:OnChanged(function(Value) ... ) is the recommended way to do this.
+   i strongly recommend decoupling UI code from logic code. i.e. Create your UI elements FIRST, and THEN setup :OnChanged functions later.
+]]
 
 local Tabs = {
     Main = Window:AddTab('Main'),
     ['UI Settings'] = Window:AddTab('UI Settings'),
 }
 
--- Groupbox and Tabbox inherit the same element functions
+-- groupbox and tabbox inherit the same element functions
 -- except Tabboxes you have to call the functions on a tab (Tabbox:AddTab(name))
 local LeftGroupBox = Tabs.Main:AddLeftGroupbox('Groupbox')
 
