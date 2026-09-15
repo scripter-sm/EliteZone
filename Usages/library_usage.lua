@@ -188,17 +188,6 @@ Options.MyMultiDropdown:SetValue({
     is = true,
 })
 
--- Special dropdowns fetch and keep their own value list updated (e.g. player list)
-LeftGroupBox:AddDropdown('MyPlayerDropdown', {
-    SpecialType = 'Player',
-    Text = 'A player dropdown',
-    Tooltip = 'This is a tooltip',
-
-    Callback = function(Value)
-        print('[cb] Player dropdown got changed:', Value)
-    end,
-})
-
 -- Label:AddColorPicker / Toggle:AddColorPicker
 -- You can attach a ColorPicker (and a KeyPicker) to a Label or a Toggle
 LeftGroupBox:AddLabel('Color'):AddColorPicker('ColorPicker', {
