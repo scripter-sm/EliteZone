@@ -2009,7 +2009,6 @@ do
         return self
     end
 
-    setmetatable(Funcs, { __index = BaseGroupbox })
     BaseAddons.__index = Funcs
 end
 
@@ -2043,8 +2042,6 @@ do
         Library:TrackLabel(TextLabelRef, Text or "", "Labels")
         Label.TextLabel = TextLabelRef
         Label.Container = Groupbox.Container
-        Label.Groupbox = Groupbox
-        function Label:Resize() Groupbox:Resize() end
         function Label:SetText(t)
             local raw = tostring(t or "")
             for _, e in ipairs(Library.TextRegistry) do
@@ -2501,8 +2498,6 @@ do
         Toggle:Display()
         local ToggleBlank = Groupbox:AddBlank(Info.BlankSize or 7); Groupbox:Resize()
         Toggle.TextLabel = TLabel; Toggle.Container = Groupbox.Container
-        Toggle.Groupbox = Groupbox
-        function Toggle:Resize() Groupbox:Resize() end
         Toggle.DestroyParts = { TOuter, TLabel, HitRegion, ToggleBlank }
         setmetatable(Toggle, BaseAddons)
         Toggles[Idx] = Toggle
