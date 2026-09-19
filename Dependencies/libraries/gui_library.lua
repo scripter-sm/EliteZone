@@ -1,5 +1,5 @@
 -- This file was compiled by Elite Zone's Compiler. [v3.8]
---Library Version (Used for caching purposes.) v1.2
+--Library Version (Used for caching purposes.) v1.3
 
 --[[ Library ]]
 
@@ -5616,8 +5616,8 @@ function EZ:CreateWindow(...)
 
 		local Logo = EZ:Create('ImageLabel', {
 			BackgroundTransparency = 1;
-			Position = UDim2.fromOffset(6, 6);
-			Size = UDim2.new(1, -12, 1, -12);
+			Position = UDim2.fromOffset(0, 6);
+			Size = UDim2.new(1, 0, 1, -12);
 			Parent = Button;
 		});
 
