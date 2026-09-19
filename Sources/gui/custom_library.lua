@@ -502,9 +502,9 @@ do
 					local LabelPosition = UDim2.new(0, 2, 1, -TextHeight - 1);
 					local LabelSize = UDim2.new(1, -4, 0, TextHeight);
 
-					local Stroke = Instance.new('UIStroke');
-					Stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border;
-					Stroke.Color = EZ.AccentColor;
+					local function EdgeColor(Item)
+						return Item == Grid.Selected and EZ.AccentColor or Item.Hovered and EZ.OutlineColor or EZ.Black;
+					end;
 
 					local Scroll = EZ:Create('ScrollingFrame', {
 						BackgroundTransparency = 1;
@@ -523,10 +523,10 @@ do
 					EZ:AddToRegistry(Scroll, { BorderColor3 = function()
 						for _, Item in next, Grid.Items do
 							Item.Button.BackgroundColor3 = EZ.MainColor;
-							Item.Button.BorderColor3 = Item.Hovered and EZ.OutlineColor or EZ.Black;
+							Item.Button.BorderColor3 = EZ.OutlineColor;
+							Item.Edge.Color = EdgeColor(Item);
 							Item.Label.TextColor3 = EZ.FontColor;
 						end;
-						Stroke.Color = EZ.AccentColor;
 						return EZ.OutlineColor;
 					end });
 					EZ:Create('UIPadding', { PaddingTop = UDim.new(0, 2); PaddingLeft = UDim.new(0, 2); PaddingRight = UDim.new(0, 2); PaddingBottom = UDim.new(0, 2); Parent = Scroll });
@@ -566,8 +566,13 @@ do
 						Cell.AutoButtonColor = false;
 						Cell.Text = '';
 						Cell.BackgroundColor3 = EZ.MainColor;
-						Cell.BorderColor3 = EZ.Black;
-						Cell.BorderMode = Enum.BorderMode.Outline;
+						Cell.BorderColor3 = EZ.OutlineColor;
+						Cell.BorderMode = Enum.BorderMode.Inset;
+
+						local Edge = Instance.new('UIStroke');
+						Edge.ApplyStrokeMode = Enum.ApplyStrokeMode.Border;
+						Edge.Color = EZ.Black;
+						Edge.Parent = Cell;
 						Cell.LayoutOrder = Index;
 						Cell.ZIndex = 5;
 						Cell.ClipsDescendants = true;
@@ -604,6 +609,7 @@ do
 						Label.Parent = Cell;
 
 						Item.Button = Cell;
+						Item.Edge = Edge;
 						Item.Visual = Visual;
 						Item.Label = Label;
 						Item.Search = Label.Text:lower();
@@ -615,11 +621,11 @@ do
 
 						Cell.MouseEnter:Connect(function()
 							Item.Hovered = true;
-							Cell.BorderColor3 = EZ.OutlineColor;
+							Edge.Color = EdgeColor(Item);
 						end);
 						Cell.MouseLeave:Connect(function()
 							Item.Hovered = nil;
-							Cell.BorderColor3 = EZ.Black;
+							Edge.Color = EdgeColor(Item);
 						end);
 
 						Cell.Activated:Connect(function()
@@ -634,8 +640,10 @@ do
 					end;
 
 					function Grid:Select(Item)
+						local Old = Grid.Selected;
 						Grid.Selected = Item;
-						Stroke.Parent = Item and Item.Button;
+						if Old then Old.Edge.Color = EdgeColor(Old) end;
+						if Item then Item.Edge.Color = EdgeColor(Item) end;
 					end;
 
 					function Grid:SetState(Item, Dimmed, Highlight)
@@ -688,7 +696,6 @@ do
 					end;
 
 					function Grid:Clear()
-						Stroke.Parent = nil;
 						for _, Item in next, Grid.Items do
 							Item.Button:Destroy();
 						end;
