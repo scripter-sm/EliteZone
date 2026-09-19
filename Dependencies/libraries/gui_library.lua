@@ -1,5 +1,5 @@
 -- This file was compiled by Elite Zone's Compiler. [v3.8]
---Library Version (Used for caching purposes.) v1.9
+--Library Version (Used for caching purposes.) v2.0
 
 --[[ Library ]]
 
@@ -6022,6 +6022,82 @@ do
 					end;
 
 					return setmetatable(Group, BaseGroupbox);
+				end;
+
+				function Section:AddSearch(SearchInfo)
+					local Search = { Value = '' };
+
+					local Outer = EZ:Create('Frame', {
+						BackgroundColor3 = Color3.new(0, 0, 0);
+						BorderColor3 = Color3.new(0, 0, 0);
+						Position = SearchInfo.Position or UDim2.new();
+						Size = SearchInfo.Size or UDim2.new(1, 0, 0, 20);
+						ZIndex = 5;
+						Parent = Section.Container;
+					});
+
+					local Inner = EZ:Create('Frame', {
+						BackgroundColor3 = EZ.MainColor;
+						BorderColor3 = EZ.OutlineColor;
+						BorderMode = Enum.BorderMode.Inset;
+						Size = UDim2.fromScale(1, 1);
+						ZIndex = 6;
+						Parent = Outer;
+					});
+					EZ:AddToRegistry(Inner, { BackgroundColor3 = 'MainColor'; BorderColor3 = 'OutlineColor' });
+
+					EZ:OnHighlight(Outer, Outer, { BorderColor3 = 'OutlineColor' }, { BorderColor3 = 'Black' });
+
+					EZ:Create('UIGradient', {
+						Color = ColorSequence.new(Color3.new(1, 1, 1), Color3.fromRGB(212, 212, 212));
+						Rotation = 90;
+						Parent = Inner;
+					});
+
+					local Icon = EZ:Create('ImageLabel', {
+						BackgroundTransparency = 1;
+						Image = 'rbxthumb://type=Asset&id=2804603877&w=150&h=150';
+						ImageColor3 = EZ.FontColor;
+						AnchorPoint = Vector2.new(0, 0.5);
+						Position = UDim2.new(0, 4, 0.5, 0);
+						Size = UDim2.fromOffset(12, 12);
+						ZIndex = 7;
+						Parent = Inner;
+					});
+					EZ:AddToRegistry(Icon, { ImageColor3 = 'FontColor' });
+
+					local Box = EZ:Create('TextBox', {
+						BackgroundTransparency = 1;
+						ClipsDescendants = true;
+						Position = UDim2.fromOffset(21, 0);
+						Size = UDim2.new(1, -25, 1, 0);
+						Font = EZ.Font;
+						PlaceholderColor3 = Color3.fromRGB(190, 190, 190);
+						PlaceholderText = SearchInfo.Placeholder or '';
+						ClearTextOnFocus = false;
+						Text = '';
+						TextColor3 = EZ.FontColor;
+						TextSize = 14;
+						TextXAlignment = Enum.TextXAlignment.Left;
+						ZIndex = 7;
+						Parent = Inner;
+					});
+					EZ:ApplyTextStroke(Box);
+					EZ:AddToRegistry(Box, { TextColor3 = 'FontColor' });
+
+					Search.Holder = Outer;
+					Search.Box = Box;
+
+					function Search:SetValue(Text)
+						Box.Text = Text;
+					end;
+
+					Box:GetPropertyChangedSignal('Text'):Connect(function()
+						Search.Value = Box.Text;
+						if SearchInfo.Callback then EZ:SafeCallback(SearchInfo.Callback, Search.Value) end;
+					end);
+
+					return Search;
 				end;
 
 				function Section:AddGrid(GridInfo)
