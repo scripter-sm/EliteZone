@@ -384,8 +384,8 @@ do
 						Image = 'rbxthumb://type=Asset&id=2804603877&w=150&h=150';
 						ImageColor3 = EZ.FontColor;
 						AnchorPoint = Vector2.new(0, 0.5);
-						Position = UDim2.new(0, 4, 0.5, 0);
-						Size = UDim2.fromOffset(12, 12);
+						Position = UDim2.new(0, 5, 0.5, 0);
+						Size = UDim2.fromOffset(10, 10);
 						ZIndex = 7;
 						Parent = Inner;
 					});
@@ -394,8 +394,8 @@ do
 					local Box = EZ:Create('TextBox', {
 						BackgroundTransparency = 1;
 						ClipsDescendants = true;
-						Position = UDim2.fromOffset(21, 0);
-						Size = UDim2.new(1, -25, 1, 0);
+						Position = UDim2.fromOffset(20, 0);
+						Size = UDim2.new(1, -24, 1, 0);
 						Font = EZ.Font;
 						PlaceholderColor3 = Color3.fromRGB(190, 190, 190);
 						PlaceholderText = SearchInfo.Placeholder or '';
@@ -423,6 +423,70 @@ do
 					end);
 
 					return Search;
+				end;
+
+				function Section:AddButtons(ButtonsInfo)
+					local Row = EZ:Create('Frame', {
+						BackgroundTransparency = 1;
+						Position = ButtonsInfo.Position or UDim2.new();
+						Size = ButtonsInfo.Size or UDim2.new(1, 0, 0, 20);
+						ZIndex = 5;
+						Parent = Section.Container;
+					});
+					EZ:Create('UIListLayout', {
+						FillDirection = Enum.FillDirection.Horizontal;
+						Padding = UDim.new(0, 4);
+						SortOrder = Enum.SortOrder.LayoutOrder;
+						Parent = Row;
+					});
+
+					local Count = #ButtonsInfo.Buttons;
+					local Width = UDim2.new(1 / Count, -4 * (Count - 1) / Count, 1, 0);
+
+					for Index, Info in next, ButtonsInfo.Buttons do
+						local Outer = EZ:Create('Frame', {
+							BackgroundColor3 = Color3.new(0, 0, 0);
+							BorderColor3 = Color3.new(0, 0, 0);
+							LayoutOrder = Index;
+							Size = Width;
+							ZIndex = 5;
+							Parent = Row;
+						});
+
+						local Inner = EZ:Create('TextButton', {
+							AutoButtonColor = false;
+							Text = '';
+							BackgroundColor3 = EZ.MainColor;
+							BorderColor3 = EZ.OutlineColor;
+							BorderMode = Enum.BorderMode.Inset;
+							Size = UDim2.fromScale(1, 1);
+							ZIndex = 6;
+							Parent = Outer;
+						});
+						EZ:AddToRegistry(Inner, { BackgroundColor3 = 'MainColor'; BorderColor3 = 'OutlineColor' });
+
+						EZ:Create('UIGradient', {
+							Color = ColorSequence.new(Color3.new(1, 1, 1), Color3.fromRGB(212, 212, 212));
+							Rotation = 90;
+							Parent = Inner;
+						});
+
+						EZ:CreateLabel({
+							Size = UDim2.fromScale(1, 1);
+							Text = Info.Text;
+							TextSize = 14;
+							ZIndex = 7;
+							Parent = Inner;
+						});
+
+						EZ:OnHighlight(Outer, Outer, { BorderColor3 = 'AccentColor' }, { BorderColor3 = 'Black' });
+
+						Inner.Activated:Connect(function()
+							EZ:SafeCallback(Info.Callback);
+						end);
+					end;
+
+					return Row;
 				end;
 
 				function Section:AddGrid(GridInfo)
@@ -457,7 +521,7 @@ do
 					});
 					EZ:AddToRegistry(Scroll, { BorderColor3 = function()
 						for _, Item in next, Grid.Items do
-							Item.Button.BackgroundColor3 = EZ.MainColor;
+							Item.Button.BackgroundColor3 = Item.Highlight or EZ.MainColor;
 							Item.Button.BorderColor3 = EZ.OutlineColor;
 							Item.Label.TextColor3 = EZ.FontColor;
 						end;
@@ -519,7 +583,8 @@ do
 							Visual.ScaleType = Enum.ScaleType.Fit;
 							Visual.AnchorPoint = Vector2.new(0.5, 0.5);
 							Visual.Position = ImagePosition;
-							Visual.Size = ImageSize;
+							local Scale = Item.ImageScale;
+							Visual.Size = Scale and UDim2.new(Scale, -6 * Scale, Scale, (-TextHeight - 6) * Scale) or ImageSize;
 						end;
 						Visual.ZIndex = 6;
 						Visual.Parent = Cell;
@@ -538,6 +603,7 @@ do
 						Label.Parent = Cell;
 
 						Item.Button = Cell;
+						Item.Visual = Visual;
 						Item.Label = Label;
 						Item.Search = Label.Text:lower();
 						Items[Index] = Item;
@@ -560,6 +626,40 @@ do
 					function Grid:Select(Item)
 						Grid.Selected = Item;
 						Stroke.Parent = Item and Item.Button;
+					end;
+
+					function Grid:SetState(Item, Dimmed, Badge, Highlight)
+						Dimmed = Dimmed or false;
+						if Item.Dimmed ~= Dimmed then
+							Item.Dimmed = Dimmed;
+							Item.Visual.ImageColor3 = Dimmed and Color3.fromRGB(60, 60, 60) or Color3.new(1, 1, 1);
+							Item.Label.TextTransparency = Dimmed and 0.5 or 0;
+						end;
+
+						if Badge then
+							local Icon = Item.BadgeIcon;
+							if not Icon then
+								Icon = Instance.new('ImageLabel');
+								Icon.Image = GridInfo.BadgeImage or '';
+								Icon.BackgroundColor3 = EZ.AccentColor;
+								Icon.BackgroundTransparency = GridInfo.BadgeImage and 1 or 0;
+								Icon.BorderSizePixel = 0;
+								Icon.AnchorPoint = Vector2.new(1, 0);
+								Icon.Position = UDim2.new(1, -3, 0, 3);
+								Icon.Size = GridInfo.BadgeImage and UDim2.fromOffset(14, 14) or UDim2.fromOffset(6, 6);
+								Icon.ZIndex = 8;
+								Icon.Parent = Item.Button;
+								Item.BadgeIcon = Icon;
+							end;
+							Icon.Visible = true;
+						elseif Item.BadgeIcon then
+							Item.BadgeIcon.Visible = false;
+						end;
+
+						if Item.Highlight ~= Highlight then
+							Item.Highlight = Highlight;
+							Item.Button.BackgroundColor3 = Highlight or EZ.MainColor;
+						end;
 					end;
 
 					function Grid:Filter(Query)
