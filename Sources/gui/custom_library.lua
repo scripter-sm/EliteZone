@@ -1,10 +1,5 @@
--- This file was compiled by Elite Zone's Compiler. [v3.8]
---Library Version (Used for caching purposes.) v0.2
-
-return function(EZ)
-	local InputService = cloneref(game:GetService('UserInputService'));
-
-	local Lib = {};
+do
+	local CustomLibrary = {};
 
 	local function Box(Parent, Properties)
 		local Outer = EZ:Create('Frame', {
@@ -30,7 +25,7 @@ return function(EZ)
 		return Outer, Inner;
 	end;
 
-	function Lib:CreateWindow(Config)
+	function CustomLibrary:CreateWindow(Config)
 		Config.Size = Config.Size or UDim2.fromOffset(550, 500);
 		Config.MinSize = Config.MinSize or Vector2.new(400, 300);
 
@@ -303,7 +298,7 @@ return function(EZ)
 						Frame.Size = UDim2.new(1, 0, 0, Height);
 					end;
 
-					return setmetatable(Group, EZ.BaseGroupbox);
+					return setmetatable(Group, BaseGroupbox);
 				end;
 
 				function Section:AddGrid(GridInfo)
@@ -441,5 +436,5 @@ return function(EZ)
 		return Window;
 	end;
 
-	return Lib;
+	EZ.CustomLibrary = CustomLibrary;
 end

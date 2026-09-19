@@ -4051,8 +4051,6 @@ do
 	BaseGroupbox.__namecall = function(Table, Key, ...)
 		return Funcs[Key](...);
 	end;
-
-EZ.BaseGroupbox = BaseGroupbox;
 end;
 
 do

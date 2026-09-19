@@ -30,6 +30,8 @@ const body = [
     '--[[ Library ]]',
     read(path.join(gui_path, 'library.lua')),
     `EZ.Version = ${JSON.stringify(version)}`,
+    '--[[ Custom Library ]]',
+    read(path.join(gui_path, 'custom_library.lua')),
     '--[[ Save Manager ]]',
     read(path.join(gui_path, 'save_manager.lua')),
     '--[[ Theme Manager ]]',
