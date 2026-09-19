@@ -521,9 +521,12 @@ do
 					});
 					EZ:AddToRegistry(Scroll, { BorderColor3 = function()
 						for _, Item in next, Grid.Items do
-							Item.Button.BackgroundColor3 = Item.Highlight or EZ.MainColor;
+							Item.Button.BackgroundColor3 = EZ.MainColor;
 							Item.Button.BorderColor3 = EZ.OutlineColor;
-							Item.Label.TextColor3 = EZ.FontColor;
+							Item.Label.TextColor3 = Item.Highlight and EZ.AccentColor or EZ.FontColor;
+							if Item.Bar then
+								Item.Bar.BackgroundColor3 = EZ.AccentColor;
+							end;
 						end;
 						Stroke.Color = EZ.AccentColor;
 						return EZ.OutlineColor;
@@ -628,7 +631,7 @@ do
 						Stroke.Parent = Item and Item.Button;
 					end;
 
-					function Grid:SetState(Item, Dimmed, Badge, Highlight)
+					function Grid:SetState(Item, Dimmed, Highlight)
 						Dimmed = Dimmed or false;
 						if Item.Dimmed ~= Dimmed then
 							Item.Dimmed = Dimmed;
@@ -636,29 +639,23 @@ do
 							Item.Label.TextTransparency = Dimmed and 0.5 or 0;
 						end;
 
-						if Badge then
-							local Icon = Item.BadgeIcon;
-							if not Icon then
-								Icon = Instance.new('ImageLabel');
-								Icon.Image = GridInfo.BadgeImage or '';
-								Icon.BackgroundColor3 = EZ.AccentColor;
-								Icon.BackgroundTransparency = GridInfo.BadgeImage and 1 or 0;
-								Icon.BorderSizePixel = 0;
-								Icon.AnchorPoint = Vector2.new(1, 0);
-								Icon.Position = UDim2.new(1, -3, 0, 3);
-								Icon.Size = GridInfo.BadgeImage and UDim2.fromOffset(14, 14) or UDim2.fromOffset(6, 6);
-								Icon.ZIndex = 8;
-								Icon.Parent = Item.Button;
-								Item.BadgeIcon = Icon;
-							end;
-							Icon.Visible = true;
-						elseif Item.BadgeIcon then
-							Item.BadgeIcon.Visible = false;
-						end;
-
+						Highlight = Highlight or false;
 						if Item.Highlight ~= Highlight then
 							Item.Highlight = Highlight;
-							Item.Button.BackgroundColor3 = Highlight or EZ.MainColor;
+							local Bar = Item.Bar;
+							if not Bar then
+								Bar = Instance.new('Frame');
+								Bar.BackgroundColor3 = EZ.AccentColor;
+								Bar.BorderSizePixel = 0;
+								Bar.AnchorPoint = Vector2.new(0, 1);
+								Bar.Position = UDim2.fromScale(0, 1);
+								Bar.Size = UDim2.new(1, 0, 0, 2);
+								Bar.ZIndex = 8;
+								Bar.Parent = Item.Button;
+								Item.Bar = Bar;
+							end;
+							Bar.Visible = Highlight;
+							Item.Label.TextColor3 = Highlight and EZ.AccentColor or EZ.FontColor;
 						end;
 					end;
 
