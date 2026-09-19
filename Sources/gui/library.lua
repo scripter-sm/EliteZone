@@ -5591,6 +5591,72 @@ function EZ:CreateWindow(...)
 		end
 	end))
 
+	if EZ.IsMobile then
+		local Gui = EZ:Create('ScreenGui', {
+			DisplayOrder = 1000;
+			ResetOnSpawn = false;
+		});
+		ProtectGui(Gui);
+		Gui.Parent = CoreGui;
+
+		local Button = EZ:Create('Frame', {
+			Active = true;
+			BackgroundColor3 = Color3.new(0, 0, 0);
+			Position = UDim2.fromOffset(20, 120);
+			Size = UDim2.fromOffset(50, 50);
+			Parent = Gui;
+		});
+
+		EZ:Create('UICorner', { CornerRadius = UDim.new(0, 12); Parent = Button });
+
+		local Logo = EZ:Create('ImageLabel', {
+			BackgroundTransparency = 1;
+			Position = UDim2.fromOffset(6, 6);
+			Size = UDim2.new(1, -12, 1, -12);
+			Parent = Button;
+		});
+
+		task.spawn(function()
+			local Path = EZ.Folder .. '/assets/logo.png';
+
+			if not isfile(Path) then
+				local Ok, Data = pcall(game.HttpGet, game, 'https://raw.githubusercontent.com/scripter-sm/EliteZone/main/README/LargeTransparentLogo.png');
+				if not Ok then return end;
+
+				ensurefolder(EZ.Folder);
+				ensurefolder(EZ.Folder .. '/assets');
+				writefile(Path, Data);
+			end;
+
+			Logo.Image = getcustomasset(Path);
+		end);
+
+		local Drag, Start, Origin, Moved;
+
+		Button.InputBegan:Connect(function(Input)
+			if Input.UserInputType ~= Enum.UserInputType.Touch or Drag then return end;
+
+			Drag, Start, Origin, Moved = Input, Input.Position, Button.Position, false;
+		end);
+
+		EZ:GiveSignal(InputService.InputChanged:Connect(function(Input)
+			if Input ~= Drag then return end;
+
+			local D = Input.Position - Start;
+			if not Moved and D.Magnitude < 8 then return end;
+
+			Moved = true;
+			Button.Position = UDim2.new(Origin.X.Scale, Origin.X.Offset + D.X, Origin.Y.Scale, Origin.Y.Offset + D.Y);
+		end));
+
+		EZ:GiveSignal(InputService.InputEnded:Connect(function(Input)
+			if Input ~= Drag then return end;
+
+			Drag = nil;
+			if not Moved then EZ:Toggle() end;
+		end));
+	end;
+
 	if Config.AutoShow then task.spawn(EZ.Toggle) end
 
 	Window.Holder = Outer;
