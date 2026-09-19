@@ -479,7 +479,8 @@ do
 							Parent = Inner;
 						});
 
-						EZ:OnHighlight(Outer, Outer, { BorderColor3 = 'AccentColor' }, { BorderColor3 = 'Black' });
+						EZ:AddToRegistry(Outer, { BorderColor3 = 'Black' });
+						EZ:OnHighlight(Outer, Outer, { BorderColor3 = 'OutlineColor' }, { BorderColor3 = 'Black' });
 
 						Inner.Activated:Connect(function()
 							EZ:SafeCallback(Info.Callback);
@@ -522,7 +523,7 @@ do
 					EZ:AddToRegistry(Scroll, { BorderColor3 = function()
 						for _, Item in next, Grid.Items do
 							Item.Button.BackgroundColor3 = EZ.MainColor;
-							Item.Button.BorderColor3 = EZ.OutlineColor;
+							Item.Button.BorderColor3 = Item.Hovered and EZ.OutlineColor or EZ.Black;
 							Item.Label.TextColor3 = EZ.FontColor;
 						end;
 						Stroke.Color = EZ.AccentColor;
@@ -565,8 +566,8 @@ do
 						Cell.AutoButtonColor = false;
 						Cell.Text = '';
 						Cell.BackgroundColor3 = EZ.MainColor;
-						Cell.BorderColor3 = EZ.OutlineColor;
-						Cell.BorderMode = Enum.BorderMode.Inset;
+						Cell.BorderColor3 = EZ.Black;
+						Cell.BorderMode = Enum.BorderMode.Outline;
 						Cell.LayoutOrder = Index;
 						Cell.ZIndex = 5;
 						Cell.ClipsDescendants = true;
@@ -611,6 +612,15 @@ do
 						if Grid.Query then
 							Cell.Visible = Item.Search:find(Grid.Query, 1, true) ~= nil;
 						end;
+
+						Cell.MouseEnter:Connect(function()
+							Item.Hovered = true;
+							Cell.BorderColor3 = EZ.OutlineColor;
+						end);
+						Cell.MouseLeave:Connect(function()
+							Item.Hovered = nil;
+							Cell.BorderColor3 = EZ.Black;
+						end);
 
 						Cell.Activated:Connect(function()
 							Grid:Select(Item);
