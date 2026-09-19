@@ -527,8 +527,8 @@ do
 							Item.Edge.Color = EdgeColor(Item);
 							Item.Label.TextColor3 = EZ.FontColor;
 							if Item.Highlight == true then
-								Item.Overlay.BackgroundColor3 = EZ.OverlayColor;
-								Item.OverlayBorder.Color = EZ.OverlayColor;
+								Item.Overlay.BackgroundColor3 = EZ.AccentColor;
+								Item.OverlayBorder.Color = EZ.AccentColor;
 							end;
 						end;
 						return EZ.OutlineColor;
@@ -683,7 +683,7 @@ do
 								Item.OverlayBorder = Border;
 							end;
 							if Highlight then
-								local Color = Highlight == true and EZ.OverlayColor or Highlight;
+								local Color = Highlight == true and EZ.AccentColor or Highlight;
 								Overlay.BackgroundColor3 = Color;
 								Item.OverlayBorder.Color = Color;
 							end;

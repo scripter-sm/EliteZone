@@ -113,7 +113,6 @@ local EZ = {
 	AccentColor = Color3.fromRGB(71, 119, 182);
 	OutlineColor = Color3.fromRGB(31, 31, 31);
 	RiskColor = Color3.fromRGB(229, 0, 0),
-	OverlayColor = Color3.fromRGB(70, 210, 100),
 
 	Black = Color3.new(0, 0, 0);
 	Font = Enum.Font.RobotoMono,
