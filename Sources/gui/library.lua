@@ -5611,8 +5611,8 @@ function EZ:CreateWindow(...)
 
 		local Logo = EZ:Create('ImageLabel', {
 			BackgroundTransparency = 1;
-			Position = UDim2.fromOffset(6, 6);
-			Size = UDim2.new(1, -12, 1, -12);
+			Position = UDim2.fromOffset(0, 6);
+			Size = UDim2.new(1, 0, 1, -12);
 			Parent = Button;
 		});
 
