@@ -1,5 +1,5 @@
 -- This file was compiled by Elite Zone's Compiler. [v3.8]
---Library Version (Used for caching purposes.) v2.7
+--Library Version (Used for caching purposes.) v2.8
 
 --[[ Library ]]
 
@@ -6178,7 +6178,7 @@ do
 					local LabelSize = UDim2.new(1, -4, 0, TextHeight);
 
 					local function EdgeColor(Item)
-						return Item == Grid.Selected and EZ.AccentColor or Item.Hovered and EZ.OutlineColor or EZ.Black;
+						return Item == Grid.Selected and not Item.Highlight and EZ.AccentColor or Item.Hovered and EZ.OutlineColor or EZ.Black;
 					end;
 
 					local Scroll = EZ:Create('ScrollingFrame', {
@@ -6357,6 +6357,7 @@ do
 								Item.OverlayBorder.Color = Highlight;
 							end;
 							Overlay.Visible = Highlight ~= nil;
+							Item.Edge.Color = EdgeColor(Item);
 						end;
 					end;
 
