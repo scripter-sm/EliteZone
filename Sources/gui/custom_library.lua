@@ -355,6 +355,9 @@ do
 					local TextHeight = GridInfo.TextHeight or 14;
 					local VisualPosition = UDim2.fromOffset(3, 3);
 					local VisualSize = UDim2.new(1, -6, 1, -TextHeight - 6);
+					local ImageScale = GridInfo.ImageScale or 1;
+					local ImagePosition = UDim2.new(0.5, 0, 0.5, -TextHeight / 2);
+					local ImageSize = UDim2.new(ImageScale, -6 * ImageScale, ImageScale, (-TextHeight - 6) * ImageScale);
 					local LabelPosition = UDim2.new(0, 2, 1, -TextHeight - 1);
 					local LabelSize = UDim2.new(1, -4, 0, TextHeight);
 
@@ -370,21 +373,20 @@ do
 						CanvasSize = UDim2.new();
 						AutomaticCanvasSize = Enum.AutomaticSize.Y;
 						ScrollingDirection = Enum.ScrollingDirection.Y;
-						ScrollBarThickness = EZ.IsMobile and 0 or 3;
-						ScrollBarImageColor3 = EZ.AccentColor;
+						ScrollBarThickness = 0;
 						BottomImage = '';
 						TopImage = '';
 						ZIndex = 4;
 						Parent = Section.Container;
 					});
-					EZ:AddToRegistry(Scroll, { ScrollBarImageColor3 = function()
+					EZ:AddToRegistry(Scroll, { BorderColor3 = function()
 						for _, Item in next, Grid.Items do
 							Item.Button.BackgroundColor3 = EZ.MainColor;
 							Item.Button.BorderColor3 = EZ.OutlineColor;
 							Item.Label.TextColor3 = EZ.FontColor;
 						end;
 						Stroke.Color = EZ.AccentColor;
-						return EZ.AccentColor;
+						return EZ.OutlineColor;
 					end });
 					EZ:Create('UIPadding', { PaddingTop = UDim.new(0, 2); PaddingLeft = UDim.new(0, 2); PaddingRight = UDim.new(0, 2); PaddingBottom = UDim.new(0, 2); Parent = Scroll });
 					EZ:Create('UIGridLayout', {
@@ -411,17 +413,22 @@ do
 						Cell.BorderMode = Enum.BorderMode.Inset;
 						Cell.LayoutOrder = Index;
 						Cell.ZIndex = 5;
+						Cell.ClipsDescendants = true;
 
 						local Visual = Item.Instance;
-						if not Visual then
+						if Visual then
+							Visual.AnchorPoint = Vector2.zero;
+							Visual.Position = VisualPosition;
+							Visual.Size = VisualSize;
+						else
 							Visual = Instance.new('ImageLabel');
 							Visual.BackgroundTransparency = 1;
 							Visual.Image = Item.Image or '';
 							Visual.ScaleType = Enum.ScaleType.Fit;
+							Visual.AnchorPoint = Vector2.new(0.5, 0.5);
+							Visual.Position = ImagePosition;
+							Visual.Size = ImageSize;
 						end;
-						Visual.AnchorPoint = Vector2.zero;
-						Visual.Position = VisualPosition;
-						Visual.Size = VisualSize;
 						Visual.ZIndex = 6;
 						Visual.Parent = Cell;
 
@@ -435,7 +442,7 @@ do
 						Label.Text = Item.Text or '';
 						Label.TextSize = 12;
 						Label.TextTruncate = Enum.TextTruncate.AtEnd;
-						Label.ZIndex = 6;
+						Label.ZIndex = 7;
 						Label.Parent = Cell;
 
 						Item.Button = Cell;
