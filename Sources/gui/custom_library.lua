@@ -635,7 +635,7 @@ do
 
 					function Grid:Select(Item)
 						Grid.Selected = Item;
-						Stroke.Parent = Item and not Item.Highlight and Item.Button or nil;
+						Stroke.Parent = Item and Item.Button;
 					end;
 
 					function Grid:SetState(Item, Dimmed, Highlight)
@@ -674,9 +674,6 @@ do
 								Item.OverlayBorder.Color = Highlight;
 							end;
 							Overlay.Visible = Highlight ~= nil;
-							if Item == Grid.Selected then
-								Stroke.Parent = not Highlight and Item.Button or nil;
-							end;
 						end;
 					end;
 
