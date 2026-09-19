@@ -1,5 +1,5 @@
 -- This file was compiled by Elite Zone's Compiler. [v3.8]
---Library Version (Used for caching purposes.) v1.4
+--Library Version (Used for caching purposes.) v1.5
 
 --[[ Library ]]
 
@@ -5714,40 +5714,56 @@ do
 
 		local Window = { Tabs = {} };
 
+		local Gui = EZ:Create('ScreenGui', {
+			ZIndexBehavior = Enum.ZIndexBehavior.Global;
+			DisplayOrder = 998;
+			ResetOnSpawn = false;
+			Enabled = false;
+		});
+		ProtectGui(Gui);
+		Gui.Parent = CoreGui;
+
 		local Outer = EZ:Create('Frame', {
 			BackgroundColor3 = Color3.new(0, 0, 0);
 			BorderSizePixel = 0;
 			Position = Config.Position or (EZ.MainFrame and UDim2.fromOffset(EZ.MainFrame.AbsolutePosition.X + EZ.MainFrame.AbsoluteSize.X + 10, EZ.MainFrame.AbsolutePosition.Y)) or UDim2.new(0.5, -Config.Size.X.Offset / 2, 0.5, -Config.Size.Y.Offset / 2);
 			Size = Config.Size;
-			Visible = false;
 			Active = true;
 			ZIndex = 1;
-			Parent = EZ.ScreenGui;
+			Parent = Gui;
 		});
 
-		local Drag, Start, Origin;
+		local Drag, Moved, Ended;
+
+		local function StopDrag()
+			if Drag then
+				Drag = nil;
+				Moved:Disconnect();
+				Ended:Disconnect();
+			end;
+		end;
 
 		Outer.InputBegan:Connect(function(Input)
 			local Type = Input.UserInputType;
 			if Drag or (Type ~= Enum.UserInputType.MouseButton1 and Type ~= Enum.UserInputType.Touch) then return end;
 			if Input.Position.Y - Outer.AbsolutePosition.Y > 25 then return end;
 
-			Drag, Start, Origin = Input, Input.Position, Outer.Position;
+			local Start, Origin, IsTouch = Input.Position, Outer.Position, Type == Enum.UserInputType.Touch;
+			Drag = Input;
+
+			Moved = InputService.InputChanged:Connect(function(Changed)
+				if Changed == Drag or (not IsTouch and Changed.UserInputType == Enum.UserInputType.MouseMovement) then
+					local D = Changed.Position - Start;
+					Outer.Position = UDim2.new(Origin.X.Scale, Origin.X.Offset + D.X, Origin.Y.Scale, Origin.Y.Offset + D.Y);
+				end;
+			end);
+
+			Ended = InputService.InputEnded:Connect(function(EndInput)
+				if EndInput == Drag or (not IsTouch and EndInput.UserInputType == Enum.UserInputType.MouseButton1) then
+					StopDrag();
+				end;
+			end);
 		end);
-
-		EZ:GiveSignal(InputService.InputChanged:Connect(function(Input)
-			if not Drag then return end;
-			if Input ~= Drag and Input.UserInputType ~= Enum.UserInputType.MouseMovement then return end;
-
-			local D = Input.Position - Start;
-			Outer.Position = UDim2.new(Origin.X.Scale, Origin.X.Offset + D.X, Origin.Y.Scale, Origin.Y.Offset + D.Y);
-		end));
-
-		EZ:GiveSignal(InputService.InputEnded:Connect(function(Input)
-			if Input == Drag or (Drag and Input.UserInputType == Enum.UserInputType.MouseButton1) then
-				Drag = nil;
-			end;
-		end));
 
 		EZ:MakeResizable(Outer, Config.MinSize);
 
@@ -5770,22 +5786,24 @@ do
 			Parent = Inner;
 		});
 
-		local GameLabel = EZ:Create('TextLabel', {
-			BackgroundTransparency = 1;
-			Font = EZ.Font;
-			TextColor3 = EZ.AccentColor;
-			TextSize = 16;
-			Position = UDim2.fromOffset(-8, 0);
-			Size = UDim2.new(1, 0, 0, 25);
-			Text = Config.Game or '';
-			TextXAlignment = Enum.TextXAlignment.Right;
-			ZIndex = 1;
-			Parent = Inner;
-		});
-		EZ:ApplyTextStroke(GameLabel);
-		EZ:AddToRegistry(GameLabel, { TextColor3 = 'AccentColor' });
+		if Config.Game then
+			local GameLabel = EZ:Create('TextLabel', {
+				BackgroundTransparency = 1;
+				Font = EZ.Font;
+				TextColor3 = EZ.AccentColor;
+				TextSize = 16;
+				Position = UDim2.fromOffset(-8, 0);
+				Size = UDim2.new(1, 0, 0, 25);
+				Text = Config.Game;
+				TextXAlignment = Enum.TextXAlignment.Right;
+				ZIndex = 1;
+				Parent = Inner;
+			});
+			EZ:ApplyTextStroke(GameLabel);
+			EZ:AddToRegistry(GameLabel, { TextColor3 = 'AccentColor' });
+		end;
 
-		local Main = EZ:Create('Frame', {
+		local MainOuter = EZ:Create('Frame', {
 			BackgroundColor3 = EZ.BackgroundColor;
 			BorderColor3 = EZ.OutlineColor;
 			Position = UDim2.fromOffset(8, 25);
@@ -5793,7 +5811,17 @@ do
 			ZIndex = 1;
 			Parent = Inner;
 		});
-		EZ:AddToRegistry(Main, { BackgroundColor3 = 'BackgroundColor'; BorderColor3 = 'OutlineColor' });
+		EZ:AddToRegistry(MainOuter, { BackgroundColor3 = 'BackgroundColor'; BorderColor3 = 'OutlineColor' });
+
+		local Main = EZ:Create('Frame', {
+			BackgroundColor3 = EZ.BackgroundColor;
+			BorderColor3 = Color3.new(0, 0, 0);
+			BorderMode = Enum.BorderMode.Inset;
+			Size = UDim2.fromScale(1, 1);
+			ZIndex = 1;
+			Parent = MainOuter;
+		});
+		EZ:AddToRegistry(Main, { BackgroundColor3 = 'BackgroundColor' });
 
 		local TabArea = EZ:Create('ScrollingFrame', {
 			BackgroundTransparency = 1;
@@ -5827,21 +5855,31 @@ do
 		});
 		EZ:AddToRegistry(TabContainer, { BackgroundColor3 = 'MainColor'; BorderColor3 = 'OutlineColor' });
 
+		local TabContainerInner = EZ:Create('Frame', {
+			BackgroundColor3 = EZ.MainColor;
+			BorderColor3 = Color3.new(0, 0, 0);
+			Size = UDim2.fromScale(1, 1);
+			ZIndex = 2;
+			Parent = TabContainer;
+		});
+		EZ:AddToRegistry(TabContainerInner, { BackgroundColor3 = 'MainColor' });
+
 		function Window:SetTitle(Title)
 			TitleLabel.Text = Title;
 		end;
 
 		function Window:SetVisible(Bool)
-			Outer.Visible = Bool;
-			if not Bool then Drag = nil end;
+			Gui.Enabled = Bool;
+			if not Bool then StopDrag() end;
 		end;
 
 		function Window:Toggle()
-			Window:SetVisible(not Outer.Visible);
+			Window:SetVisible(not Gui.Enabled);
 		end;
 
 		function Window:Remove()
-			Outer:Destroy();
+			StopDrag();
+			Gui:Destroy();
 			table.clear(Window);
 		end;
 
@@ -5862,12 +5900,22 @@ do
 			});
 			EZ:AddToRegistry(Button, { BackgroundColor3 = 'BackgroundColor'; BorderColor3 = 'OutlineColor' });
 
+			local ButtonBorder = EZ:Create('Frame', {
+				BackgroundTransparency = 1;
+				BorderColor3 = EZ.OutlineColor;
+				Size = UDim2.fromScale(1, 1);
+				ZIndex = 2;
+				Parent = Button;
+			});
+			EZ:Create('UIStroke', { Color = Color3.new(0, 0, 0); Parent = ButtonBorder });
+			EZ:AddToRegistry(ButtonBorder, { BorderColor3 = 'OutlineColor' });
+
 			local Accent = EZ:Create('Frame', {
 				BackgroundColor3 = EZ.AccentColor;
 				BorderSizePixel = 0;
 				Size = UDim2.new(1, 0, 0, 1);
 				Visible = false;
-				ZIndex = 2;
+				ZIndex = 104;
 				Parent = Button;
 			});
 			EZ:AddToRegistry(Accent, { BackgroundColor3 = 'AccentColor' });
@@ -5884,7 +5932,7 @@ do
 				Size = UDim2.fromScale(1, 1);
 				Visible = false;
 				ZIndex = 2;
-				Parent = TabContainer;
+				Parent = TabContainerInner;
 			});
 
 			function Tab:ShowTab()
@@ -5980,6 +6028,14 @@ do
 					local Grid = { Items = {} };
 					local CellSize = GridInfo.CellSize or UDim2.fromOffset(80, 80);
 					local TextHeight = GridInfo.TextHeight or 14;
+					local VisualPosition = UDim2.fromOffset(3, 3);
+					local VisualSize = UDim2.new(1, -6, 1, -TextHeight - 6);
+					local LabelPosition = UDim2.new(0, 2, 1, -TextHeight - 1);
+					local LabelSize = UDim2.new(1, -4, 0, TextHeight);
+
+					local Stroke = Instance.new('UIStroke');
+					Stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border;
+					Stroke.Color = EZ.AccentColor;
 
 					local Scroll = EZ:Create('ScrollingFrame', {
 						BackgroundTransparency = 1;
@@ -6000,9 +6056,9 @@ do
 						for _, Item in next, Grid.Items do
 							Item.Button.BackgroundColor3 = EZ.MainColor;
 							Item.Button.BorderColor3 = EZ.OutlineColor;
-							Item.Stroke.Color = EZ.AccentColor;
 							Item.Label.TextColor3 = EZ.FontColor;
 						end;
+						Stroke.Color = EZ.AccentColor;
 						return EZ.AccentColor;
 					end });
 					EZ:Create('UIPadding', { PaddingTop = UDim.new(0, 2); PaddingLeft = UDim.new(0, 2); PaddingRight = UDim.new(0, 2); PaddingBottom = UDim.new(0, 2); Parent = Scroll });
@@ -6019,55 +6075,47 @@ do
 					end;
 
 					function Grid:AddItem(Item)
-						local Cell = EZ:Create('TextButton', {
-							AutoButtonColor = false;
-							Text = '';
-							BackgroundColor3 = EZ.MainColor;
-							BorderColor3 = EZ.OutlineColor;
-							BorderMode = Enum.BorderMode.Inset;
-							LayoutOrder = #Grid.Items + 1;
-							ZIndex = 5;
-							Parent = Scroll;
-						});
+						local Items = Grid.Items;
+						local Index = #Items + 1;
 
-						local Stroke = EZ:Create('UIStroke', {
-							ApplyStrokeMode = Enum.ApplyStrokeMode.Border;
-							Color = EZ.AccentColor;
-							Enabled = false;
-							Parent = Cell;
-						});
+						local Cell = Instance.new('TextButton');
+						Cell.AutoButtonColor = false;
+						Cell.Text = '';
+						Cell.BackgroundColor3 = EZ.MainColor;
+						Cell.BorderColor3 = EZ.OutlineColor;
+						Cell.BorderMode = Enum.BorderMode.Inset;
+						Cell.LayoutOrder = Index;
+						Cell.ZIndex = 5;
 
-						local Visual = Item.Instance or EZ:Create('ImageLabel', {
-							BackgroundTransparency = 1;
-							Image = Item.Image or '';
-							ScaleType = Enum.ScaleType.Fit;
-						});
-						EZ:Create(Visual, {
-							AnchorPoint = Vector2.zero;
-							Position = UDim2.fromOffset(3, 3);
-							Size = UDim2.new(1, -6, 1, -TextHeight - 6);
-							ZIndex = 6;
-							Parent = Cell;
-						});
+						local Visual = Item.Instance;
+						if not Visual then
+							Visual = Instance.new('ImageLabel');
+							Visual.BackgroundTransparency = 1;
+							Visual.Image = Item.Image or '';
+							Visual.ScaleType = Enum.ScaleType.Fit;
+						end;
+						Visual.AnchorPoint = Vector2.zero;
+						Visual.Position = VisualPosition;
+						Visual.Size = VisualSize;
+						Visual.ZIndex = 6;
+						Visual.Parent = Cell;
 
-						local Label = EZ:Create('TextLabel', {
-							BackgroundTransparency = 1;
-							Font = EZ.Font;
-							TextColor3 = EZ.FontColor;
-							Position = UDim2.new(0, 2, 1, -TextHeight - 1);
-							Size = UDim2.new(1, -4, 0, TextHeight);
-							Text = Item.Text or '';
-							TextSize = 12;
-							TextTruncate = Enum.TextTruncate.AtEnd;
-							ZIndex = 6;
-							Parent = Cell;
-						});
-						EZ:ApplyTextStroke(Label);
+						local Label = Instance.new('TextLabel');
+						Label.BackgroundTransparency = 1;
+						Label.Font = EZ.Font;
+						Label.TextColor3 = EZ.FontColor;
+						Label.TextStrokeTransparency = 0;
+						Label.Position = LabelPosition;
+						Label.Size = LabelSize;
+						Label.Text = Item.Text or '';
+						Label.TextSize = 12;
+						Label.TextTruncate = Enum.TextTruncate.AtEnd;
+						Label.ZIndex = 6;
+						Label.Parent = Cell;
 
 						Item.Button = Cell;
 						Item.Label = Label;
-						Item.Stroke = Stroke;
-						Grid.Items[#Grid.Items + 1] = Item;
+						Items[Index] = Item;
 
 						Cell.Activated:Connect(function()
 							Grid:Select(Item);
@@ -6075,16 +6123,18 @@ do
 							if GridInfo.Callback then EZ:SafeCallback(GridInfo.Callback, Item) end;
 						end);
 
+						Cell.Parent = Scroll;
+
 						return Item;
 					end;
 
 					function Grid:Select(Item)
-						if Grid.Selected then Grid.Selected.Stroke.Enabled = false end;
 						Grid.Selected = Item;
-						if Item then Item.Stroke.Enabled = true end;
+						Stroke.Parent = Item and Item.Button;
 					end;
 
 					function Grid:Clear()
+						Stroke.Parent = nil;
 						for _, Item in next, Grid.Items do
 							Item.Button:Destroy();
 						end;
