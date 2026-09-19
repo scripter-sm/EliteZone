@@ -1,5 +1,5 @@
 -- This file was compiled by Elite Zone's Compiler. [v3.8]
---Library Version (Used for caching purposes.) v1.6
+--Library Version (Used for caching purposes.) v1.7
 
 --[[ Library ]]
 
@@ -6064,12 +6064,28 @@ do
 						return EZ.OutlineColor;
 					end });
 					EZ:Create('UIPadding', { PaddingTop = UDim.new(0, 2); PaddingLeft = UDim.new(0, 2); PaddingRight = UDim.new(0, 2); PaddingBottom = UDim.new(0, 2); Parent = Scroll });
-					EZ:Create('UIGridLayout', {
+					local Layout = EZ:Create('UIGridLayout', {
 						CellSize = CellSize;
 						CellPadding = UDim2.fromOffset(4, 4);
 						SortOrder = Enum.SortOrder.LayoutOrder;
 						Parent = Scroll;
 					});
+
+					local MinWidth, Ratio = CellSize.X.Offset, CellSize.Y.Offset / CellSize.X.Offset;
+					local LastWidth;
+
+					local function Fit()
+						local Width = Scroll.AbsoluteSize.X - 4;
+						if Width == LastWidth or Width <= 0 then return end;
+						LastWidth = Width;
+
+						local Columns = math.max(1, (Width + 4) // (MinWidth + 4));
+						local CellWidth = (Width - 4 * (Columns - 1)) // Columns;
+						Layout.CellSize = UDim2.fromOffset(CellWidth, CellWidth * Ratio // 1);
+					end;
+
+					Scroll:GetPropertyChangedSignal('AbsoluteSize'):Connect(Fit);
+					Fit();
 					Grid.Holder = Scroll;
 
 					function Grid:SetVisible(Bool)
