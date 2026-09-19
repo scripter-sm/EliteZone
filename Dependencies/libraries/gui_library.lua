@@ -1,5 +1,5 @@
 -- This file was compiled by Elite Zone's Compiler. [v3.8]
---Library Version (Used for caching purposes.) v2.2
+--Library Version (Used for caching purposes.) v2.3
 
 --[[ Library ]]
 
@@ -6198,10 +6198,7 @@ do
 						for _, Item in next, Grid.Items do
 							Item.Button.BackgroundColor3 = EZ.MainColor;
 							Item.Button.BorderColor3 = EZ.OutlineColor;
-							Item.Label.TextColor3 = Item.Highlight and EZ.AccentColor or EZ.FontColor;
-							if Item.Bar then
-								Item.Bar.BackgroundColor3 = EZ.AccentColor;
-							end;
+							Item.Label.TextColor3 = EZ.FontColor;
 						end;
 						Stroke.Color = EZ.AccentColor;
 						return EZ.OutlineColor;
@@ -6277,7 +6274,7 @@ do
 						Label.Text = Item.Text or '';
 						Label.TextSize = 12;
 						Label.TextTruncate = Enum.TextTruncate.AtEnd;
-						Label.ZIndex = 7;
+						Label.ZIndex = 8;
 						Label.Parent = Cell;
 
 						Item.Button = Cell;
@@ -6314,23 +6311,34 @@ do
 							Item.Label.TextTransparency = Dimmed and 0.5 or 0;
 						end;
 
-						Highlight = Highlight or false;
 						if Item.Highlight ~= Highlight then
 							Item.Highlight = Highlight;
-							local Bar = Item.Bar;
-							if not Bar then
-								Bar = Instance.new('Frame');
-								Bar.BackgroundColor3 = EZ.AccentColor;
-								Bar.BorderSizePixel = 0;
-								Bar.AnchorPoint = Vector2.new(0, 1);
-								Bar.Position = UDim2.fromScale(0, 1);
-								Bar.Size = UDim2.new(1, 0, 0, 2);
-								Bar.ZIndex = 8;
-								Bar.Parent = Item.Button;
-								Item.Bar = Bar;
+							local Overlay = Item.Overlay;
+							if not Overlay then
+								Overlay = Instance.new('Frame');
+								Overlay.BorderSizePixel = 0;
+								Overlay.Size = UDim2.fromScale(1, 1);
+								Overlay.ZIndex = 7;
+
+								local Gradient = Instance.new('UIGradient');
+								Gradient.Rotation = 90;
+								Gradient.Transparency = NumberSequence.new(0.85, 0.55);
+								Gradient.Parent = Overlay;
+
+								local Border = Instance.new('UIStroke');
+								Border.ApplyStrokeMode = Enum.ApplyStrokeMode.Border;
+								Border.Thickness = 1;
+								Border.Parent = Overlay;
+
+								Overlay.Parent = Item.Button;
+								Item.Overlay = Overlay;
+								Item.OverlayBorder = Border;
 							end;
-							Bar.Visible = Highlight;
-							Item.Label.TextColor3 = Highlight and EZ.AccentColor or EZ.FontColor;
+							if Highlight then
+								Overlay.BackgroundColor3 = Highlight;
+								Item.OverlayBorder.Color = Highlight;
+							end;
+							Overlay.Visible = Highlight ~= nil;
 						end;
 					end;
 
