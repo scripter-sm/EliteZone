@@ -22,7 +22,7 @@ do
 		NotificationStyleSortOrder = 'Default';
 	};
 
-	local function MakeTheme(FontColor, MainColor, AccentColor, BackgroundColor, OutlineColor, RiskColor)
+	local function MakeTheme(FontColor, MainColor, AccentColor, BackgroundColor, OutlineColor, RiskColor, OverlayColor)
 		local Data = {
 			FontColor = FontColor;
 			MainColor = MainColor;
@@ -30,6 +30,7 @@ do
 			BackgroundColor = BackgroundColor;
 			OutlineColor = OutlineColor;
 			RiskColor = RiskColor;
+			OverlayColor = OverlayColor or AccentColor;
 		};
 
 		for Key, Value in next, NonColorDefaults do
@@ -40,7 +41,7 @@ do
 	end;
 
 	ThemeManager.BuiltInThemes = {
-		['Default']      = MakeTheme('ffffff', '181818', '4777b6', '141414', '1f1f1f', 'e50000');
+		['Default']      = MakeTheme('ffffff', '181818', '4777b6', '141414', '1f1f1f', 'e50000', '46d264');
 		['Tokyo Night']  = MakeTheme('ffffff', '191925', '6956cb', '15151e', '272727', 'fb5f5f');
 		['Nord']         = MakeTheme('ffffff', '1c1e20', '9effc8', '1c1e20', '24282d', 'ff7a00');
 		['Skeet']        = MakeTheme('ffffff', '131313', '81ff54', '151515', '2a2a2a', 'e50000');
@@ -63,7 +64,7 @@ do
 	};
 
 	ThemeManager.ColorKeys = {
-		'FontColor', 'MainColor', 'AccentColor', 'BackgroundColor', 'OutlineColor', 'RiskColor',
+		'FontColor', 'MainColor', 'AccentColor', 'BackgroundColor', 'OutlineColor', 'RiskColor', 'OverlayColor',
 	};
 
 	ThemeManager.BackgroundKeys = {
@@ -76,7 +77,7 @@ do
 	};
 
 	ThemeManager.ThemeKeys = {
-		'FontColor', 'MainColor', 'AccentColor', 'BackgroundColor', 'OutlineColor', 'RiskColor',
+		'FontColor', 'MainColor', 'AccentColor', 'BackgroundColor', 'OutlineColor', 'RiskColor', 'OverlayColor',
 
 		'Background_Color', 'Background_Transparency', 'Background_Blur',
 		'Background_Contrast', 'Background_Saturation', 'Background_Brightness',
@@ -104,6 +105,10 @@ do
 
 		if not Data then
 			return;
+		end;
+
+		if not Data.OverlayColor and Options.OverlayColor then
+			Options.OverlayColor:SetValueRGB(Color3.fromHex(Data.AccentColor));
 		end;
 
 		for Key, Value in next, Data do
@@ -514,6 +519,7 @@ do
 		Groupbox:AddLabel('Outline Color')   :AddColorPicker('OutlineColor',    { Default = self.Library.OutlineColor });
 		Groupbox:AddLabel('Text Color')      :AddColorPicker('FontColor',       { Default = self.Library.FontColor });
 		Groupbox:AddLabel('Risk Text Color') :AddColorPicker('RiskColor',       { Default = self.Library.RiskColor });
+		Groupbox:AddLabel('Green Overlay')   :AddColorPicker('OverlayColor',    { Default = self.Library.OverlayColor });
 
 		Groupbox:AddDivider();
 

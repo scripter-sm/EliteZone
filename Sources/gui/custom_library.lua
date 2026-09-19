@@ -526,6 +526,10 @@ do
 							Item.Button.BorderColor3 = EZ.OutlineColor;
 							Item.Edge.Color = EdgeColor(Item);
 							Item.Label.TextColor3 = EZ.FontColor;
+							if Item.Highlight == true then
+								Item.Overlay.BackgroundColor3 = EZ.OverlayColor;
+								Item.OverlayBorder.Color = EZ.OverlayColor;
+							end;
 						end;
 						return EZ.OutlineColor;
 					end });
@@ -656,6 +660,7 @@ do
 
 						if Item.Highlight ~= Highlight then
 							Item.Highlight = Highlight;
+							Item.Edge.Enabled = not Highlight;
 							local Overlay = Item.Overlay;
 							if not Overlay then
 								Overlay = Instance.new('Frame');
@@ -678,8 +683,9 @@ do
 								Item.OverlayBorder = Border;
 							end;
 							if Highlight then
-								Overlay.BackgroundColor3 = Highlight;
-								Item.OverlayBorder.Color = Highlight;
+								local Color = Highlight == true and EZ.OverlayColor or Highlight;
+								Overlay.BackgroundColor3 = Color;
+								Item.OverlayBorder.Color = Color;
 							end;
 							Overlay.Visible = Highlight ~= nil;
 						end;

@@ -88,7 +88,7 @@ do
 			'ThemeManager_CustomThemeName',
 
 			'FontColor', 'MainColor', 'AccentColor',
-			'BackgroundColor', 'OutlineColor', 'RiskColor',
+			'BackgroundColor', 'OutlineColor', 'RiskColor', 'OverlayColor',
 
 			'Background_Color', 'Background_Transparency', 'Background_Blur',
 			'Background_Contrast', 'Background_Saturation', 'Background_Brightness',
