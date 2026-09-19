@@ -463,7 +463,12 @@ do
 
 						Item.Button = Cell;
 						Item.Label = Label;
+						Item.Search = Label.Text:lower();
 						Items[Index] = Item;
+
+						if Grid.Query then
+							Cell.Visible = Item.Search:find(Grid.Query, 1, true) ~= nil;
+						end;
 
 						Cell.Activated:Connect(function()
 							Grid:Select(Item);
@@ -479,6 +484,16 @@ do
 					function Grid:Select(Item)
 						Grid.Selected = Item;
 						Stroke.Parent = Item and Item.Button;
+					end;
+
+					function Grid:Filter(Query)
+						Query = Query ~= '' and Query:lower() or nil;
+						if Query == Grid.Query then return end;
+						Grid.Query = Query;
+
+						for _, Item in next, Grid.Items do
+							Item.Button.Visible = not Query or Item.Search:find(Query, 1, true) ~= nil;
+						end;
 					end;
 
 					function Grid:Clear()
