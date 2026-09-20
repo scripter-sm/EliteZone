@@ -1671,6 +1671,12 @@ do
 				BorderColor3 = EZ:GetDarkerColor(ColorPicker.Value);
 			});
 
+			local Cache = EZ.TransparencyCache and EZ.TransparencyCache[DisplayFrame];
+
+			if Cache then
+				Cache.BackgroundTransparency = ColorPicker.Transparency;
+			end;
+
 			if TransparencyBoxInner then
 				TransparencyBoxInner.BackgroundColor3 = ColorPicker.Value;
 				TransparencyCursor.Position = UDim2.new(1 - ColorPicker.Transparency, 0, 0, 0);
@@ -5438,6 +5444,7 @@ function EZ:CreateWindow(...)
 	});
 
 	local TransparencyCache = {};
+	EZ.TransparencyCache = TransparencyCache;
 	local Toggled = false;
 	local Fading = false;
 
