@@ -1,5 +1,5 @@
 -- This file was compiled by Elite Zone's Compiler. [v3.8]
---Library Version (Used for caching purposes.) v3.2
+--Library Version (Used for caching purposes.) v3.3
 
 --[[ Library ]]
 
@@ -1675,6 +1675,12 @@ do
 				BackgroundTransparency = ColorPicker.Transparency;
 				BorderColor3 = EZ:GetDarkerColor(ColorPicker.Value);
 			});
+
+			local Cache = EZ.TransparencyCache and EZ.TransparencyCache[DisplayFrame];
+
+			if Cache then
+				Cache.BackgroundTransparency = ColorPicker.Transparency;
+			end;
 
 			if TransparencyBoxInner then
 				TransparencyBoxInner.BackgroundColor3 = ColorPicker.Value;
@@ -5443,6 +5449,7 @@ function EZ:CreateWindow(...)
 	});
 
 	local TransparencyCache = {};
+	EZ.TransparencyCache = TransparencyCache;
 	local Toggled = false;
 	local Fading = false;
 
