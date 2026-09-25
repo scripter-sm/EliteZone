@@ -1,5 +1,5 @@
 -- This file was compiled by Elite Zone's Compiler. [v3.8]
---Library Version (Used for caching purposes.) v3.3
+--Library Version (Used for caching purposes.) v3.4
 
 --[[ Library ]]
 
@@ -6029,6 +6029,22 @@ do
 					end;
 
 					return setmetatable(Group, BaseGroupbox);
+				end;
+
+				function Section:AddPair(PairInfo)
+					local Position = PairInfo.Position or UDim2.new();
+					local Height = PairInfo.Height or 41;
+
+					local Left = Section:AddGroup({
+						Position = Position;
+						Size = UDim2.new(0.5, -2, 0, Height);
+					});
+					local Right = Section:AddGroup({
+						Position = UDim2.new(Position.X.Scale + 0.5, Position.X.Offset + 2, Position.Y.Scale, Position.Y.Offset);
+						Size = UDim2.new(0.5, -2, 0, Height);
+					});
+
+					return Left, Right;
 				end;
 
 				function Section:AddSearch(SearchInfo)
