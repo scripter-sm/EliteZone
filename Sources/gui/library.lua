@@ -327,7 +327,6 @@ function EZ:MakeDraggable(Instance, Cutoff, IgnoreForced)
 				return;
 			end;
 
-			-- touch: Mouse is stale until the finger moves, so read the input itself
 			local Touch = Input.UserInputType == Enum.UserInputType.Touch;
 			local Pos = Touch and Input.Position or Vector2.new(Mouse.X, Mouse.Y);
 
@@ -356,7 +355,6 @@ function EZ:MakeDraggable(Instance, Cutoff, IgnoreForced)
 	end)
 end;
 
--- touch only counts as a tap if the finger didn't travel (so scrolling doesn't click things)
 function EZ:IsTap(Input)
 	if Input.UserInputType ~= Enum.UserInputType.Touch then
 		return true;
@@ -3367,7 +3365,6 @@ do
 				local gPos = Fill.Size.X.Offset;
 				local Diff = mPos - (Fill.AbsolutePosition.X + gPos);
 
-				-- wait to see if the finger goes sideways (slide) or vertical (scroll, leave slider alone)
 				local Start = Input.Position;
 
 				while Input.UserInputState ~= Enum.UserInputState.End do
@@ -5519,7 +5516,7 @@ function EZ:CreateWindow(...)
 
 			Outer.Visible = true;
 			local guiservice = GetService("GuiService");
-			task.spawn(function()
+			if not EZ.IsMobile then task.spawn(function()
 
 				local State = InputService.MouseIconEnabled;
 
@@ -5565,7 +5562,7 @@ function EZ:CreateWindow(...)
 
 				Cursor:Destroy();
 				CursorOutline:Destroy();
-			end);
+			end); end;
 		end;
 
 		for _, Desc in next, Outer:GetDescendants() do
