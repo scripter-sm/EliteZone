@@ -639,14 +639,16 @@ do
 							Cell.Visible = Item.Search:find(Grid.Query, 1, true) ~= nil;
 						end;
 
-						Cell.MouseEnter:Connect(function()
-							Item.Hovered = true;
-							Edge.Color = EdgeColor(Item);
-						end);
-						Cell.MouseLeave:Connect(function()
-							Item.Hovered = nil;
-							Edge.Color = EdgeColor(Item);
-						end);
+						if not EZ.IsMobile then
+							Cell.MouseEnter:Connect(function()
+								Item.Hovered = true;
+								Edge.Color = EdgeColor(Item);
+							end);
+							Cell.MouseLeave:Connect(function()
+								Item.Hovered = nil;
+								Edge.Color = EdgeColor(Item);
+							end);
+						end;
 
 						Cell.Activated:Connect(function()
 							Grid:Select(Item);
