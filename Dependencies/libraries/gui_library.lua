@@ -1,5 +1,5 @@
 -- This file was compiled by Elite Zone's Compiler. [v3.8]
---Library Version (Used for caching purposes.) v3.4
+--Library Version (Used for caching purposes.) v3.5
 
 --[[ Library ]]
 
@@ -332,27 +332,49 @@ function EZ:MakeDraggable(Instance, Cutoff, IgnoreForced)
 				return;
 			end;
 
+			-- touch: Mouse is stale until the finger moves, so read the input itself
+			local Touch = Input.UserInputType == Enum.UserInputType.Touch;
+			local Pos = Touch and Input.Position or Vector2.new(Mouse.X, Mouse.Y);
+
 			local ObjPos = Vector2.new(
-				Mouse.X - Instance.AbsolutePosition.X,
-				Mouse.Y - Instance.AbsolutePosition.Y
+				Pos.X - Instance.AbsolutePosition.X,
+				Pos.Y - Instance.AbsolutePosition.Y
 			);
 
 			if ObjPos.Y > (Cutoff or 40) then
 				return;
 			end;
 
-			while InputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) do
+			while if Touch then Input.UserInputState ~= Enum.UserInputState.End else InputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) do
+				Pos = Touch and Input.Position or Vector2.new(Mouse.X, Mouse.Y);
+
 				Instance.Position = UDim2.new(
 					0,
-					Mouse.X - ObjPos.X + (Instance.Size.X.Offset * Instance.AnchorPoint.X),
+					Pos.X - ObjPos.X + (Instance.Size.X.Offset * Instance.AnchorPoint.X),
 					0,
-					Mouse.Y - ObjPos.Y + (Instance.Size.Y.Offset * Instance.AnchorPoint.Y)
+					Pos.Y - ObjPos.Y + (Instance.Size.Y.Offset * Instance.AnchorPoint.Y)
 				);
 
 				RenderStepped:Wait();
 			end;
 		end;
 	end)
+end;
+
+-- touch only counts as a tap if the finger didn't travel (so scrolling doesn't click things)
+function EZ:IsTap(Input)
+	if Input.UserInputType ~= Enum.UserInputType.Touch then
+		return true;
+	end;
+
+	local Start = Input.Position;
+
+	while Input.UserInputState ~= Enum.UserInputState.End do
+		Input.Changed:Wait();
+	end;
+
+	local D = Input.Position - Start;
+	return D:Dot(D) < 100;
 end;
 
 function EZ:MakeDraggableOutline(Instance, Cutoff, IgnoreForced)
@@ -3037,7 +3059,7 @@ do
 			end;
 
 			if (Input.UserInputType == Enum.UserInputType.MouseButton1 and not EZ:MouseIsOverOpenedFrame())
-				or Input.UserInputType == Enum.UserInputType.Touch then
+				or Input.UserInputType == Enum.UserInputType.Touch and EZ:IsTap(Input) then
 
 				Toggle:SetValue(not Toggle.Value)
 				EZ:AttemptSave();
@@ -3350,16 +3372,23 @@ do
 				local gPos = Fill.Size.X.Offset;
 				local Diff = mPos - (Fill.AbsolutePosition.X + gPos);
 
-				local Held = true;
-				local Conn;
+				-- wait to see if the finger goes sideways (slide) or vertical (scroll, leave slider alone)
+				local Start = Input.Position;
 
-				Conn = Input.Changed:Connect(function()
-					if Input.UserInputState == Enum.UserInputState.End then
-						Held = false;
+				while Input.UserInputState ~= Enum.UserInputState.End do
+					local D = Input.Position - Start;
+					local X, Y = math.abs(D.X), math.abs(D.Y);
+
+					if Y > 8 and Y > X then
+						return;
+					elseif X > 8 then
+						break;
 					end;
-				end);
 
-				while Held do
+					RenderStepped:Wait();
+				end;
+
+				repeat
 					local nMPos = Input.Position.X;
 					local nX = math.clamp(gPos + (nMPos - mPos) + Diff, 0, Slider.MaxSize);
 
@@ -3374,11 +3403,7 @@ do
 					end;
 
 					RenderStepped:Wait();
-				end;
-
-				if Conn then
-					Conn:Disconnect();
-				end;
+				until Input.UserInputState == Enum.UserInputState.End;
 
 				EZ:AttemptSave();
 			end;
@@ -3741,7 +3766,7 @@ do
 
 				ButtonLabel.InputBegan:Connect(function(Input)
 					if Input.UserInputType == Enum.UserInputType.MouseButton1
-						or Input.UserInputType == Enum.UserInputType.Touch then
+						or Input.UserInputType == Enum.UserInputType.Touch and EZ:IsTap(Input) then
 
 						local Try = not Selected;
 
@@ -3862,7 +3887,7 @@ do
 			end;
 
 			if (Input.UserInputType == Enum.UserInputType.MouseButton1 and not EZ:MouseIsOverOpenedFrame())
-				or Input.UserInputType == Enum.UserInputType.Touch then
+				or Input.UserInputType == Enum.UserInputType.Touch and EZ:IsTap(Input) then
 
 				if ListOuter.Visible then
 					Dropdown:CloseDropdown();
@@ -3879,9 +3904,10 @@ do
 
 			if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
 				local AbsPos, AbsSize = ListOuter.AbsolutePosition, ListOuter.AbsoluteSize;
+				local Pos = Input.UserInputType == Enum.UserInputType.Touch and Input.Position or Vector2.new(Mouse.X, Mouse.Y);
 
-				if Mouse.X < AbsPos.X or Mouse.X > AbsPos.X + AbsSize.X
-					or Mouse.Y < (AbsPos.Y - 20 - 1) or Mouse.Y > AbsPos.Y + AbsSize.Y then
+				if Pos.X < AbsPos.X or Pos.X > AbsPos.X + AbsSize.X
+					or Pos.Y < (AbsPos.Y - 20 - 1) or Pos.Y > AbsPos.Y + AbsSize.Y then
 
 					Dropdown:CloseDropdown();
 				end;
@@ -5372,7 +5398,7 @@ function EZ:CreateWindow(...)
 
 				Button.InputBegan:Connect(function(Input)
 					if (Input.UserInputType == Enum.UserInputType.MouseButton1 and not EZ:MouseIsOverOpenedFrame())
-						or Input.UserInputType == Enum.UserInputType.Touch then
+						or Input.UserInputType == Enum.UserInputType.Touch and EZ:IsTap(Input) then
 						Tab:Show();
 						Tab:Resize();
 					end;
@@ -5419,7 +5445,7 @@ function EZ:CreateWindow(...)
 			end;
 
 			if (Input.UserInputType == Enum.UserInputType.MouseButton1 and not EZ:MouseIsOverOpenedFrame())
-				or Input.UserInputType == Enum.UserInputType.Touch then
+				or Input.UserInputType == Enum.UserInputType.Touch and EZ:IsTap(Input) then
 
 				Tab:ShowTab();
 			end;
