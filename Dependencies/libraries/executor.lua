@@ -48,7 +48,29 @@ local aliases = {
     getscriptclosure = { "getscriptfunction" },
     fireclickdetector = { "click_detector" },
     isfunctionhooked = { "is_function_hooked" },
+    getreg = { "getregistry", "debug.getregistry" },
+    getrenv = { "get_renv" },
+    getscripts = { "get_scripts", "getrunningscripts", "get_running_scripts" },
+    getscriptbytecode = { "get_script_bytecode", "dumpstring" },
+    getscripthash = { "get_script_hash" },
+    gethiddenproperty = { "gethiddenprop", "get_hidden_property", "get_hidden_prop" },
+    sethiddenproperty = { "sethiddenprop", "set_hidden_property", "set_hidden_prop" },
+    isscriptable = { "is_scriptable" },
+    setscriptable = { "set_scriptable" },
+    getcallbackvalue = { "get_callback_value" },
+    getinstances = { "get_instances" },
+    checkcaller = { "is_synapse_function", "is_protosmasher_caller" },
+    newcclosure = { "new_c_closure" },
+    clonefunction = { "clone_function" },
+    firesignal = { "fire_signal" },
 }
+
+if not genv.WebSocket then
+    local connect = find("syn.websocket.connect") or find("websocket.connect")
+    if connect then
+        genv.WebSocket = { connect = connect }
+    end
+end
 
 for name, list in aliases do
     if not find(name) then
@@ -152,7 +174,7 @@ if executor_name:find("solara") or executor_name:find("xeno") then
     stubbed.firetouchinterest = true
 end
 
-for _, name in { "queue_on_teleport", "sethiddenproperty", "gethiddenproperty", "getrenv", "getcallingscript", "request", "appendfile" } do
+for _, name in { "queue_on_teleport", "sethiddenproperty", "gethiddenproperty", "getrenv", "getcallingscript", "request", "appendfile", "getreg", "getscripts", "getscriptbytecode", "getscriptclosure", "getscripthash", "isscriptable", "setscriptable" } do
     if not find(name) then
         stubbed[name] = true
     end
@@ -198,7 +220,5 @@ local caps = {
         return find(name) ~= nil
     end,
 }
-
-genv.EZ_CAPS = caps
 
 return caps

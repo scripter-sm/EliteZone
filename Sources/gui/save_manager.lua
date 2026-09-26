@@ -405,7 +405,7 @@ do
 		Section:AddDropdown('SaveManager_ConfigCopyList', { Text = 'Config list', Values = self:RefreshConfigList(), AllowNull = true });
 
 		Section:AddButton('Copy config to clipboard', function()
-			local SetClipboard = not (EZ_CAPS and EZ_CAPS.stubbed.setclipboard) and setclipboard;
+			local SetClipboard = setclipboard or set_clipboard or toclipboard;
 
 			if not SetClipboard then
 				return self.Library:Notify('Clipboard is not supported by your executor', 3);
