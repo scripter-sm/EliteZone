@@ -13,4 +13,4 @@ if (getgenv().EZ_LOADED) then
 	return;
 end;
 
-loadstring(game:HttpGet("https://api.luarmor.net/files/v4/loaders/31283a1cc203e3f65710cffc683c3bee.lua"))()
+loadstring(game:HttpGet("https://api.jnkie.com/api/v1/luascripts/public/fc6c41033fff55a0515fd72167127e8be413724c62cdcc464a6a9e9b3a84bb5b/download"))()
