@@ -79,5 +79,13 @@
       "[~] Fixed Ragebot UE Killer Mode",
       "[~] Fixed Manipulation"
     ]
+  },
+  {
+    "date": "2026-09-27",
+    "version": "v3.9",
+    "game": "Rivals",
+    "changes": [
+      "[~] rewritten everything"
+    ]
   }
 ]
