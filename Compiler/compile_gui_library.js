@@ -5,11 +5,33 @@ const gui_path = path.join(__dirname, '..', 'Sources', 'gui');
 const output_path = path.join(__dirname, '..', 'Dependencies', 'libraries', 'gui_library.lua');
 const version_path = path.join(__dirname, '..', 'Dependencies', 'version.dat');
 const library_version_path = path.join(__dirname, '..', 'Dependencies', 'library_version.dat');
+const community_configs_path = path.join(__dirname, '..', 'Dependencies', 'Community Configs');
 
 function read(file) {
     let str = fs.readFileSync(file, { encoding: 'utf8' }).replace(/\r\n/g, '\n');
     if (str.charCodeAt(0) === 0xFEFF) str = str.substring(1);
     return str.trim();
+}
+
+function long_bracket(str) {
+    let level = 0;
+    while (str.includes(`]${'='.repeat(level)}]`)) level++;
+    const eq = '='.repeat(level);
+    return `[${eq}[${str}]${eq}]`;
+}
+
+function build_community_configs() {
+    const files = fs.existsSync(community_configs_path)
+        ? fs.readdirSync(community_configs_path).filter(file => file.endsWith('.json'))
+        : [];
+
+    const entries = files.map(file => {
+        const name = path.basename(file, '.json');
+        const raw = read(path.join(community_configs_path, file));
+        return `    [${JSON.stringify(name)}] = ${long_bracket(raw)},`;
+    });
+
+    return `EZ.SaveManager.CommunityConfigs = {\n${entries.join('\n')}\n}`;
 }
 
 function bump_library_version() {
@@ -34,6 +56,8 @@ const body = [
     read(path.join(gui_path, 'custom_library.lua')),
     '--[[ Save Manager ]]',
     read(path.join(gui_path, 'save_manager.lua')),
+    '--[[ Community Configs ]]',
+    build_community_configs(),
     '--[[ Theme Manager ]]',
     read(path.join(gui_path, 'theme_manager.lua')),
     'return EZ',

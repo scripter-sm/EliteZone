@@ -3,6 +3,7 @@ local SaveManager = {};
 do
 	SaveManager.Ignore = {};
 	SaveManager.Library = EZ;
+	SaveManager.CommunityConfigs = SaveManager.CommunityConfigs or {};
 
 	SaveManager.Parser = {
 		Toggle = {
@@ -231,6 +232,18 @@ do
 		return List;
 	end;
 
+	function SaveManager:GetCommunityConfigNames()
+		local List = {};
+
+		for Name in next, self.CommunityConfigs do
+			table.insert(List, Name);
+		end;
+
+		table.sort(List);
+
+		return List;
+	end;
+
 	function SaveManager:GetAutoloadConfig()
 		local Cache = EZ:ReadCache();
 		return Cache.configs and Cache.configs[EZ.Game];
@@ -273,6 +286,29 @@ do
 
 	function SaveManager:BuildConfigSection(Tab)
 		local Section = Tab:AddRightGroupbox('Configuration');
+
+		Section:AddDropdown('SaveManager_CommunityConfigList', { Text = 'Community Configs', Values = self:GetCommunityConfigNames(), AllowNull = true });
+		Section:AddButton('Load', function()
+			local Name = Options.SaveManager_CommunityConfigList.Value;
+
+			if not Name then
+				return self.Library:Notify('No community config selected', 2);
+			end;
+
+			local Success, Decoded = pcall(HttpService.JSONDecode, HttpService, self.CommunityConfigs[Name]);
+
+			if not Success or type(Decoded) ~= 'table' or type(Decoded.objects) ~= 'table' then
+				return self.Library:Notify(string.format('Invalid community config %q', Name), 3);
+			end;
+
+			local Loaded, Err = self:Load(Decoded);
+
+			if not Loaded then
+				return self.Library:Notify('Failed to load community config: ' .. tostring(Err), 3);
+			end;
+
+			self.Library:Notify(string.format('Loaded community config %q', Name));
+		end);
 
 		Section:AddInput('SaveManager_ConfigName', { Text = 'Config name' });
 		Section:AddDropdown('SaveManager_ConfigList', { Text = 'Config list', Values = self:RefreshConfigList(), AllowNull = true });
@@ -435,7 +471,7 @@ do
 			self.Library:Notify(string.format('Copied config %q to clipboard', Name));
 		end);
 
-		self:SetIgnoreIndexes({ 'SaveManager_ConfigList', 'SaveManager_ConfigCopyList', 'SaveManager_ConfigName', 'SaveManager_ConfigImport' });
+		self:SetIgnoreIndexes({ 'SaveManager_ConfigList', 'SaveManager_ConfigCopyList', 'SaveManager_ConfigName', 'SaveManager_ConfigImport', 'SaveManager_CommunityConfigList' });
 	end;
 end;
 
