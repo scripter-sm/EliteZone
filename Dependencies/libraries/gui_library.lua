@@ -1188,7 +1188,7 @@ function EZ:AddContextMenu(Anchor, Trigger)
 		);
 
 		Button.InputBegan:Connect(function(Input)
-			if Input.UserInputType ~= Enum.UserInputType.MouseButton1 then
+			if Input.UserInputType ~= Enum.UserInputType.MouseButton1 and not (Input.UserInputType == Enum.UserInputType.Touch and EZ:IsTap(Input)) then
 				return;
 			end;
 
@@ -1560,7 +1560,7 @@ do
 				);
 
 				Button.InputBegan:Connect(function(Input)
-					if Input.UserInputType ~= Enum.UserInputType.MouseButton1 then
+					if Input.UserInputType ~= Enum.UserInputType.MouseButton1 and not (Input.UserInputType == Enum.UserInputType.Touch and EZ:IsTap(Input)) then
 						return
 					end
 
@@ -2559,11 +2559,11 @@ do
 					return false
 				end
 
-				if Input.UserInputType ~= Enum.UserInputType.MouseButton1 then
-					return false
+				if Input.UserInputType == Enum.UserInputType.Touch then
+					return EZ:IsTap(Input)
 				end
 
-				return true
+				return Input.UserInputType == Enum.UserInputType.MouseButton1
 			end
 
 			Button.Outer.InputBegan:Connect(function(Input)
