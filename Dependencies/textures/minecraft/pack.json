@@ -60,7 +60,6 @@
   {"name": "demote", "group": "base", "kind": "sound", "file": "sounds/demote_anvil_break.ogg", "ids": [91547731028928]},
   {"name": "promote", "group": "base", "kind": "sound", "file": "sounds/levelup.ogg", "ids": [138975587469438]},
   {"name": "remove the n", "group": "base", "kind": "remove", "of": "image", "ids": [13854780042]},
-  {"name": "logo g", "group": "base", "kind": "image", "file": "ui/logorivals.png", "ids": [13854780213]},
   {"name": "lobby music", "group": "base", "kind": "sound", "file": "sounds/music_menu_menu2.ogg", "ids": [17697682466, 17733314783]},
   {"name": "remove map pattern", "group": "base", "kind": "remove", "of": "image", "ids": [136887158756561]},
   {"name": "click", "group": "base", "kind": "sound", "file": "sounds/wood_click.ogg", "ids": [177266782]},
