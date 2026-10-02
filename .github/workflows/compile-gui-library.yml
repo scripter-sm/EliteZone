@@ -3,10 +3,18 @@ name: Compile GUI Library
 on:
   push:
     branches: [ main ]
-    paths: [ 'Sources/gui/**' ]
+    paths:
+      - 'Sources/gui/**'
+      - 'Dependencies/Community Configs/**'
+      - 'Dependencies/version.dat'
+      - 'Compiler/compile_gui_library.js'
   pull_request:
     branches: [ main ]
-    paths: [ 'Sources/gui/**' ]
+    paths:
+      - 'Sources/gui/**'
+      - 'Dependencies/Community Configs/**'
+      - 'Dependencies/version.dat'
+      - 'Compiler/compile_gui_library.js'
 
 permissions:
   contents: write
