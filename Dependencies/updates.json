@@ -87,5 +87,23 @@
     "changes": [
       "[~] rewritten everything"
     ]
+  },
+  {
+    "date": "2026-10-02",
+    "version": "v3.10",
+    "game": "Rivals",
+    "changes": [
+      "[+] loading check",
+      "[+] auto execute [means if you server hop it will rerun script]",
+      "[+] knife backstab v2 [much better than old one]",
+      "[+] silent mode",
+      "[+] spoofers",
+      "[+] released \"NOT SO HOT\" config",
+      "[~] fixed ignore while holding melee/utility for targeting",
+      "[~] restructured melee in ragebot",
+      "[~] improved calculation of knife orbit",
+      "[~] fixed mobile button check",
+      "[-] old default ragebot strafe mode [ replaced by hitboxgluer ]"
+    ]
   }
 ]
