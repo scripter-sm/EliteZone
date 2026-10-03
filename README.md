@@ -51,11 +51,6 @@ If something isn't working, try these first:
 
 If the issue continues, send the **exact error**, your scripting utility, and any useful details when asking for support. [in discord]
 
-## media
-
-* [MrNoName - the best new hvh script](https://www.youtube.com/shorts/MqGHBitd0Go)
-* [Best free key cheat](https://www.youtube.com/watch?v=DTVCiDkP7Yg)
-
 ## proprietary
 
 > Elite Zone's original code, systems, features, and architecture belong to Elite Zone unless stated otherwise.
