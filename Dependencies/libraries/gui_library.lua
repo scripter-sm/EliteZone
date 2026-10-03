@@ -1,5 +1,5 @@
 -- This file was compiled by Elite Zone's Compiler. [v3.10]
---Library Version (Used for caching purposes.) v4.3
+--Library Version (Used for caching purposes.) v4.4
 
 --[[ Library ]]
 
@@ -2555,15 +2555,11 @@ do
 			end
 
 			local function ValidateClick(Input)
-				if EZ:MouseIsOverOpenedFrame() then
-					return false
+				if Input.UserInputType == Enum.UserInputType.Touch then
+					return EZ:IsTap(Input)
 				end
 
-				if Input.UserInputType ~= Enum.UserInputType.MouseButton1 then
-					return false
-				end
-
-				return true
+				return Input.UserInputType == Enum.UserInputType.MouseButton1 and not EZ:MouseIsOverOpenedFrame()
 			end
 
 			Button.Outer.InputBegan:Connect(function(Input)
