@@ -27,6 +27,10 @@ elseif (readfile and isfile and isfile("Elite Zone/cache/key.dat")) then
 	end;
 end;
 
+if (not getgenv().SCRIPT_KEY) then
+	getgenv().SCRIPT_KEY = "KEYLESS";
+end;
+
 local Lighting = game:GetService("Lighting");
 
 while (Lighting:FindFirstChild("LoadingScreen")) do
