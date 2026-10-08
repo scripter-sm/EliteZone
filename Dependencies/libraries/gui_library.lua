@@ -1,5 +1,5 @@
 -- This file was compiled by Elite Zone's Compiler. [v3.10]
---Library Version (Used for caching purposes.) v4.8
+--Library Version (Used for caching purposes.) v4.9
 
 --[[ Library ]]
 
@@ -4441,7 +4441,6 @@ function EZ:CreateTargetHUD(Config)
 
 	local Parent = Config.Parent;
 	local Font = Config.Font;
-	local StatColor = Config.StatColor or EZ.AccentColor;
 	local UpColor = Config.UpColor or EZ.AccentColor;
 	local DownColor = Config.DownColor or EZ.RiskColor;
 	local Width = Config.Width or 528;
@@ -4453,24 +4452,32 @@ function EZ:CreateTargetHUD(Config)
 	local RowGap = 12;
 	local TextX = 92;
 	local ValueW = 150;
+	local Placeholders = Config.PlaceholderIcons or {
+		'rbxassetid://17225649668';
+		'rbxassetid://17225650488';
+		'rbxassetid://17225650859';
+		'rbxassetid://17225651405';
+	};
 
 	local HUD = {};
 
-	local ScreenGui = EZ:Create('ScreenGui', {
-		Name = 'EZTargetHUD';
-		DisplayOrder = 999;
-		ResetOnSpawn = false;
-		ZIndexBehavior = Enum.ZIndexBehavior.Sibling;
-		Parent = Parent;
-	});
+	local ScreenGui = Instance.new('ScreenGui');
+	ScreenGui.Name = 'EZTargetHUD';
+	ScreenGui.DisplayOrder = 999;
+	ScreenGui.ResetOnSpawn = false;
+	ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling;
+	ScreenGui.Parent = Parent;
 
-	if not ScreenGui then
-		ScreenGui = Instance.new('ScreenGui');
-		ScreenGui.Name = 'EZTargetHUD';
-		ScreenGui.DisplayOrder = 999;
-		ScreenGui.ResetOnSpawn = false;
-		ScreenGui.Parent = Parent;
-	end;
+	local function stroke(Instance, Key, Thickness)
+		local Line = Instance.new('UIStroke');
+		Line.ApplyStrokeMode = Enum.ApplyStrokeMode.Border;
+		Line.Color = Color3.new(0, 0, 0);
+		Line.Thickness = Thickness or 1;
+		Line.Transparency = 0;
+		Line.Parent = Instance;
+		EZ:AddToRegistry(Line, Key and { Color = Key; } or { Color = 'OutlineColor'; });
+		return Line;
+	end
 
 	local Root = EZ:Create('Frame', {
 		Name = 'TargetHUD';
@@ -4479,44 +4486,50 @@ function EZ:CreateTargetHUD(Config)
 		AnchorPoint = Vector2.new(0.5, 0);
 		BackgroundColor3 = EZ.MainColor;
 		BorderSizePixel = 0;
-		ClipsDescendants = true;
+		ClipsDescendants = false;
 		Visible = false;
+		ZIndex = 120;
 		Parent = ScreenGui;
 	});
+
+	stroke(Root);
 
 	EZ:AddToRegistry(Root, {
 		BackgroundColor3 = 'MainColor';
 	});
 
-	local Scale = EZ:Create('UIScale', {
-		Scale = Config.Scale or 1;
-		Parent = Root;
-	});
+	local Scale = Instance.new('UIScale');
+	Scale.Scale = Config.Scale or 1;
+	Scale.Parent = Root;
 
-	local Body;
+	local Body = Root;
 
-	for _ = 1, 3 do
+	for Index = 1, 3 do
 		local Layer = EZ:Create('Frame', {
 			BackgroundTransparency = 1;
 			Size = UDim2.new(1, -Pad, 1, -Pad);
 			Position = UDim2.fromOffset(Pad, Pad);
 			BorderSizePixel = 0;
-			Parent = _ == 1 and Root or Body;
+			ClipsDescendants = false;
+			ZIndex = 120 + Index;
+			Parent = Body;
 		});
 
-		if not Body then
-			Body = Layer;
-		end;
-	end;
+		stroke(Layer, 'OutlineColor');
+		Body = Layer;
+	end
 
 	Body.BackgroundColor3 = EZ.BackgroundColor;
-	Body.BorderSizePixel = 0;
+	Body.BackgroundTransparency = 0;
 
 	EZ:AddToRegistry(Body, {
 		BackgroundColor3 = 'BackgroundColor';
 	});
 
+	local ZSlot = 124;
+	local ZText = 125;
 	local Slots = {};
+	local Icons = {};
 
 	for Index = 1, 4 do
 		local Column = Index % 2 == 0 and 1 or 0;
@@ -4528,8 +4541,11 @@ function EZ:CreateTargetHUD(Config)
 			BackgroundColor3 = EZ.MainColor;
 			BorderSizePixel = 0;
 			ClipsDescendants = true;
+			ZIndex = ZSlot;
 			Parent = Body;
 		});
+
+		stroke(Holder, 'OutlineColor');
 
 		EZ:AddToRegistry(Holder, {
 			BackgroundColor3 = 'MainColor';
@@ -4540,11 +4556,17 @@ function EZ:CreateTargetHUD(Config)
 			BackgroundTransparency = 1;
 			ScaleType = Enum.ScaleType.Fit;
 			Image = '';
+			ZIndex = ZText;
 			Parent = Holder;
 		});
 
-		Slots[Index] = { Holder = Holder; Icon = Icon; };
+		Slots[Index] = Holder;
+		Icons[Index] = Icon;
 	end;
+
+	local function dim()
+		return EZ.FontColor:Lerp(EZ.BackgroundColor, 0.32);
+	end
 
 	local function label(Size, Position, TextSize, Text, Alignment)
 		return EZ:Create('TextLabel', {
@@ -4558,6 +4580,7 @@ function EZ:CreateTargetHUD(Config)
 			TextXAlignment = Alignment or Enum.TextXAlignment.Left;
 			TextYAlignment = Enum.TextYAlignment.Center;
 			TextTruncate = Enum.TextTruncate.AtEnd;
+			ZIndex = ZText;
 			Parent = Body;
 		});
 	end
@@ -4570,28 +4593,40 @@ function EZ:CreateTargetHUD(Config)
 	local RatioValue = label(UDim2.fromOffset(ValueW, 16), UDim2.new(1, -(TextX + ValueW), 0, 108), 11, '', Enum.TextXAlignment.Right);
 
 	Stats.RichText = true;
-	Stats.Text = '';
 	RatioValue.RichText = true;
-	RatioValue.Text = '';
+
+	for _, Item in next, { Stats, HealthLabel, RatioLabel } do
+		EZ:AddToRegistry(Item, {
+			TextColor3 = dim;
+		});
+	end;
+
+	for _, Item in next, { Name, HealthValue, RatioValue } do
+		EZ:AddToRegistry(Item, {
+			TextColor3 = 'FontColor';
+		});
+	end;
 
 	local function bar(Y)
 		local Track = EZ:Create('Frame', {
 			Size = UDim2.new(1, -TextX - TextX, 0, 2);
 			Position = UDim2.fromOffset(TextX, Y);
-			BackgroundColor3 = EZ.MainColor;
+			BackgroundColor3 = EZ.OutlineColor;
 			BorderSizePixel = 0;
 			ClipsDescendants = true;
+			ZIndex = ZSlot;
 			Parent = Body;
 		});
 
 		EZ:AddToRegistry(Track, {
-			BackgroundColor3 = 'MainColor';
+			BackgroundColor3 = 'OutlineColor';
 		});
 
 		local Fill = EZ:Create('Frame', {
-			Size = UDim2.fromScale(1, 1);
+			Size = UDim2.fromScale(0, 1);
 			BackgroundColor3 = EZ.AccentColor;
 			BorderSizePixel = 0;
+			ZIndex = ZText;
 			Parent = Track;
 		});
 
@@ -4605,29 +4640,13 @@ function EZ:CreateTargetHUD(Config)
 	local HealthTrack, HealthFill = bar(96);
 	local RatioTrack, RatioFill = bar(128);
 
-	local Seam = EZ:Create('Frame', {
-		AnchorPoint = Vector2.new(0, 0);
-		Size = UDim2.fromOffset(2, 2);
-		BackgroundColor3 = EZ.BackgroundColor;
-		BorderSizePixel = 0;
-		Parent = RatioTrack;
-	});
-
-	EZ:AddToRegistry(Seam, {
-		BackgroundColor3 = 'BackgroundColor';
-	});
-
-	for _, Item in next, { Name, Stats, HealthLabel, HealthValue, RatioLabel, RatioValue } do
-		EZ:AddToRegistry(Item, {
-			TextColor3 = 'FontColor';
-		});
-	end;
-
 	HUD.ScreenGui = ScreenGui;
 	HUD.Root = Root;
 	HUD.Body = Body;
 	HUD.Scale = Scale;
 	HUD.Slots = Slots;
+	HUD.Icons = Icons;
+	HUD.Placeholders = Placeholders;
 	HUD.Name = Name;
 	HUD.Stats = Stats;
 	HUD.HealthLabel = HealthLabel;
@@ -4638,10 +4657,10 @@ function EZ:CreateTargetHUD(Config)
 	HUD.HealthFill = HealthFill;
 	HUD.RatioTrack = RatioTrack;
 	HUD.RatioFill = RatioFill;
-	HUD.RatioSeam = Seam;
-	HUD.StatColor = StatColor;
 	HUD.UpColor = UpColor;
 	HUD.DownColor = DownColor;
+
+	local Labels = { Name, Stats, HealthLabel, HealthValue, RatioLabel, RatioValue };
 
 	function HUD:Apply(Data)
 		local rank = Data.Rank or 'unranked';
@@ -4649,12 +4668,14 @@ function EZ:CreateTargetHUD(Config)
 			rank = rank.Name or rank.name or 'unranked';
 		end
 
+		local accent = EZ.AccentColor:ToHex();
+
 		Name.Text = Data.Name or '';
 		Stats.Text = ('level <font color="#%s">%s</font>   rank <font color="#%s">%s</font>   device <font color="#%s">%s</font>   streak <font color="#%s">%s</font>'):format(
-			StatColor:ToHex(), tostring(Data.Level or 0),
-			StatColor:ToHex(), rank:lower(),
-			StatColor:ToHex(), tostring(Data.Device or '?'),
-			StatColor:ToHex(), tostring(Data.Streak or 0)
+			accent, tostring(Data.Level or 0),
+			accent, rank:lower(),
+			accent, tostring(Data.Device or '?'),
+			accent, tostring(Data.Streak or 0)
 		);
 
 		local Health = Data.Health or 0;
@@ -4671,12 +4692,15 @@ function EZ:CreateTargetHUD(Config)
 
 		local Total = Given + Taken;
 		local Ratio = Total > 0 and Given / Total or 0.5;
-		RatioFill.Size = UDim2.fromScale(math.clamp(Ratio, 0, 1), 1);
-		Seam.Position = UDim2.fromScale(math.clamp(Ratio, 0, 1), 0);
+		Ratio = math.clamp(Ratio, 0, 1);
+		RatioFill.Size = UDim2.fromScale(Ratio, 1);
 
 		local Items = Data.Items;
 		for Index = 1, 4 do
-			Slots[Index].Icon.Image = Items and Items[Index] or '';
+			local Image = Items and Items[Index];
+			Icons[Index].Image = Image or '';
+			Icons[Index].ImageColor3 = Image and Color3.new(1, 1, 1) or dim();
+			Icons[Index].Size = Image and UDim2.fromScale(1, 1) or UDim2.fromScale(0.7, 0.7);
 		end;
 	end;
 
@@ -4693,9 +4717,9 @@ function EZ:CreateTargetHUD(Config)
 	end;
 
 	function HUD:SetFont(NewFont)
+		if not NewFont then return end;
 		Font = NewFont;
-
-		for _, Item in next, { Name, Stats, HealthLabel, HealthValue, RatioLabel, RatioValue } do
+		for _, Item in next, Labels do
 			Item.FontFace = Font;
 		end;
 	end;
