@@ -1,5 +1,5 @@
 -- This file was compiled by Elite Zone's Compiler. [v3.10]
---Library Version (Used for caching purposes.) v5.0
+--Library Version (Used for caching purposes.) v5.1
 
 --[[ Library ]]
 
@@ -4471,11 +4471,11 @@ function EZ:CreateTargetHUD(Config)
 	local function stroke(Target, Key, Thickness)
 		local Line = Instance.new('UIStroke');
 		Line.ApplyStrokeMode = Enum.ApplyStrokeMode.Border;
-		Line.Color = Color3.new(0, 0, 0);
+		Line.Color = EZ[Key or 'OutlineColor'];
 		Line.Thickness = Thickness or 1;
 		Line.Transparency = 0;
 		Line.Parent = Target;
-		EZ:AddToRegistry(Line, Key and { Color = Key; } or { Color = 'OutlineColor'; });
+		EZ:AddToRegistry(Line, { Color = Key or 'OutlineColor'; });
 		return Line;
 	end
 
@@ -4568,7 +4568,7 @@ function EZ:CreateTargetHUD(Config)
 		return EZ.FontColor:Lerp(EZ.BackgroundColor, 0.32);
 	end
 
-	local function label(Size, Position, TextSize, Text, Alignment)
+	local function label(Size, Position, TextSize, Text, Alignment, Color)
 		return EZ:Create('TextLabel', {
 			Size = Size;
 			Position = Position;
@@ -4576,7 +4576,7 @@ function EZ:CreateTargetHUD(Config)
 			Text = Text or '';
 			TextSize = TextSize;
 			FontFace = Font;
-			TextColor3 = EZ.FontColor;
+			TextColor3 = Color or EZ.FontColor;
 			TextXAlignment = Alignment or Enum.TextXAlignment.Left;
 			TextYAlignment = Enum.TextYAlignment.Center;
 			TextTruncate = Enum.TextTruncate.AtEnd;
@@ -4586,10 +4586,10 @@ function EZ:CreateTargetHUD(Config)
 	end
 
 	local Name = label(UDim2.new(1, -TextX - TextX, 0, 22), UDim2.fromOffset(TextX, Edge + 5), 14);
-	local Stats = label(UDim2.new(1, -TextX - TextX, 0, 18), UDim2.fromOffset(TextX, Edge + 25), 11);
-	local HealthLabel = label(UDim2.fromOffset(ValueW, 16), UDim2.fromOffset(TextX, 76), 11, 'health');
+	local Stats = label(UDim2.new(1, -TextX - TextX, 0, 18), UDim2.fromOffset(TextX, Edge + 25), 11, '', nil, dim());
+	local HealthLabel = label(UDim2.fromOffset(ValueW, 16), UDim2.fromOffset(TextX, 76), 11, 'health', nil, dim());
 	local HealthValue = label(UDim2.fromOffset(ValueW, 16), UDim2.new(1, -(TextX + ValueW), 0, 76), 11, '0 / 0', Enum.TextXAlignment.Right);
-	local RatioLabel = label(UDim2.fromOffset(ValueW, 16), UDim2.fromOffset(TextX, 108), 11, 'damage ratio');
+	local RatioLabel = label(UDim2.fromOffset(ValueW, 16), UDim2.fromOffset(TextX, 108), 11, 'damage ratio', nil, dim());
 	local RatioValue = label(UDim2.fromOffset(ValueW, 16), UDim2.new(1, -(TextX + ValueW), 0, 108), 11, '', Enum.TextXAlignment.Right);
 
 	Stats.RichText = true;
