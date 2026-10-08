@@ -4463,13 +4463,13 @@ function EZ:CreateTargetHUD(Config)
 	ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling;
 	ScreenGui.Parent = Parent;
 
-	local function stroke(Instance, Key, Thickness)
+	local function stroke(Target, Key, Thickness)
 		local Line = Instance.new('UIStroke');
 		Line.ApplyStrokeMode = Enum.ApplyStrokeMode.Border;
 		Line.Color = Color3.new(0, 0, 0);
 		Line.Thickness = Thickness or 1;
 		Line.Transparency = 0;
-		Line.Parent = Instance;
+		Line.Parent = Target;
 		EZ:AddToRegistry(Line, Key and { Color = Key; } or { Color = 'OutlineColor'; });
 		return Line;
 	end
