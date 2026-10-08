@@ -238,13 +238,9 @@ function EZ:SafeCallback(f, ...)
 		return;
 	end;
 
-	if not EZ.NotifyOnError then
-		return f(...);
-	end;
-
 	local success, event = pcall(f, ...);
 
-	if not success then
+	if (not success) and EZ.NotifyOnError then
 		local _, i = event:find(":%d+: ");
 
 		if not i then
