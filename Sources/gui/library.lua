@@ -4447,6 +4447,7 @@ function EZ:CreateTargetHUD(Config)
 	local Top = 18;
 	local RowGap = 12;
 	local TextX = 92;
+	local ValueW = 150;
 
 	local HUD = {};
 
@@ -4558,10 +4559,10 @@ function EZ:CreateTargetHUD(Config)
 
 	local Name = label(UDim2.new(1, -TextX - TextX, 0, 22), UDim2.fromOffset(TextX, Edge + 5), 14);
 	local Stats = label(UDim2.new(1, -TextX - TextX, 0, 18), UDim2.fromOffset(TextX, Edge + 25), 11);
-	local HealthLabel = label(UDim2.fromOffset(150, 16), UDim2.fromOffset(TextX, 76), 11, 'health');
-	local HealthValue = label(UDim2.fromOffset(150, 16), UDim2.new(1, -TextX - 4, 0, 76), 11, '0 / 0', Enum.TextXAlignment.Right);
-	local RatioLabel = label(UDim2.fromOffset(150, 16), UDim2.fromOffset(TextX, 108), 11, 'damage ratio');
-	local RatioValue = label(UDim2.fromOffset(150, 16), UDim2.new(1, -TextX - 4, 0, 108), 11, '', Enum.TextXAlignment.Right);
+	local HealthLabel = label(UDim2.fromOffset(ValueW, 16), UDim2.fromOffset(TextX, 76), 11, 'health');
+	local HealthValue = label(UDim2.fromOffset(ValueW, 16), UDim2.new(1, -(TextX + ValueW), 0, 76), 11, '0 / 0', Enum.TextXAlignment.Right);
+	local RatioLabel = label(UDim2.fromOffset(ValueW, 16), UDim2.fromOffset(TextX, 108), 11, 'damage ratio');
+	local RatioValue = label(UDim2.fromOffset(ValueW, 16), UDim2.new(1, -(TextX + ValueW), 0, 108), 11, '', Enum.TextXAlignment.Right);
 
 	Stats.RichText = true;
 	Stats.Text = '';
