@@ -4431,6 +4431,277 @@ function EZ:CreatePopout(Config)
 	return Popout;
 end
 
+function EZ:CreateTargetHUD(Config)
+	Config = Config or {};
+
+	local Parent = Config.Parent;
+	local Font = Config.Font;
+	local StatColor = Config.StatColor or EZ.AccentColor;
+	local UpColor = Config.UpColor or EZ.AccentColor;
+	local DownColor = Config.DownColor or EZ.RiskColor;
+	local Width = Config.Width or 528;
+	local Height = Config.Height or 208;
+	local Slot = 58;
+	local Pad = 9;
+	local Edge = 17;
+	local Top = 18;
+	local RowGap = 12;
+	local TextX = 92;
+
+	local HUD = {};
+
+	local ScreenGui = EZ:Create('ScreenGui', {
+		Name = 'EZTargetHUD';
+		DisplayOrder = 999;
+		ResetOnSpawn = false;
+		ZIndexBehavior = Enum.ZIndexBehavior.Sibling;
+		Parent = Parent;
+	});
+
+	if not ScreenGui then
+		ScreenGui = Instance.new('ScreenGui');
+		ScreenGui.Name = 'EZTargetHUD';
+		ScreenGui.DisplayOrder = 999;
+		ScreenGui.ResetOnSpawn = false;
+		ScreenGui.Parent = Parent;
+	end;
+
+	local Root = EZ:Create('Frame', {
+		Name = 'TargetHUD';
+		Size = UDim2.fromOffset(Width, Height);
+		Position = UDim2.new(0.5, 0, 0.78, 0);
+		AnchorPoint = Vector2.new(0.5, 0);
+		BackgroundColor3 = EZ.MainColor;
+		BorderSizePixel = 0;
+		ClipsDescendants = true;
+		Visible = false;
+		Parent = ScreenGui;
+	});
+
+	EZ:AddToRegistry(Root, {
+		BackgroundColor3 = 'MainColor';
+	});
+
+	local Scale = EZ:Create('UIScale', {
+		Scale = Config.Scale or 1;
+		Parent = Root;
+	});
+
+	local Body;
+
+	for _ = 1, 3 do
+		local Layer = EZ:Create('Frame', {
+			BackgroundTransparency = 1;
+			Size = UDim2.new(1, -Pad, 1, -Pad);
+			Position = UDim2.fromOffset(Pad, Pad);
+			BorderSizePixel = 0;
+			Parent = _ == 1 and Root or Body;
+		});
+
+		if not Body then
+			Body = Layer;
+		end;
+	end;
+
+	Body.BackgroundColor3 = EZ.BackgroundColor;
+	Body.BorderSizePixel = 0;
+
+	EZ:AddToRegistry(Body, {
+		BackgroundColor3 = 'BackgroundColor';
+	});
+
+	local Slots = {};
+
+	for Index = 1, 4 do
+		local Column = Index % 2 == 0 and 1 or 0;
+		local Row = Index < 3 and 0 or 1;
+
+		local Holder = EZ:Create('Frame', {
+			Size = UDim2.fromOffset(Slot, Slot);
+			Position = UDim2.new(Column, Column == 1 and -(Edge + Slot) or Edge, 0, Top + Row * (Slot + RowGap));
+			BackgroundColor3 = EZ.MainColor;
+			BorderSizePixel = 0;
+			ClipsDescendants = true;
+			Parent = Body;
+		});
+
+		EZ:AddToRegistry(Holder, {
+			BackgroundColor3 = 'MainColor';
+		});
+
+		local Icon = EZ:Create('ImageLabel', {
+			Size = UDim2.fromScale(1, 1);
+			BackgroundTransparency = 1;
+			ScaleType = Enum.ScaleType.Fit;
+			Image = '';
+			Parent = Holder;
+		});
+
+		Slots[Index] = { Holder = Holder; Icon = Icon; };
+	end;
+
+	local function label(Size, Position, TextSize, Text, Alignment)
+		return EZ:Create('TextLabel', {
+			Size = Size;
+			Position = Position;
+			BackgroundTransparency = 1;
+			Text = Text or '';
+			TextSize = TextSize;
+			FontFace = Font;
+			TextColor3 = EZ.FontColor;
+			TextXAlignment = Alignment or Enum.TextXAlignment.Left;
+			TextYAlignment = Enum.TextYAlignment.Center;
+			TextTruncate = Enum.TextTruncate.AtEnd;
+			Parent = Body;
+		});
+	end
+
+	local Name = label(UDim2.new(1, -TextX - TextX, 0, 22), UDim2.fromOffset(TextX, Edge + 5), 14);
+	local Stats = label(UDim2.new(1, -TextX - TextX, 0, 18), UDim2.fromOffset(TextX, Edge + 25), 11);
+	local HealthLabel = label(UDim2.fromOffset(150, 16), UDim2.fromOffset(TextX, 76), 11, 'health');
+	local HealthValue = label(UDim2.fromOffset(150, 16), UDim2.new(1, -TextX - 4, 0, 76), 11, '0 / 0', Enum.TextXAlignment.Right);
+	local RatioLabel = label(UDim2.fromOffset(150, 16), UDim2.fromOffset(TextX, 108), 11, 'damage ratio');
+	local RatioValue = label(UDim2.fromOffset(150, 16), UDim2.new(1, -TextX - 4, 0, 108), 11, '', Enum.TextXAlignment.Right);
+
+	Stats.RichText = true;
+	Stats.Text = '';
+	RatioValue.RichText = true;
+	RatioValue.Text = '';
+
+	local function bar(Y)
+		local Track = EZ:Create('Frame', {
+			Size = UDim2.new(1, -TextX - TextX, 0, 2);
+			Position = UDim2.fromOffset(TextX, Y);
+			BackgroundColor3 = EZ.MainColor;
+			BorderSizePixel = 0;
+			ClipsDescendants = true;
+			Parent = Body;
+		});
+
+		EZ:AddToRegistry(Track, {
+			BackgroundColor3 = 'MainColor';
+		});
+
+		local Fill = EZ:Create('Frame', {
+			Size = UDim2.fromScale(1, 1);
+			BackgroundColor3 = EZ.AccentColor;
+			BorderSizePixel = 0;
+			Parent = Track;
+		});
+
+		EZ:AddToRegistry(Fill, {
+			BackgroundColor3 = 'AccentColor';
+		});
+
+		return Track, Fill;
+	end
+
+	local HealthTrack, HealthFill = bar(96);
+	local RatioTrack, RatioFill = bar(128);
+
+	local Seam = EZ:Create('Frame', {
+		AnchorPoint = Vector2.new(0, 0);
+		Size = UDim2.fromOffset(2, 2);
+		BackgroundColor3 = EZ.BackgroundColor;
+		BorderSizePixel = 0;
+		Parent = RatioTrack;
+	});
+
+	EZ:AddToRegistry(Seam, {
+		BackgroundColor3 = 'BackgroundColor';
+	});
+
+	for _, Item in next, { Name, Stats, HealthLabel, HealthValue, RatioLabel, RatioValue } do
+		EZ:AddToRegistry(Item, {
+			TextColor3 = 'FontColor';
+		});
+	end;
+
+	HUD.ScreenGui = ScreenGui;
+	HUD.Root = Root;
+	HUD.Body = Body;
+	HUD.Scale = Scale;
+	HUD.Slots = Slots;
+	HUD.Name = Name;
+	HUD.Stats = Stats;
+	HUD.HealthLabel = HealthLabel;
+	HUD.HealthValue = HealthValue;
+	HUD.RatioLabel = RatioLabel;
+	HUD.RatioValue = RatioValue;
+	HUD.HealthTrack = HealthTrack;
+	HUD.HealthFill = HealthFill;
+	HUD.RatioTrack = RatioTrack;
+	HUD.RatioFill = RatioFill;
+	HUD.RatioSeam = Seam;
+	HUD.StatColor = StatColor;
+	HUD.UpColor = UpColor;
+	HUD.DownColor = DownColor;
+
+	function HUD:Apply(Data)
+		local rank = Data.Rank or 'unranked';
+		if type(rank) ~= 'string' then
+			rank = rank.Name or rank.name or 'unranked';
+		end
+
+		Name.Text = Data.Name or '';
+		Stats.Text = ('level <font color="#%s">%s</font>   rank <font color="#%s">%s</font>   device <font color="#%s">%s</font>   streak <font color="#%s">%s</font>'):format(
+			StatColor:ToHex(), tostring(Data.Level or 0),
+			StatColor:ToHex(), rank:lower(),
+			StatColor:ToHex(), tostring(Data.Device or '?'),
+			StatColor:ToHex(), tostring(Data.Streak or 0)
+		);
+
+		local Health = Data.Health or 0;
+		local MaxHealth = Data.MaxHealth or 100;
+		HealthValue.Text = math.floor(Health) .. ' / ' .. math.floor(MaxHealth);
+		HealthFill.Size = UDim2.fromScale(math.clamp(Health / MaxHealth, 0, 1), 1);
+
+		local Given = Data.DamageGiven or 0;
+		local Taken = Data.DamageTaken or 0;
+		RatioValue.Text = ('%d <font color="#%s">▲</font>  %d <font color="#%s">▼</font>'):format(
+			math.floor(Given + 0.5), UpColor:ToHex(),
+			math.floor(Taken + 0.5), DownColor:ToHex()
+		);
+
+		local Total = Given + Taken;
+		local Ratio = Total > 0 and Given / Total or 0.5;
+		RatioFill.Size = UDim2.fromScale(math.clamp(Ratio, 0, 1), 1);
+		Seam.Position = UDim2.fromScale(math.clamp(Ratio, 0, 1), 0);
+
+		local Items = Data.Items;
+		for Index = 1, 4 do
+			Slots[Index].Icon.Image = Items and Items[Index] or '';
+		end;
+	end;
+
+	function HUD:SetVisible(Bool)
+		Root.Visible = Bool;
+	end;
+
+	function HUD:SetScale(Amount)
+		Scale.Scale = Amount;
+	end;
+
+	function HUD:SetOffset(X, Y)
+		Root.Position = UDim2.new(0.5, X, 0.78, Y);
+	end;
+
+	function HUD:SetFont(NewFont)
+		Font = NewFont;
+
+		for _, Item in next, { Name, Stats, HealthLabel, HealthValue, RatioLabel, RatioValue } do
+			Item.FontFace = Font;
+		end;
+	end;
+
+	function HUD:Remove()
+		ScreenGui:Destroy();
+		table.clear(HUD);
+	end;
+
+	return HUD;
+end
+
 function EZ:SetWatermarkVisibility(Bool)
 	EZ.Watermark.Visible = Bool;
 end;
