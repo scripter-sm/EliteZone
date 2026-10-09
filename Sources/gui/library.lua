@@ -4733,7 +4733,7 @@ function HUD:Apply(Data)
 local Items = Data.Items;
 		local Muted = Data.Placeholder or not Items;
 		local Tint = Muted and EZ.OutlineColor or Color3.new(1, 1, 1);
-		local Size = Muted and UDim2.fromScale(0.7, 0.7) or UDim2.fromScale(1, 1);
+		local Size = Muted and UDim2.fromScale(0.85, 0.85) or UDim2.fromScale(1, 1);
 
 		for Index = 1, 4 do
 			local Image = Items and Items[Index] or '';
