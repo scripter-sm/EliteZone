@@ -1,5 +1,5 @@
 -- This file was compiled by Elite Zone's Compiler. [v3.10]
---Library Version (Used for caching purposes.) v6.1
+--Library Version (Used for caching purposes.) v6.2
 
 --[[ Library ]]
 
@@ -4628,16 +4628,26 @@ function EZ:CreateTargetHUD(Config)
 
 	local function bar(Y)
 		local Track = EZ:Create('Frame', {
-			Size = UDim2.new(1, -TextX - TextX, 0, 2);
-			Position = UDim2.fromOffset(TextX, Y);
-			BackgroundColor3 = EZ.OutlineColor;
+			Size = UDim2.new(1, -TextX - TextX + 2, 0, 4);
+			Position = UDim2.fromOffset(TextX - 1, Y - 1);
+			BackgroundColor3 = Color3.new(0, 0, 0);
 			BorderSizePixel = 0;
-			ClipsDescendants = true;
+			ClipsDescendants = false;
 			ZIndex = ZSlot;
 			Parent = Body;
 		});
 
-		EZ:AddToRegistry(Track, {
+		local Inner = EZ:Create('Frame', {
+			Size = UDim2.new(1, -2, 1, -2);
+			Position = UDim2.fromOffset(1, 1);
+			BackgroundColor3 = EZ.OutlineColor;
+			BorderSizePixel = 0;
+			ClipsDescendants = true;
+			ZIndex = ZSlot + 1;
+			Parent = Track;
+		});
+
+		EZ:AddToRegistry(Inner, {
 			BackgroundColor3 = 'OutlineColor';
 		});
 
@@ -4646,18 +4656,18 @@ function EZ:CreateTargetHUD(Config)
 			BackgroundColor3 = EZ.AccentColor;
 			BorderSizePixel = 0;
 			ZIndex = ZText;
-			Parent = Track;
+			Parent = Inner;
 		});
 
 		EZ:AddToRegistry(Fill, {
 			BackgroundColor3 = 'AccentColor';
 		});
 
-		return Track, Fill;
+		return Track, Fill, Inner;
 	end
 
 	local HealthTrack, HealthFill = bar(96);
-	local RatioTrack, RatioFill = bar(128);
+	local RatioTrack, RatioFill, RatioInner = bar(128);
 
 	local Seam = EZ:Create('Frame', {
 		AnchorPoint = Vector2.new(0, 0);
@@ -4665,7 +4675,7 @@ function EZ:CreateTargetHUD(Config)
 		BackgroundColor3 = EZ.BackgroundColor;
 		BorderSizePixel = 0;
 		ZIndex = ZText;
-		Parent = RatioTrack;
+		Parent = RatioInner;
 	});
 
 	EZ:AddToRegistry(Seam, {
