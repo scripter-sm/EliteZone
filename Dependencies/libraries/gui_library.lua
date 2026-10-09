@@ -1,5 +1,5 @@
 -- This file was compiled by Elite Zone's Compiler. [v3.10]
---Library Version (Used for caching purposes.) v5.7
+--Library Version (Used for caching purposes.) v5.8
 
 --[[ Library ]]
 
@@ -4552,6 +4552,8 @@ function EZ:CreateTargetHUD(Config)
 		});
 
 		local Icon = EZ:Create('ImageLabel', {
+			AnchorPoint = Vector2.new(0.5, 0.5);
+			Position = UDim2.fromScale(0.5, 0.5);
 			Size = UDim2.fromScale(1, 1);
 			BackgroundTransparency = 1;
 			ScaleType = Enum.ScaleType.Fit;
