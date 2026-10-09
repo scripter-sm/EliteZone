@@ -4635,6 +4635,19 @@ function EZ:CreateTargetHUD(Config)
 	local HealthTrack, HealthFill = bar(96);
 	local RatioTrack, RatioFill = bar(128);
 
+	local Seam = EZ:Create('Frame', {
+		AnchorPoint = Vector2.new(0, 0);
+		Size = UDim2.fromOffset(2, 2);
+		BackgroundColor3 = EZ.BackgroundColor;
+		BorderSizePixel = 0;
+		ZIndex = ZText;
+		Parent = RatioTrack;
+	});
+
+	EZ:AddToRegistry(Seam, {
+		BackgroundColor3 = 'BackgroundColor';
+	});
+
 	HUD.ScreenGui = ScreenGui;
 	HUD.Root = Root;
 	HUD.Body = Body;
@@ -4652,6 +4665,7 @@ function EZ:CreateTargetHUD(Config)
 	HUD.HealthFill = HealthFill;
 	HUD.RatioTrack = RatioTrack;
 	HUD.RatioFill = RatioFill;
+	HUD.RatioSeam = Seam;
 	HUD.UpColor = UpColor;
 	HUD.DownColor = DownColor;
 
