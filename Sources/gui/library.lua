@@ -4477,7 +4477,7 @@ function EZ:CreateTargetHUD(Config)
 	local Root = EZ:Create('Frame', {
 		Name = 'TargetHUD';
 		Size = UDim2.fromOffset(Width, Height);
-		Position = UDim2.new(0.5, 0, 0.78, 0);
+		Position = UDim2.new(0.5, 0, 0.5, 0);
 		AnchorPoint = Vector2.new(0.5, 0);
 		BackgroundColor3 = EZ.MainColor;
 		BorderSizePixel = 0;
@@ -4730,7 +4730,7 @@ function HUD:Apply(Data)
 		end;
 local Items = Data.Items;
 		local Muted = Data.Placeholder or not Items;
-		local Tint = Muted and dim() or Color3.new(1, 1, 1);
+		local Tint = Muted and EZ.OutlineColor or Color3.new(1, 1, 1);
 		local Size = Muted and UDim2.fromScale(0.7, 0.7) or UDim2.fromScale(1, 1);
 
 		for Index = 1, 4 do
@@ -4754,7 +4754,7 @@ local Items = Data.Items;
 	end;
 
 	function HUD:SetOffset(X, Y)
-		Root.Position = UDim2.new(0.5, X, 0.78, Y);
+		Root.Position = UDim2.new(0.5, X, 0.5, Y);
 	end;
 
 	function HUD:SetFont(NewFont)
