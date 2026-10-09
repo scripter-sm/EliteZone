@@ -1,5 +1,5 @@
 -- This file was compiled by Elite Zone's Compiler. [v3.10]
---Library Version (Used for caching purposes.) v5.2
+--Library Version (Used for caching purposes.) v5.3
 
 --[[ Library ]]
 
@@ -4730,7 +4730,6 @@ function HUD:Apply(Data)
 				Icon.Size = Image and UDim2.fromScale(1, 1) or UDim2.fromScale(0.7, 0.7);
 			end;
 		end;
-	end;
 	end;
 
 	function HUD:SetVisible(Bool)
