@@ -1,5 +1,5 @@
 -- This file was compiled by Elite Zone's Compiler. [v3.10]
---Library Version (Used for caching purposes.) v5.5
+--Library Version (Used for caching purposes.) v5.6
 
 --[[ Library ]]
 
@@ -4733,15 +4733,19 @@ function HUD:Apply(Data)
 			RatioFill.Size = Scale;
 			Seam.Position = UDim2.fromScale(Ratio, 0);
 		end;
+local Items = Data.Items;
+		local Muted = Data.Placeholder or not Items;
+		local Tint = Muted and dim() or Color3.new(1, 1, 1);
+		local Size = Muted and UDim2.fromScale(0.7, 0.7) or UDim2.fromScale(1, 1);
 
-		local Items = Data.Items;
 		for Index = 1, 4 do
 			local Image = Items and Items[Index] or '';
 			local Icon = Icons[Index];
-			if Icon.Image ~= Image then
+
+			if Icon.Image ~= Image or Icon.ImageColor3 ~= Tint then
 				Icon.Image = Image;
-				Icon.ImageColor3 = Image and Color3.new(1, 1, 1) or dim();
-				Icon.Size = Image and UDim2.fromScale(1, 1) or UDim2.fromScale(0.7, 0.7);
+				Icon.ImageColor3 = Tint;
+				Icon.Size = Size;
 			end;
 		end;
 	end;
