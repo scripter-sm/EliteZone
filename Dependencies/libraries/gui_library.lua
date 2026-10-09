@@ -1,5 +1,5 @@
 -- This file was compiled by Elite Zone's Compiler. [v3.10]
---Library Version (Used for caching purposes.) v5.4
+--Library Version (Used for caching purposes.) v5.5
 
 --[[ Library ]]
 
@@ -4507,7 +4507,7 @@ function EZ:CreateTargetHUD(Config)
 	for Index = 1, 3 do
 		local Layer = EZ:Create('Frame', {
 			BackgroundTransparency = 1;
-			Size = UDim2.new(1, -Pad, 1, -Pad);
+			Size = UDim2.new(1, -Pad * 2, 1, -Pad * 2);
 			Position = UDim2.fromOffset(Pad, Pad);
 			BorderSizePixel = 0;
 			ClipsDescendants = false;
