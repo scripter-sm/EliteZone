@@ -4657,46 +4657,75 @@ function EZ:CreateTargetHUD(Config)
 
 	local Labels = { Name, Stats, HealthLabel, HealthValue, RatioLabel, RatioValue };
 
-	function HUD:Apply(Data)
+function HUD:Apply(Data)
 		local rank = Data.Rank or 'unranked';
 		if type(rank) ~= 'string' then
 			rank = rank.Name or rank.name or 'unranked';
-		end
+		end;
 
 		local accent = EZ.AccentColor:ToHex();
 
-		Name.Text = Data.Name or '';
-		Stats.Text = ('level <font color="#%s">%s</font>   rank <font color="#%s">%s</font>   device <font color="#%s">%s</font>   streak <font color="#%s">%s</font>'):format(
+		local text = Data.Name or '';
+		if Name.Text ~= text then
+			Name.Text = text;
+		end;
+
+		text = ('level <font color="#%s">%s</font>   rank <font color="#%s">%s</font>   device <font color="#%s">%s</font>   streak <font color="#%s">%s</font>'):format(
 			accent, tostring(Data.Level or 0),
 			accent, rank:lower(),
 			accent, tostring(Data.Device or '?'),
 			accent, tostring(Data.Streak or 0)
 		);
 
+		if Stats.Text ~= text then
+			Stats.Text = text;
+		end;
+
 		local Health = Data.Health or 0;
 		local MaxHealth = Data.MaxHealth or 100;
-		HealthValue.Text = math.floor(Health) .. ' / ' .. math.floor(MaxHealth);
-		HealthFill.Size = UDim2.fromScale(math.clamp(Health / MaxHealth, 0, 1), 1);
+		text = math.floor(Health) .. ' / ' .. math.floor(MaxHealth);
+
+		if HealthValue.Text ~= text then
+			HealthValue.Text = text;
+		end;
+
+		local Scale = UDim2.fromScale(math.clamp(Health / MaxHealth, 0, 1), 1);
+		if HealthFill.Size ~= Scale then
+			HealthFill.Size = Scale;
+		end;
 
 		local Given = Data.DamageGiven or 0;
 		local Taken = Data.DamageTaken or 0;
-		RatioValue.Text = ('%d <font color="#%s">▲</font>  %d <font color="#%s">▼</font>'):format(
+		text = ('%d <font color="#%s">▲</font>  %d <font color="#%s">▼</font>'):format(
 			math.floor(Given + 0.5), UpColor:ToHex(),
 			math.floor(Taken + 0.5), DownColor:ToHex()
 		);
 
+		if RatioValue.Text ~= text then
+			RatioValue.Text = text;
+		end;
+
 		local Total = Given + Taken;
 		local Ratio = Total > 0 and Given / Total or 0.5;
 		Ratio = math.clamp(Ratio, 0, 1);
-		RatioFill.Size = UDim2.fromScale(Ratio, 1);
+		Scale = UDim2.fromScale(Ratio, 1);
+
+		if RatioFill.Size ~= Scale then
+			RatioFill.Size = Scale;
+			Seam.Position = UDim2.fromScale(Ratio, 0);
+		end;
 
 		local Items = Data.Items;
 		for Index = 1, 4 do
-			local Image = Items and Items[Index];
-			Icons[Index].Image = Image or '';
-			Icons[Index].ImageColor3 = Image and Color3.new(1, 1, 1) or dim();
-			Icons[Index].Size = Image and UDim2.fromScale(1, 1) or UDim2.fromScale(0.7, 0.7);
+			local Image = Items and Items[Index] or '';
+			local Icon = Icons[Index];
+			if Icon.Image ~= Image then
+				Icon.Image = Image;
+				Icon.ImageColor3 = Image and Color3.new(1, 1, 1) or dim();
+				Icon.Size = Image and UDim2.fromScale(1, 1) or UDim2.fromScale(0.7, 0.7);
+			end;
 		end;
+	end;
 	end;
 
 	function HUD:SetVisible(Bool)
