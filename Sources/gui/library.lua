@@ -4726,7 +4726,6 @@ function HUD:Apply(Data)
 			end;
 		end;
 	end;
-	end;
 
 	function HUD:SetVisible(Bool)
 		Root.Visible = Bool;
