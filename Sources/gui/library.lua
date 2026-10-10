@@ -4438,13 +4438,13 @@ function EZ:CreateTargetHUD(Config)
 	local Font = Config.Font;
 	local UpColor = Config.UpColor or EZ.AccentColor;
 	local DownColor = Config.DownColor or EZ.RiskColor;
-	local Width = Config.Width or 528;
+	local Width = Config.Width or 556;
 	local Height = Config.Height or 214;
 	local Slot = 58;
 	local Pad = 9;
 	local Edge = 17;
 	local RowGap = 12;
-	local TextX = 92;
+	local TextX = 84;
 	local ValueW = 150;
 	local Placeholders = Config.PlaceholderIcons or {
 		'rbxassetid://17225649668';
@@ -4617,11 +4617,11 @@ function EZ:CreateTargetHUD(Config)
 	end
 
 	local Name = label(UDim2.new(1, -TextX - TextX, 0, 24), UDim2.fromOffset(TextX, Edge + 5), 16);
-	local Stats = label(UDim2.new(1, -TextX - TextX, 0, 20), UDim2.fromOffset(TextX, Edge + 27), 14, '', nil, dim());
-	local HealthLabel = label(UDim2.fromOffset(ValueW, 18), UDim2.fromOffset(TextX, 88), 14, 'health', nil, dim());
-	local HealthValue = label(UDim2.fromOffset(ValueW, 18), UDim2.new(1, -(TextX + ValueW), 0, 88), 14, '0 / 0', Enum.TextXAlignment.Right);
-	local RatioLabel = label(UDim2.fromOffset(ValueW, 18), UDim2.fromOffset(TextX, 120), 14, 'damage ratio', nil, dim());
-	local RatioValue = label(UDim2.fromOffset(ValueW, 18), UDim2.new(1, -(TextX + ValueW), 0, 120), 14, '', Enum.TextXAlignment.Right);
+	local Stats = label(UDim2.new(1, -TextX - TextX, 0, 20), UDim2.fromOffset(TextX, Edge + 27), 13, '', nil, dim());
+	local HealthLabel = label(UDim2.fromOffset(ValueW, 18), UDim2.fromOffset(TextX, 88), 13, 'health', nil, dim());
+	local HealthValue = label(UDim2.fromOffset(ValueW, 18), UDim2.new(1, -(TextX + ValueW), 0, 88), 13, '0 / 0', Enum.TextXAlignment.Right);
+	local RatioLabel = label(UDim2.fromOffset(ValueW, 18), UDim2.fromOffset(TextX, 120), 13, 'damage ratio', nil, dim());
+	local RatioValue = label(UDim2.fromOffset(ValueW, 18), UDim2.new(1, -(TextX + ValueW), 0, 120), 13, '', Enum.TextXAlignment.Right);
 
 	Stats.RichText = true;
 	RatioValue.RichText = true;
