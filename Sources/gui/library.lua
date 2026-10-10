@@ -4448,8 +4448,8 @@ function EZ:CreateTargetHUD(Config)
 	local ValueW = 150;
 	local Placeholders = Config.PlaceholderIcons or {
 		'rbxassetid://17225649668';
-		'rbxassetid://17225650488';
 		'rbxassetid://17225650859';
+		'rbxassetid://17225650488';
 		'rbxassetid://17225651405';
 	};
 
