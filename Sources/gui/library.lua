@@ -4436,7 +4436,7 @@ function EZ:CreateTargetHUD(Config)
 
 	local Parent = Config.Parent;
 	local Font = Config.Font;
-	local KeyFont = Config.KeyFont or '';
+	local KeyFont = Config.KeyFont;
 	local UpColor = Config.UpColor or EZ.AccentColor;
 	local DownColor = Config.DownColor or EZ.RiskColor;
 	local Width = Config.Width or 556;
@@ -4599,14 +4599,14 @@ function EZ:CreateTargetHUD(Config)
 		return EZ.FontColor:Lerp(EZ.BackgroundColor, 0.32);
 	end
 
-	local function label(Size, Position, TextSize, Text, Alignment, Color)
+	local function label(Size, Position, TextSize, Text, Alignment, Color, Face)
 		return EZ:Create('TextLabel', {
 			Size = Size;
 			Position = Position;
 			BackgroundTransparency = 1;
 			Text = Text or '';
 			TextSize = TextSize;
-			FontFace = Font;
+			FontFace = Face or Font;
 			TextColor3 = Color or EZ.FontColor;
 			TextXAlignment = Alignment or Enum.TextXAlignment.Left;
 			TextYAlignment = Enum.TextYAlignment.Center;
@@ -4618,7 +4618,7 @@ function EZ:CreateTargetHUD(Config)
 	end
 
 	local Name = label(UDim2.new(1, -TextX - TextX, 0, 24), UDim2.fromOffset(TextX, Top + 4), 16);
-	local Stats = label(UDim2.new(1, -TextX - TextX, 0, 20), UDim2.fromOffset(TextX, Top + 26), 13, '', nil, dim());
+	local Stats = label(UDim2.new(1, -TextX - TextX, 0, 20), UDim2.fromOffset(TextX, Top + 26), 13, '', nil, dim(), KeyFont);
 	local HealthLabel = label(UDim2.fromOffset(ValueW, 18), UDim2.fromOffset(TextX, Top + 70), 13, 'health', nil, dim());
 	local HealthValue = label(UDim2.fromOffset(ValueW, 18), UDim2.new(1, -(TextX + ValueW), 0, Top + 70), 13, '0 / 0', Enum.TextXAlignment.Right);
 	local RatioLabel = label(UDim2.fromOffset(ValueW, 18), UDim2.fromOffset(TextX, Top + 102), 13, 'damage ratio', nil, dim());
@@ -4721,11 +4721,11 @@ function HUD:Apply(Data)
 			Name.Text = text;
 		end;
 
-		text = ('<font face="%s">level</font> <font color="#%s">%s</font>  <font face="%s">rank</font> <font color="#%s">%s</font>  <font face="%s">device</font> <font color="#%s">%s</font>  <font face="%s">streak</font> <font color="#%s">%s</font>'):format(
-			KeyFont, accent, tostring(Data.Level or 0),
-			KeyFont, accent, rank:lower(),
-			KeyFont, accent, tostring(Data.Device or '?'),
-			KeyFont, accent, tostring(Data.Streak or 0)
+		text = ('level <font color="#%s">%s</font>  rank <font color="#%s">%s</font>  device <font color="#%s">%s</font>  streak <font color="#%s">%s</font>'):format(
+			accent, tostring(Data.Level or 0),
+			accent, rank:lower(),
+			accent, tostring(Data.Device or '?'),
+			accent, tostring(Data.Streak or 0)
 		);
 
 		if Stats.Text ~= text then
