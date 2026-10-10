@@ -4515,7 +4515,7 @@ function EZ:CreateTargetHUD(Config)
 
 	local Body = Panel;
 
-	for Index = 1, 3 do
+	for Index = 1, 2 do
 		local Layer = EZ:Create('Frame', {
 			BackgroundColor3 = EZ.OutlineColor;
 			BorderColor3 = EZ.OutlineColor;
