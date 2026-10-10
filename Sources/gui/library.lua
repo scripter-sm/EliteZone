@@ -4469,7 +4469,9 @@ function EZ:CreateTargetHUD(Config)
 		Position = UDim2.new(0.5, 0, 0.5, 0);
 		AnchorPoint = Vector2.new(0.5, 0);
 		BackgroundColor3 = EZ.OutlineColor;
-		BorderSizePixel = 0;
+		BorderColor3 = EZ.OutlineColor;
+		BorderSizePixel = 1;
+		BorderMode = Enum.BorderMode.Inset;
 		ClipsDescendants = false;
 		Visible = false;
 		ZIndex = 120;
@@ -4480,7 +4482,9 @@ function EZ:CreateTargetHUD(Config)
 		Size = UDim2.new(1, -2, 1, -2);
 		Position = UDim2.new(0, 1, 0, 1);
 		BackgroundColor3 = EZ.MainColor;
-		BorderSizePixel = 0;
+		BorderColor3 = Color3.new(0, 0, 0);
+		BorderSizePixel = 1;
+		BorderMode = Enum.BorderMode.Inset;
 		ClipsDescendants = false;
 		ZIndex = 121;
 		Parent = Root;
@@ -4503,9 +4507,11 @@ function EZ:CreateTargetHUD(Config)
 	for Index = 1, 3 do
 		local Layer = EZ:Create('Frame', {
 			BackgroundColor3 = EZ.OutlineColor;
+			BorderColor3 = EZ.OutlineColor;
+			BorderSizePixel = 1;
+			BorderMode = Enum.BorderMode.Inset;
 			Size = UDim2.new(1, -Pad * 2, 1, -Pad * 2);
 			Position = UDim2.fromOffset(Pad, Pad);
-			BorderSizePixel = 0;
 			ClipsDescendants = false;
 			ZIndex = 122 + Index;
 			Parent = Body;
@@ -4515,7 +4521,9 @@ function EZ:CreateTargetHUD(Config)
 			Size = UDim2.new(1, -2, 1, -2);
 			Position = UDim2.new(0, 1, 0, 1);
 			BackgroundColor3 = EZ.MainColor;
-			BorderSizePixel = 0;
+			BorderColor3 = Color3.new(0, 0, 0);
+			BorderSizePixel = 1;
+			BorderMode = Enum.BorderMode.Inset;
 			ClipsDescendants = false;
 			ZIndex = 123 + Index;
 			Parent = Layer;
@@ -4545,7 +4553,9 @@ function EZ:CreateTargetHUD(Config)
 			Size = UDim2.fromOffset(Slot, Slot);
 			Position = UDim2.new(Column, Column == 1 and -(Edge + Slot) or Edge, 0, Top + Row * (Slot + RowGap));
 			BackgroundColor3 = EZ.OutlineColor;
-			BorderSizePixel = 0;
+			BorderColor3 = EZ.OutlineColor;
+			BorderSizePixel = 1;
+			BorderMode = Enum.BorderMode.Inset;
 			ClipsDescendants = false;
 			ZIndex = ZSlot;
 			Parent = Body;
@@ -4556,7 +4566,8 @@ function EZ:CreateTargetHUD(Config)
 			Position = UDim2.new(0, 1, 0, 1);
 			BackgroundColor3 = EZ.MainColor;
 			BorderColor3 = Color3.new(0, 0, 0);
-			BorderSizePixel = 0;
+			BorderSizePixel = 1;
+			BorderMode = Enum.BorderMode.Inset;
 			ClipsDescendants = true;
 			ZIndex = ZSlot + 1;
 			Parent = Holder;
