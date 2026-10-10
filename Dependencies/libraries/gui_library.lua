@@ -1,5 +1,5 @@
 -- This file was compiled by Elite Zone's Compiler. [v3.10]
---Library Version (Used for caching purposes.) v7.4
+--Library Version (Used for caching purposes.) v7.5
 
 --[[ Library ]]
 
@@ -4444,7 +4444,7 @@ function EZ:CreateTargetHUD(Config)
 	local UpColor = Config.UpColor or EZ.AccentColor;
 	local DownColor = Config.DownColor or EZ.RiskColor;
 	local Width = Config.Width or 528;
-	local Height = Config.Height or 206;
+	local Height = Config.Height or 214;
 	local Slot = 58;
 	local Pad = 9;
 	local Edge = 17;
@@ -4553,7 +4553,7 @@ function EZ:CreateTargetHUD(Config)
 		Body = Inner;
 	end
 
-	local Top = math.max(0, math.floor((Body.Size.Y.Offset - Slot * 2 - RowGap) / 2));
+	local Top = math.max(0, math.floor((Body.AbsoluteSize.Y / Scale.Scale - Slot * 2 - RowGap) / 2));
 
 	local ZSlot = 124;
 	local ZText = 125;
