@@ -1,5 +1,5 @@
 -- This file was compiled by Elite Zone's Compiler. [v3.10]
---Library Version (Used for caching purposes.) v6.2
+--Library Version (Used for caching purposes.) v6.3
 
 --[[ Library ]]
 
@@ -4468,24 +4468,15 @@ function EZ:CreateTargetHUD(Config)
 	ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling;
 	ScreenGui.Parent = Parent;
 
-	local function stroke(Target, Key, Thickness)
-		local Line = Instance.new('UIStroke');
-		Line.ApplyStrokeMode = Enum.ApplyStrokeMode.Border;
-		Line.Color = EZ[Key or 'OutlineColor'];
-		Line.Thickness = Thickness or 1;
-		Line.Transparency = 0;
-		Line.Parent = Target;
-		EZ:AddToRegistry(Line, { Color = Key or 'OutlineColor'; });
-		return Line;
-	end
-
 	local Root = EZ:Create('Frame', {
 		Name = 'TargetHUD';
 		Size = UDim2.fromOffset(Width, Height);
 		Position = UDim2.new(0.5, 0, 0.5, 0);
 		AnchorPoint = Vector2.new(0.5, 0);
-		BackgroundColor3 = Color3.new(0, 0, 0);
-		BorderSizePixel = 0;
+		BackgroundTransparency = 1;
+		BorderColor3 = Color3.new(0, 0, 0);
+		BorderSizePixel = 1;
+		BorderMode = Enum.BorderMode.Inset;
 		ClipsDescendants = false;
 		Visible = false;
 		ZIndex = 120;
@@ -4493,10 +4484,11 @@ function EZ:CreateTargetHUD(Config)
 	});
 
 	local Panel = EZ:Create('Frame', {
-		Size = UDim2.new(1, -2, 1, -2);
-		Position = UDim2.fromOffset(1, 1);
+		Size = UDim2.new(1, 0, 1, 0);
 		BackgroundColor3 = EZ.MainColor;
-		BorderSizePixel = 0;
+		BorderColor3 = EZ.OutlineColor;
+		BorderSizePixel = 1;
+		BorderMode = Enum.BorderMode.Inset;
 		ClipsDescendants = false;
 		ZIndex = 121;
 		Parent = Root;
@@ -4504,6 +4496,7 @@ function EZ:CreateTargetHUD(Config)
 
 	EZ:AddToRegistry(Panel, {
 		BackgroundColor3 = 'MainColor';
+		BorderColor3 = 'OutlineColor';
 	});
 
 	local Scale = Instance.new('UIScale');
@@ -4514,34 +4507,35 @@ function EZ:CreateTargetHUD(Config)
 
 	for Index = 1, 3 do
 		local Layer = EZ:Create('Frame', {
-			BackgroundColor3 = Color3.new(0, 0, 0);
+			BackgroundTransparency = 1;
 			Size = UDim2.new(1, -Pad * 2, 1, -Pad * 2);
 			Position = UDim2.fromOffset(Pad, Pad);
-			BorderSizePixel = 0;
+			BorderColor3 = Color3.new(0, 0, 0);
+			BorderSizePixel = 1;
+			BorderMode = Enum.BorderMode.Inset;
 			ClipsDescendants = false;
 			ZIndex = 122 + Index;
 			Parent = Body;
 		});
 
 		local Inner = EZ:Create('Frame', {
-			Size = UDim2.new(1, -2, 1, -2);
-			Position = UDim2.fromOffset(1, 1);
-			BackgroundTransparency = 1;
-			BorderSizePixel = 0;
+			Size = UDim2.new(1, 0, 1, 0);
+			BackgroundColor3 = EZ.MainColor;
+			BorderColor3 = EZ.OutlineColor;
+			BorderSizePixel = 1;
+			BorderMode = Enum.BorderMode.Inset;
 			ClipsDescendants = false;
 			ZIndex = 123 + Index;
 			Parent = Layer;
 		});
 
+		EZ:AddToRegistry(Inner, {
+			BackgroundColor3 = 'MainColor';
+			BorderColor3 = 'OutlineColor';
+		});
+
 		Body = Inner;
 	end
-
-	Body.BackgroundColor3 = EZ.MainColor;
-	Body.BackgroundTransparency = 0;
-
-	EZ:AddToRegistry(Body, {
-		BackgroundColor3 = 'MainColor';
-	});
 
 	local ZSlot = 124;
 	local ZText = 125;
@@ -4555,17 +4549,29 @@ function EZ:CreateTargetHUD(Config)
 		local Holder = EZ:Create('Frame', {
 			Size = UDim2.fromOffset(Slot, Slot);
 			Position = UDim2.new(Column, Column == 1 and -(Edge + Slot) or Edge, 0, Top + Row * (Slot + RowGap));
-			BackgroundColor3 = EZ.MainColor;
-			BorderSizePixel = 0;
-			ClipsDescendants = true;
+			BackgroundTransparency = 1;
+			BorderColor3 = Color3.new(0, 0, 0);
+			BorderSizePixel = 1;
+			BorderMode = Enum.BorderMode.Inset;
+			ClipsDescendants = false;
 			ZIndex = ZSlot;
 			Parent = Body;
 		});
 
-		stroke(Holder, 'OutlineColor');
+		local Inner = EZ:Create('Frame', {
+			Size = UDim2.new(1, 0, 1, 0);
+			BackgroundColor3 = EZ.MainColor;
+			BorderColor3 = EZ.OutlineColor;
+			BorderSizePixel = 1;
+			BorderMode = Enum.BorderMode.Inset;
+			ClipsDescendants = true;
+			ZIndex = ZSlot + 1;
+			Parent = Holder;
+		});
 
-		EZ:AddToRegistry(Holder, {
+		EZ:AddToRegistry(Inner, {
 			BackgroundColor3 = 'MainColor';
+			BorderColor3 = 'OutlineColor';
 		});
 
 		local Icon = EZ:Create('ImageLabel', {
@@ -4576,7 +4582,7 @@ function EZ:CreateTargetHUD(Config)
 			ScaleType = Enum.ScaleType.Fit;
 			Image = '';
 			ZIndex = ZText;
-			Parent = Holder;
+			Parent = Inner;
 		});
 
 		Slots[Index] = Holder;
@@ -4630,16 +4636,17 @@ function EZ:CreateTargetHUD(Config)
 		local Track = EZ:Create('Frame', {
 			Size = UDim2.new(1, -TextX - TextX + 2, 0, 4);
 			Position = UDim2.fromOffset(TextX - 1, Y - 1);
-			BackgroundColor3 = Color3.new(0, 0, 0);
-			BorderSizePixel = 0;
+			BackgroundTransparency = 1;
+			BorderColor3 = Color3.new(0, 0, 0);
+			BorderSizePixel = 1;
+			BorderMode = Enum.BorderMode.Inset;
 			ClipsDescendants = false;
 			ZIndex = ZSlot;
 			Parent = Body;
 		});
 
 		local Inner = EZ:Create('Frame', {
-			Size = UDim2.new(1, -2, 1, -2);
-			Position = UDim2.fromOffset(1, 1);
+			Size = UDim2.new(1, 0, 1, 0);
 			BackgroundColor3 = EZ.OutlineColor;
 			BorderSizePixel = 0;
 			ClipsDescendants = true;
