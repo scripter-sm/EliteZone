@@ -4598,8 +4598,9 @@ function EZ:CreateTargetHUD(Config)
 		return EZ.FontColor:Lerp(EZ.BackgroundColor, 0.32);
 	end
 
+	local Sized = {};
 	local function label(Size, Position, TextSize, Text, Alignment, Color)
-		return EZ:Create('TextLabel', {
+		local Item = EZ:Create('TextLabel', {
 			Size = Size;
 			Position = Position;
 			BackgroundTransparency = 1;
@@ -4613,6 +4614,10 @@ function EZ:CreateTargetHUD(Config)
 			ZIndex = ZText;
 			Parent = Body;
 		});
+
+		table.insert(Sized, { Item, TextSize; });
+
+		return Item;
 	end
 
 	local Name = label(UDim2.new(1, -TextX - TextX, 0, 22), UDim2.fromOffset(TextX, Edge + 5), 14);
@@ -4786,6 +4791,12 @@ local Items = Data.Items;
 
 	function HUD:SetScale(Amount)
 		Scale.Scale = Amount;
+	end;
+
+	function HUD:SetTextScale(Amount)
+		for _, Entry in next, Sized do
+			Entry[1].TextSize = math.max(1, math.floor(Entry[2] * Amount));
+		end;
 	end;
 
 	function HUD:SetOffset(X, Y)
