@@ -4598,9 +4598,8 @@ function EZ:CreateTargetHUD(Config)
 		return EZ.FontColor:Lerp(EZ.BackgroundColor, 0.32);
 	end
 
-	local Sized = {};
-	local function label(Size, Position, TextSize, Text, Alignment, Color, Fixed)
-		local Item = EZ:Create('TextLabel', {
+	local function label(Size, Position, TextSize, Text, Alignment, Color)
+		return EZ:Create('TextLabel', {
 			Size = Size;
 			Position = Position;
 			BackgroundTransparency = 1;
@@ -4615,20 +4614,14 @@ function EZ:CreateTargetHUD(Config)
 			ZIndex = ZText;
 			Parent = Body;
 		});
-
-		if not Fixed then
-			table.insert(Sized, { Item, TextSize, Size; });
-		end;
-
-		return Item;
 	end
 
-	local Name = label(UDim2.new(1, -TextX - TextX, 0, 22), UDim2.fromOffset(TextX, Edge + 5), 14, nil, nil, nil, true);
-	local Stats = label(UDim2.new(1, -TextX - TextX, 0, 20), UDim2.fromOffset(TextX, Edge + 25), 13, '', nil, dim());
-	local HealthLabel = label(UDim2.fromOffset(ValueW, 18), UDim2.fromOffset(TextX, 88), 13, 'health', nil, dim());
-	local HealthValue = label(UDim2.fromOffset(ValueW, 18), UDim2.new(1, -(TextX + ValueW), 0, 88), 13, '0 / 0', Enum.TextXAlignment.Right);
-	local RatioLabel = label(UDim2.fromOffset(ValueW, 18), UDim2.fromOffset(TextX, 120), 13, 'damage ratio', nil, dim());
-	local RatioValue = label(UDim2.fromOffset(ValueW, 18), UDim2.new(1, -(TextX + ValueW), 0, 120), 13, '', Enum.TextXAlignment.Right);
+	local Name = label(UDim2.new(1, -TextX - TextX, 0, 24), UDim2.fromOffset(TextX, Edge + 5), 16);
+	local Stats = label(UDim2.new(1, -TextX - TextX, 0, 20), UDim2.fromOffset(TextX, Edge + 27), 14, '', nil, dim());
+	local HealthLabel = label(UDim2.fromOffset(ValueW, 18), UDim2.fromOffset(TextX, 88), 14, 'health', nil, dim());
+	local HealthValue = label(UDim2.fromOffset(ValueW, 18), UDim2.new(1, -(TextX + ValueW), 0, 88), 14, '0 / 0', Enum.TextXAlignment.Right);
+	local RatioLabel = label(UDim2.fromOffset(ValueW, 18), UDim2.fromOffset(TextX, 120), 14, 'damage ratio', nil, dim());
+	local RatioValue = label(UDim2.fromOffset(ValueW, 18), UDim2.new(1, -(TextX + ValueW), 0, 120), 14, '', Enum.TextXAlignment.Right);
 
 	Stats.RichText = true;
 	RatioValue.RichText = true;
@@ -4794,14 +4787,6 @@ local Items = Data.Items;
 
 	function HUD:SetScale(Amount)
 		Scale.Scale = Amount;
-	end;
-
-	function HUD:SetTextScale(Amount)
-		for _, Entry in next, Sized do
-			local Box = Entry[3];
-			Entry[1].TextSize = math.max(1, math.floor(Entry[2] * Amount));
-			Entry[1].Size = UDim2.new(Box.X.Scale, Box.X.Offset, 0, math.floor(Box.Y.Offset * Amount));
-		end;
 	end;
 
 	function HUD:SetOffset(X, Y)
