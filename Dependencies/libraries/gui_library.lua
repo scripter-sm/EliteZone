@@ -1,5 +1,5 @@
 -- This file was compiled by Elite Zone's Compiler. [v3.10]
---Library Version (Used for caching purposes.) v7.0
+--Library Version (Used for caching purposes.) v7.1
 
 --[[ Library ]]
 
@@ -4520,7 +4520,7 @@ function EZ:CreateTargetHUD(Config)
 
 	local Body = Panel;
 
-	for Index = 1, 3 do
+	for Index = 1, 2 do
 		local Layer = EZ:Create('Frame', {
 			BackgroundColor3 = EZ.OutlineColor;
 			BorderColor3 = EZ.OutlineColor;
