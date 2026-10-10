@@ -4443,7 +4443,6 @@ function EZ:CreateTargetHUD(Config)
 	local Slot = 58;
 	local Pad = 9;
 	local Edge = 17;
-	local Top = 18;
 	local RowGap = 12;
 	local TextX = 92;
 	local ValueW = 150;
@@ -4548,6 +4547,8 @@ function EZ:CreateTargetHUD(Config)
 
 		Body = Inner;
 	end
+
+	local Top = math.max(0, math.floor((Body.Size.Y.Offset - Slot * 2 - RowGap) / 2));
 
 	local ZSlot = 124;
 	local ZText = 125;
