@@ -1,5 +1,5 @@
 -- This file was compiled by Elite Zone's Compiler. [v3.10]
---Library Version (Used for caching purposes.) v8.4
+--Library Version (Used for caching purposes.) v8.5
 
 --[[ Library ]]
 
@@ -4444,7 +4444,7 @@ function EZ:CreateTargetHUD(Config)
 	local UpColor = Config.UpColor or EZ.AccentColor;
 	local DownColor = Config.DownColor or EZ.RiskColor;
 	local Width = Config.Width or 556;
-	local Height = Config.Height or 214;
+	local Height = Config.Height or 244;
 	local Slot = 58;
 	local Pad = 9;
 	local Edge = 17;
@@ -4621,12 +4621,12 @@ function EZ:CreateTargetHUD(Config)
 		});
 	end
 
-	local Name = label(UDim2.new(1, -TextX - TextX, 0, 24), UDim2.fromOffset(TextX, Edge + 5), 16);
-	local Stats = label(UDim2.new(1, -TextX - TextX, 0, 20), UDim2.fromOffset(TextX, Edge + 27), 13, '', nil, dim());
-	local HealthLabel = label(UDim2.fromOffset(ValueW, 18), UDim2.fromOffset(TextX, 88), 13, 'health', nil, dim());
-	local HealthValue = label(UDim2.fromOffset(ValueW, 18), UDim2.new(1, -(TextX + ValueW), 0, 88), 13, '0 / 0', Enum.TextXAlignment.Right);
-	local RatioLabel = label(UDim2.fromOffset(ValueW, 18), UDim2.fromOffset(TextX, 120), 13, 'damage ratio', nil, dim());
-	local RatioValue = label(UDim2.fromOffset(ValueW, 18), UDim2.new(1, -(TextX + ValueW), 0, 120), 13, '', Enum.TextXAlignment.Right);
+	local Name = label(UDim2.new(1, -TextX - TextX, 0, 24), UDim2.fromOffset(TextX, Top + 4), 16);
+	local Stats = label(UDim2.new(1, -TextX - TextX, 0, 20), UDim2.fromOffset(TextX, Top + 26), 13, '', nil, dim());
+	local HealthLabel = label(UDim2.fromOffset(ValueW, 18), UDim2.fromOffset(TextX, Top + 70), 13, 'health', nil, dim());
+	local HealthValue = label(UDim2.fromOffset(ValueW, 18), UDim2.new(1, -(TextX + ValueW), 0, Top + 70), 13, '0 / 0', Enum.TextXAlignment.Right);
+	local RatioLabel = label(UDim2.fromOffset(ValueW, 18), UDim2.fromOffset(TextX, Top + 102), 13, 'damage ratio', nil, dim());
+	local RatioValue = label(UDim2.fromOffset(ValueW, 18), UDim2.new(1, -(TextX + ValueW), 0, Top + 102), 13, '', Enum.TextXAlignment.Right);
 
 	Stats.RichText = true;
 	RatioValue.RichText = true;
@@ -4673,8 +4673,8 @@ function EZ:CreateTargetHUD(Config)
 		return Track, Fill;
 	end
 
-	local HealthTrack, HealthFill = bar(108);
-	local RatioTrack, RatioFill = bar(140);
+	local HealthTrack, HealthFill = bar(Top + 90);
+	local RatioTrack, RatioFill = bar(Top + 122);
 
 	local Seam = EZ:Create('Frame', {
 		AnchorPoint = Vector2.new(0, 0);
