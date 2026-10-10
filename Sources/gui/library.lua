@@ -4610,13 +4610,14 @@ function EZ:CreateTargetHUD(Config)
 			TextColor3 = Color or EZ.FontColor;
 			TextXAlignment = Alignment or Enum.TextXAlignment.Left;
 			TextYAlignment = Enum.TextYAlignment.Center;
-			TextTruncate = Enum.TextTruncate.AtEnd;
+			TextTruncate = Enum.TextTruncate.None;
+			TextWrapped = false;
 			ZIndex = ZText;
 			Parent = Body;
 		});
 
 		if not Fixed then
-			table.insert(Sized, { Item, TextSize; });
+			table.insert(Sized, { Item, TextSize, Size; });
 		end;
 
 		return Item;
@@ -4797,7 +4798,9 @@ local Items = Data.Items;
 
 	function HUD:SetTextScale(Amount)
 		for _, Entry in next, Sized do
+			local Box = Entry[3];
 			Entry[1].TextSize = math.max(1, math.floor(Entry[2] * Amount));
+			Entry[1].Size = UDim2.new(Box.X.Scale, Box.X.Offset, 0, math.floor(Box.Y.Offset * Amount));
 		end;
 	end;
 
