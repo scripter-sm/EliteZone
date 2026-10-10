@@ -1,5 +1,5 @@
 -- This file was compiled by Elite Zone's Compiler. [v3.10]
---Library Version (Used for caching purposes.) v6.7
+--Library Version (Used for caching purposes.) v6.8
 
 --[[ Library ]]
 
@@ -4444,7 +4444,7 @@ function EZ:CreateTargetHUD(Config)
 	local UpColor = Config.UpColor or EZ.AccentColor;
 	local DownColor = Config.DownColor or EZ.RiskColor;
 	local Width = Config.Width or 528;
-	local Height = Config.Height or 208;
+	local Height = Config.Height or 222;
 	local Slot = 58;
 	local Pad = 9;
 	local Edge = 17;
@@ -4619,10 +4619,10 @@ function EZ:CreateTargetHUD(Config)
 
 	local Name = label(UDim2.new(1, -TextX - TextX, 0, 22), UDim2.fromOffset(TextX, Edge + 5), 14);
 	local Stats = label(UDim2.new(1, -TextX - TextX, 0, 18), UDim2.fromOffset(TextX, Edge + 25), 11, '', nil, dim());
-	local HealthLabel = label(UDim2.fromOffset(ValueW, 16), UDim2.fromOffset(TextX, 76), 11, 'health', nil, dim());
-	local HealthValue = label(UDim2.fromOffset(ValueW, 16), UDim2.new(1, -(TextX + ValueW), 0, 76), 11, '0 / 0', Enum.TextXAlignment.Right);
-	local RatioLabel = label(UDim2.fromOffset(ValueW, 16), UDim2.fromOffset(TextX, 108), 11, 'damage ratio', nil, dim());
-	local RatioValue = label(UDim2.fromOffset(ValueW, 16), UDim2.new(1, -(TextX + ValueW), 0, 108), 11, '', Enum.TextXAlignment.Right);
+	local HealthLabel = label(UDim2.fromOffset(ValueW, 16), UDim2.fromOffset(TextX, 88), 11, 'health', nil, dim());
+	local HealthValue = label(UDim2.fromOffset(ValueW, 16), UDim2.new(1, -(TextX + ValueW), 0, 88), 11, '0 / 0', Enum.TextXAlignment.Right);
+	local RatioLabel = label(UDim2.fromOffset(ValueW, 16), UDim2.fromOffset(TextX, 120), 11, 'damage ratio', nil, dim());
+	local RatioValue = label(UDim2.fromOffset(ValueW, 16), UDim2.new(1, -(TextX + ValueW), 0, 120), 11, '', Enum.TextXAlignment.Right);
 
 	Stats.RichText = true;
 	RatioValue.RichText = true;
@@ -4669,8 +4669,8 @@ function EZ:CreateTargetHUD(Config)
 		return Track, Fill;
 	end
 
-	local HealthTrack, HealthFill = bar(96);
-	local RatioTrack, RatioFill = bar(128);
+	local HealthTrack, HealthFill = bar(108);
+	local RatioTrack, RatioFill = bar(140);
 
 	local Seam = EZ:Create('Frame', {
 		AnchorPoint = Vector2.new(0, 0);
