@@ -4436,7 +4436,7 @@ function EZ:CreateTargetHUD(Config)
 
 	local Parent = Config.Parent;
 	local Font = Config.Font;
-	local KeyFont = Config.KeyFont and Config.KeyFont.Family or '';
+	local KeyFont = Config.KeyFont or '';
 	local UpColor = Config.UpColor or EZ.AccentColor;
 	local DownColor = Config.DownColor or EZ.RiskColor;
 	local Width = Config.Width or 556;
