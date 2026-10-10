@@ -1,5 +1,5 @@
 -- This file was compiled by Elite Zone's Compiler. [v3.10]
---Library Version (Used for caching purposes.) v8.5
+--Library Version (Used for caching purposes.) v8.6
 
 --[[ Library ]]
 
@@ -4441,6 +4441,7 @@ function EZ:CreateTargetHUD(Config)
 
 	local Parent = Config.Parent;
 	local Font = Config.Font;
+	local KeyFont = Config.KeyFont and Config.KeyFont.Family or '';
 	local UpColor = Config.UpColor or EZ.AccentColor;
 	local DownColor = Config.DownColor or EZ.RiskColor;
 	local Width = Config.Width or 556;
@@ -4725,11 +4726,11 @@ function HUD:Apply(Data)
 			Name.Text = text;
 		end;
 
-		text = ('level <font color="#%s">%s</font>  rank <font color="#%s">%s</font>  device <font color="#%s">%s</font>  streak <font color="#%s">%s</font>'):format(
-			accent, tostring(Data.Level or 0),
-			accent, rank:lower(),
-			accent, tostring(Data.Device or '?'),
-			accent, tostring(Data.Streak or 0)
+		text = ('<font face="%s">level</font> <font color="#%s">%s</font>  <font face="%s">rank</font> <font color="#%s">%s</font>  <font face="%s">device</font> <font color="#%s">%s</font>  <font face="%s">streak</font> <font color="#%s">%s</font>'):format(
+			KeyFont, accent, tostring(Data.Level or 0),
+			KeyFont, accent, rank:lower(),
+			KeyFont, accent, tostring(Data.Device or '?'),
+			KeyFont, accent, tostring(Data.Streak or 0)
 		);
 
 		if Stats.Text ~= text then
