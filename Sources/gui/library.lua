@@ -4563,7 +4563,7 @@ function EZ:CreateTargetHUD(Config)
 		local Holder = EZ:Create('Frame', {
 			Size = UDim2.fromOffset(Slot, Slot);
 			Position = UDim2.new(Column, Column == 1 and -(Edge + Slot) or Edge, 0, Top + Row * (Slot + RowGap));
-			BackgroundColor3 = EZ.MainColor;
+			BackgroundColor3 = EZ.BackgroundColor;
 			BorderSizePixel = 0;
 			ClipsDescendants = true;
 			ZIndex = ZSlot;
@@ -4573,7 +4573,7 @@ function EZ:CreateTargetHUD(Config)
 		stroke(Holder, 'OutlineColor');
 
 		EZ:AddToRegistry(Holder, {
-			BackgroundColor3 = 'MainColor';
+			BackgroundColor3 = 'BackgroundColor';
 		});
 
 		local Icon = EZ:Create('ImageLabel', {
