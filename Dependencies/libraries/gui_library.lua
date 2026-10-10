@@ -1,5 +1,5 @@
 -- This file was compiled by Elite Zone's Compiler. [v3.10]
---Library Version (Used for caching purposes.) v7.6
+--Library Version (Used for caching purposes.) v7.7
 
 --[[ Library ]]
 
@@ -4496,7 +4496,7 @@ function EZ:CreateTargetHUD(Config)
 	local Panel = EZ:Create('Frame', {
 		Size = UDim2.new(1, -2, 1, -2);
 		Position = UDim2.new(0, 1, 0, 1);
-		BackgroundColor3 = EZ.BackgroundColor;
+		BackgroundColor3 = EZ.MainColor;
 		BorderSizePixel = 0;
 		ClipsDescendants = false;
 		ZIndex = 121;
@@ -4508,7 +4508,7 @@ function EZ:CreateTargetHUD(Config)
 	});
 
 	EZ:AddToRegistry(Panel, {
-		BackgroundColor3 = 'BackgroundColor';
+		BackgroundColor3 = 'MainColor';
 	});
 
 	local Scale = Instance.new('UIScale');
@@ -4530,10 +4530,14 @@ function EZ:CreateTargetHUD(Config)
 			Parent = Body;
 		});
 
+		local Last = Index == 2;
+		local Fill = Last and EZ.MainColor or EZ.BackgroundColor;
+		local FillKey = Last and 'MainColor' or 'BackgroundColor';
+
 		local Inner = EZ:Create('Frame', {
 			Size = UDim2.new(1, -2, 1, -2);
 			Position = UDim2.new(0, 1, 0, 1);
-			BackgroundColor3 = EZ.MainColor;
+			BackgroundColor3 = Fill;
 			BorderColor3 = Color3.new(0, 0, 0);
 			BorderSizePixel = 1;
 			BorderMode = Enum.BorderMode.Inset;
@@ -4547,7 +4551,7 @@ function EZ:CreateTargetHUD(Config)
 		});
 
 		EZ:AddToRegistry(Inner, {
-			BackgroundColor3 = 'MainColor';
+			BackgroundColor3 = FillKey;
 		});
 
 		Body = Inner;
