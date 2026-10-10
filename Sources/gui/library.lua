@@ -4480,7 +4480,7 @@ function EZ:CreateTargetHUD(Config)
 		Position = UDim2.new(0.5, 0, 0.5, 0);
 		AnchorPoint = Vector2.new(0.5, 0);
 		BackgroundColor3 = EZ.OutlineColor;
-		BorderColor3 = EZ.OutlineColor;
+		BorderColor3 = Color3.new(0, 0, 0);
 		BorderSizePixel = 1;
 		BorderMode = Enum.BorderMode.Inset;
 		ClipsDescendants = false;
@@ -4493,9 +4493,7 @@ function EZ:CreateTargetHUD(Config)
 		Size = UDim2.new(1, -2, 1, -2);
 		Position = UDim2.new(0, 1, 0, 1);
 		BackgroundColor3 = EZ.MainColor;
-		BorderColor3 = Color3.new(0, 0, 0);
-		BorderSizePixel = 1;
-		BorderMode = Enum.BorderMode.Inset;
+		BorderSizePixel = 0;
 		ClipsDescendants = false;
 		ZIndex = 121;
 		Parent = Root;
