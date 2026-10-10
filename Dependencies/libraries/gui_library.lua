@@ -1,5 +1,5 @@
 -- This file was compiled by Elite Zone's Compiler. [v3.10]
---Library Version (Used for caching purposes.) v7.5
+--Library Version (Used for caching purposes.) v7.6
 
 --[[ Library ]]
 
@@ -4496,7 +4496,7 @@ function EZ:CreateTargetHUD(Config)
 	local Panel = EZ:Create('Frame', {
 		Size = UDim2.new(1, -2, 1, -2);
 		Position = UDim2.new(0, 1, 0, 1);
-		BackgroundColor3 = EZ.MainColor;
+		BackgroundColor3 = EZ.BackgroundColor;
 		BorderSizePixel = 0;
 		ClipsDescendants = false;
 		ZIndex = 121;
@@ -4508,7 +4508,7 @@ function EZ:CreateTargetHUD(Config)
 	});
 
 	EZ:AddToRegistry(Panel, {
-		BackgroundColor3 = 'MainColor';
+		BackgroundColor3 = 'BackgroundColor';
 	});
 
 	local Scale = Instance.new('UIScale');
