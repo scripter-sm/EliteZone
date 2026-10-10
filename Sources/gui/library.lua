@@ -4616,11 +4616,11 @@ function EZ:CreateTargetHUD(Config)
 	end
 
 	local Name = label(UDim2.new(1, -TextX - TextX, 0, 22), UDim2.fromOffset(TextX, Edge + 5), 14);
-	local Stats = label(UDim2.new(1, -TextX - TextX, 0, 18), UDim2.fromOffset(TextX, Edge + 25), 11, '', nil, dim());
-	local HealthLabel = label(UDim2.fromOffset(ValueW, 16), UDim2.fromOffset(TextX, 88), 11, 'health', nil, dim());
-	local HealthValue = label(UDim2.fromOffset(ValueW, 16), UDim2.new(1, -(TextX + ValueW), 0, 88), 11, '0 / 0', Enum.TextXAlignment.Right);
-	local RatioLabel = label(UDim2.fromOffset(ValueW, 16), UDim2.fromOffset(TextX, 120), 11, 'damage ratio', nil, dim());
-	local RatioValue = label(UDim2.fromOffset(ValueW, 16), UDim2.new(1, -(TextX + ValueW), 0, 120), 11, '', Enum.TextXAlignment.Right);
+	local Stats = label(UDim2.new(1, -TextX - TextX, 0, 20), UDim2.fromOffset(TextX, Edge + 25), 13, '', nil, dim());
+	local HealthLabel = label(UDim2.fromOffset(ValueW, 18), UDim2.fromOffset(TextX, 88), 13, 'health', nil, dim());
+	local HealthValue = label(UDim2.fromOffset(ValueW, 18), UDim2.new(1, -(TextX + ValueW), 0, 88), 13, '0 / 0', Enum.TextXAlignment.Right);
+	local RatioLabel = label(UDim2.fromOffset(ValueW, 18), UDim2.fromOffset(TextX, 120), 13, 'damage ratio', nil, dim());
+	local RatioValue = label(UDim2.fromOffset(ValueW, 18), UDim2.new(1, -(TextX + ValueW), 0, 120), 13, '', Enum.TextXAlignment.Right);
 
 	Stats.RichText = true;
 	RatioValue.RichText = true;
@@ -4719,7 +4719,7 @@ function HUD:Apply(Data)
 			Name.Text = text;
 		end;
 
-		text = ('level <font color="#%s">%s</font>   rank <font color="#%s">%s</font>   device <font color="#%s">%s</font>   streak <font color="#%s">%s</font>'):format(
+		text = ('level <font color="#%s">%s</font>  rank <font color="#%s">%s</font>  device <font color="#%s">%s</font>  streak <font color="#%s">%s</font>'):format(
 			accent, tostring(Data.Level or 0),
 			accent, rank:lower(),
 			accent, tostring(Data.Device or '?'),
