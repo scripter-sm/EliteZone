@@ -4711,7 +4711,8 @@ function EZ:CreateTargetHUD(Config)
 function HUD:Apply(Data)
 		local rank = Data.Rank or 'unranked';
 		if type(rank) ~= 'string' then
-			rank = rank.Name or rank.name or 'unranked';
+			local ok, name = pcall(function() return rank.Name or rank.name end);
+			rank = type(name) == 'string' and name or 'unranked';
 		end;
 
 		local accent = EZ.AccentColor:ToHex();
