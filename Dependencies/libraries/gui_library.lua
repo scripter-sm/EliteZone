@@ -1,5 +1,5 @@
 -- This file was compiled by Elite Zone's Compiler. [v3.10]
---Library Version (Used for caching purposes.) v6.8
+--Library Version (Used for caching purposes.) v6.9
 
 --[[ Library ]]
 
@@ -4448,7 +4448,7 @@ function EZ:CreateTargetHUD(Config)
 	local Slot = 58;
 	local Pad = 9;
 	local Edge = 17;
-	local Top = 18;
+	local Top = 8;
 	local RowGap = 12;
 	local TextX = 92;
 	local ValueW = 150;
