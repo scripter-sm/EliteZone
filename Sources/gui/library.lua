@@ -4439,7 +4439,7 @@ function EZ:CreateTargetHUD(Config)
 	local UpColor = Config.UpColor or EZ.AccentColor;
 	local DownColor = Config.DownColor or EZ.RiskColor;
 	local Width = Config.Width or 528;
-	local Height = Config.Height or 242;
+	local Height = Config.Height or 206;
 	local Slot = 58;
 	local Pad = 9;
 	local Edge = 17;
