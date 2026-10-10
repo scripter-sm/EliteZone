@@ -4443,7 +4443,7 @@ function EZ:CreateTargetHUD(Config)
 	local Slot = 58;
 	local Pad = 9;
 	local Edge = 17;
-	local Top = 18;
+	local Top = 8;
 	local RowGap = 12;
 	local TextX = 92;
 	local ValueW = 150;
