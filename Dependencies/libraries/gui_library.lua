@@ -1,5 +1,5 @@
 -- This file was compiled by Elite Zone's Compiler. [v3.10]
---Library Version (Used for caching purposes.) v10.0
+--Library Version (Used for caching purposes.) v10.1
 
 --[[ Library ]]
 
@@ -4567,6 +4567,7 @@ function EZ:CreateTargetHUD(Config)
 	local Borders = {};
 	local Shades = {};
 	local Gradients = {};
+	local Edges = {};
 	local Applied;
 	local IconScale = 1.6;
 	local Muted;
@@ -4603,8 +4604,7 @@ function EZ:CreateTargetHUD(Config)
 		});
 
 		local Shade = EZ:Create('Frame', {
-			BackgroundColor3 = Color3.new(1, 1, 1);
-			BackgroundTransparency = 0.4;
+			BackgroundColor3 = EZ.AccentColor;
 			BorderSizePixel = 0;
 			Size = UDim2.fromScale(1, 1);
 			Visible = false;
@@ -4613,12 +4613,20 @@ function EZ:CreateTargetHUD(Config)
 		});
 
 		local Fade = EZ:Create('UIGradient', {
-			Color = ColorSequence.new(EZ.AccentColor, Color3.new(1, 1, 1, 0));
+			Transparency = NumberSequence.new(0.85, 0.55);
 			Rotation = 90;
 			Parent = Shade;
 		});
 
+		local Edge_ = EZ:Create('UIStroke', {
+			ApplyStrokeMode = Enum.ApplyStrokeMode.Border;
+			Thickness = 1;
+			Color = EZ.AccentColor;
+			Parent = Shade;
+		});
+
 		Gradients[Index] = Fade;
+		Edges[Index] = Edge_;
 
 		Slots[Index] = Holder;
 		Icons[Index] = Icon;
@@ -4742,10 +4750,8 @@ function HUD:Apply(Data)
 		local Current = EZ.AccentColor;
 		if Current ~= Applied then
 			Applied = Current;
-			local Fade = ColorSequence.new(Current, Color3.new(1, 1, 1, 0));
-
 			for Slot = 1, 4 do
-				Gradients[Slot].Color = Fade;
+				Gradients[Slot].Transparency = NumberSequence.new(0.85, 0.55);
 			end;
 		end;
 
@@ -4822,6 +4828,14 @@ local Items = Data.Items;
 
 			if Shade.Visible ~= Held then
 				Shade.Visible = Held;
+			end;
+
+			if Held then
+				local Line = Edges[Index];
+
+				if Line.Color ~= Current then
+					Line.Color = Current;
+				end;
 			end;
 
 			if Icon.Image ~= Image or Icon.ImageColor3 ~= Tint then
