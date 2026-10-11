@@ -1,5 +1,5 @@
--- This file was compiled by Elite Zone's Compiler. [v3.10]
---Library Version (Used for caching purposes.) v10.4
+-- This file was compiled by Elite Zone's Compiler. [v3.11]
+--Library Version (Used for caching purposes.) v10.5
 
 --[[ Library ]]
 
@@ -6144,7 +6144,7 @@ function EZ:CreateWindow(...)
 	return Window;
 end;
 
-EZ.Version = "v3.10"
+EZ.Version = "v3.11"
 
 --[[ Custom Library ]]
 
