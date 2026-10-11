@@ -1,5 +1,5 @@
 -- This file was compiled by Elite Zone's Compiler. [v3.10]
---Library Version (Used for caching purposes.) v9.2
+--Library Version (Used for caching purposes.) v9.3
 
 --[[ Library ]]
 
@@ -4564,6 +4564,7 @@ function EZ:CreateTargetHUD(Config)
 	local ZText = 125;
 	local Slots = {};
 	local Icons = {};
+	local Borders = {};
 
 	for Index = 1, 4 do
 		local Column = Index % 2 == 0 and 1 or 0;
@@ -4579,7 +4580,7 @@ function EZ:CreateTargetHUD(Config)
 			Parent = Body;
 		});
 
-		stroke(Holder, 'OutlineColor');
+		Borders[Index] = stroke(Holder, 'OutlineColor');
 
 		EZ:AddToRegistry(Holder, {
 			BackgroundColor3 = 'BackgroundColor';
@@ -4775,11 +4776,18 @@ local Items = Data.Items;
 		local Muted = Data.Placeholder or not Items;
 		local Tint = Muted and EZ.OutlineColor or Color3.new(1, 1, 1);
 		local Size = Muted and UDim2.fromScale(0.85, 0.85)
-			or UDim2.new(1.6, -6 * 1.6, 1.6, -6 * 1.6);
+			or UDim2.new(2.1, -6 * 2.1, 2.1, -6 * 2.1);
 
 		for Index = 1, 4 do
 			local Image = Items and Items[Index] or '';
 			local Icon = Icons[Index];
+			local Held = Data.Held and Data.Held[Index];
+			local Line = Borders[Index];
+			local Edge_ = Held and EZ.AccentColor or EZ.OutlineColor;
+
+			if Line.Color ~= Edge_ then
+				Line.Color = Edge_;
+			end;
 
 			if Icon.Image ~= Image or Icon.ImageColor3 ~= Tint then
 				Icon.Image = Image;
