@@ -1,5 +1,5 @@
 -- This file was compiled by Elite Zone's Compiler. [v3.10]
---Library Version (Used for caching purposes.) v9.8
+--Library Version (Used for caching purposes.) v9.9
 
 --[[ Library ]]
 
@@ -4565,6 +4565,9 @@ function EZ:CreateTargetHUD(Config)
 	local Slots = {};
 	local Icons = {};
 	local Borders = {};
+	local Shades = {};
+	local IconScale = 1.6;
+	local Muted;
 
 	for Index = 1, 4 do
 		local Column = Index % 2 == 0 and 1 or 0;
@@ -4597,8 +4600,29 @@ function EZ:CreateTargetHUD(Config)
 			Parent = Holder;
 		});
 
+		local Shade = EZ:Create('Frame', {
+			BackgroundColor3 = Color3.new(1, 1, 1);
+			BackgroundTransparency = 0.4;
+			BorderSizePixel = 0;
+			Size = UDim2.fromScale(1, 1);
+			Visible = false;
+			ZIndex = ZSlot + 3;
+			Parent = Holder;
+		});
+
+		EZ:Create('UIGradient', {
+			Color = ColorSequence.new(EZ.AccentColor, Color3.new(1, 1, 1, 0));
+			Rotation = 90;
+			Parent = Shade;
+		});
+
+		EZ:AddToRegistry(Shade, {
+			UIGradient = 'AccentColor';
+		});
+
 		Slots[Index] = Holder;
 		Icons[Index] = Icon;
+		Shades[Index] = Shade;
 	end;
 
 	local function dim()
@@ -4767,20 +4791,27 @@ function HUD:Apply(Data)
 			Seam.Position = UDim2.fromScale(Ratio, 0);
 		end;
 local Items = Data.Items;
-		local Muted = Data.Placeholder or not Items;
+				local MutedNow = Data.Placeholder or not Items;
+		if MutedNow ~= Muted then
+			Muted = MutedNow;
+			local Size = Muted and UDim2.fromScale(0.85, 0.85)
+				or UDim2.new(IconScale, -6 * IconScale, IconScale, -6 * IconScale);
+
+			for Slot = 1, 4 do
+				Icons[Slot].Size = Size;
+			end;
+		end;
+
 		local Tint = Muted and EZ.OutlineColor or Color3.new(1, 1, 1);
-		local Size = Muted and UDim2.fromScale(0.85, 0.85)
-			or UDim2.new(2.4, -6 * 2.4, 2.4, -6 * 2.4);
 
 		for Index = 1, 4 do
 			local Image = Items and Items[Index] or '';
 			local Icon = Icons[Index];
-			local Held = Data.Held and Data.Held[Index];
-			local Line = Borders[Index];
-			local Edge_ = Held and EZ.AccentColor or EZ.OutlineColor;
+			local Held = Data.Held and Data.Held[Index] or false;
+			local Shade = Shades[Index];
 
-			if Line.Color ~= Edge_ then
-				Line.Color = Edge_;
+			if Shade.Visible ~= Held then
+				Shade.Visible = Held;
 			end;
 
 			if Icon.Image ~= Image or Icon.ImageColor3 ~= Tint then
@@ -4797,6 +4828,16 @@ local Items = Data.Items;
 
 	function HUD:SetScale(Amount)
 		Scale.Scale = Amount;
+	end;
+
+	function HUD:SetIconScale(Amount)
+		IconScale = Amount;
+		local Size = Muted and UDim2.fromScale(0.85, 0.85)
+			or UDim2.new(Amount, -6 * Amount, Amount, -6 * Amount);
+
+		for Slot = 1, 4 do
+			Icons[Slot].Size = Size;
+		end;
 	end;
 
 	function HUD:SetOffset(X, Y)
