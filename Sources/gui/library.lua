@@ -4718,16 +4718,21 @@ function HUD:Apply(Data)
 
 		local accent = EZ.AccentColor:ToHex();
 
+		local function field(Value, Fallback)
+			local ok, text = pcall(tostring, Value);
+			return ok and type(text) == 'string' and text or Fallback;
+		end
+
 		local text = Data.Name or '';
 		if Name.Text ~= text then
 			Name.Text = text;
 		end;
 
 		text = ('level <font color="#%s">%s</font>  rank <font color="#%s">%s</font>  device <font color="#%s">%s</font>  streak <font color="#%s">%s</font>'):format(
-			accent, tostring(Data.Level or 0),
-			accent, rank:lower(),
-			accent, tostring(Data.Device or '?'),
-			accent, tostring(Data.Streak or 0)
+			accent, field(Data.Level or 0, '0'),
+			accent, field(rank, 'unranked'):lower(),
+			accent, field(Data.Device or '?', '?'),
+			accent, field(Data.Streak or 0, '0')
 		);
 
 		if Stats.Text ~= text then
