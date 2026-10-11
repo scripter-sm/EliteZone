@@ -4561,6 +4561,8 @@ function EZ:CreateTargetHUD(Config)
 	local Icons = {};
 	local Borders = {};
 	local Shades = {};
+	local Gradients = {};
+	local Applied;
 	local IconScale = 1.6;
 	local Muted;
 
@@ -4605,15 +4607,13 @@ function EZ:CreateTargetHUD(Config)
 			Parent = Holder;
 		});
 
-		EZ:Create('UIGradient', {
+		local Fade = EZ:Create('UIGradient', {
 			Color = ColorSequence.new(EZ.AccentColor, Color3.new(1, 1, 1, 0));
 			Rotation = 90;
 			Parent = Shade;
 		});
 
-		EZ:AddToRegistry(Shade, {
-			UIGradient = 'AccentColor';
-		});
+		Gradients[Index] = Fade;
 
 		Slots[Index] = Holder;
 		Icons[Index] = Icon;
@@ -4734,7 +4734,17 @@ function EZ:CreateTargetHUD(Config)
 	local Labels = { Name, Stats, HealthLabel, HealthValue, RatioLabel, RatioValue };
 
 function HUD:Apply(Data)
-		local accent = EZ.AccentColor:ToHex();
+		local Current = EZ.AccentColor;
+		if Current ~= Applied then
+			Applied = Current;
+			local Fade = ColorSequence.new(Current, Color3.new(1, 1, 1, 0));
+
+			for Slot = 1, 4 do
+				Gradients[Slot].Color = Fade;
+			end;
+		end;
+
+		local accent = Current:ToHex();
 
 		local text = Data.Name or '';
 		if Name.Text ~= text then
