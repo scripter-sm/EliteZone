@@ -893,23 +893,27 @@ function EZ:OnHighlight(HighlightInstance, Instance, Properties, PropertiesDefau
 	HighlightInstance.MouseLeave:Connect(ApplyDefault);
 end;
 
-function EZ:MouseIsOverOpenedFrame()
+function EZ:MouseIsOverOpenedFrame(Position)
+	Position = Position or Vector2.new(Mouse.X, Mouse.Y);
+
 	for Frame, _ in next, EZ.OpenedFrames do
 		local AbsPos, AbsSize = Frame.AbsolutePosition, Frame.AbsoluteSize;
 
-		if Mouse.X >= AbsPos.X and Mouse.X <= AbsPos.X + AbsSize.X
-			and Mouse.Y >= AbsPos.Y and Mouse.Y <= AbsPos.Y + AbsSize.Y then
+		if Position.X >= AbsPos.X and Position.X <= AbsPos.X + AbsSize.X
+			and Position.Y >= AbsPos.Y and Position.Y <= AbsPos.Y + AbsSize.Y then
 
 			return true;
 		end;
 	end;
 end;
 
-function EZ:IsMouseOverFrame(Frame)
+function EZ:IsMouseOverFrame(Frame, Position)
+	Position = Position or Vector2.new(Mouse.X, Mouse.Y);
+
 	local AbsPos, AbsSize = Frame.AbsolutePosition, Frame.AbsoluteSize;
 
-	if Mouse.X >= AbsPos.X and Mouse.X <= AbsPos.X + AbsSize.X
-		and Mouse.Y >= AbsPos.Y and Mouse.Y <= AbsPos.Y + AbsSize.Y then
+	if Position.X >= AbsPos.X and Position.X <= AbsPos.X + AbsSize.X
+		and Position.Y >= AbsPos.Y and Position.Y <= AbsPos.Y + AbsSize.Y then
 
 		return true;
 	end;
@@ -1745,15 +1749,16 @@ do
 		end;
 
 		SatVibMap.InputBegan:Connect(function(Input)
-			if Input.UserInputType == Enum.UserInputType.MouseButton1 then
-				while InputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) do
+			if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+				local isTouch = Input.UserInputType == Enum.UserInputType.Touch;
+				while isTouch and Input.UserInputState ~= Enum.UserInputState.End or not isTouch and InputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) do
 					local MinX = SatVibMap.AbsolutePosition.X;
 					local MaxX = MinX + SatVibMap.AbsoluteSize.X;
-					local MouseX = math.clamp(Mouse.X, MinX, MaxX);
+					local MouseX = math.clamp(isTouch and Input.Position.X or Mouse.X, MinX, MaxX);
 
 					local MinY = SatVibMap.AbsolutePosition.Y;
 					local MaxY = MinY + SatVibMap.AbsoluteSize.Y;
-					local MouseY = math.clamp(Mouse.Y, MinY, MaxY);
+					local MouseY = math.clamp(isTouch and Input.Position.Y or Mouse.Y, MinY, MaxY);
 
 					ColorPicker.Sat = (MouseX - MinX) / (MaxX - MinX);
 					ColorPicker.Vib = 1 - ((MouseY - MinY) / (MaxY - MinY));
@@ -1767,11 +1772,12 @@ do
 		end);
 
 		HueSelectorInner.InputBegan:Connect(function(Input)
-			if Input.UserInputType == Enum.UserInputType.MouseButton1 then
-				while InputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) do
+			if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+				local isTouch = Input.UserInputType == Enum.UserInputType.Touch;
+				while isTouch and Input.UserInputState ~= Enum.UserInputState.End or not isTouch and InputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) do
 					local MinY = HueSelectorInner.AbsolutePosition.Y;
 					local MaxY = MinY + HueSelectorInner.AbsoluteSize.Y;
-					local MouseY = math.clamp(Mouse.Y, MinY, MaxY);
+					local MouseY = math.clamp(isTouch and Input.Position.Y or Mouse.Y, MinY, MaxY);
 
 					ColorPicker.Hue = ((MouseY - MinY) / (MaxY - MinY));
 					ColorPicker:Display();
@@ -1783,27 +1789,36 @@ do
 			end;
 		end);
 
-		DisplayFrame.InputBegan:Connect(function(Input)
-			if Input.UserInputType == Enum.UserInputType.MouseButton1 and not EZ:MouseIsOverOpenedFrame() then
-				if PickerFrameOuter.Visible then
-					ColorPicker:Hide()
-				else
-					ContextMenu:Hide()
-					ColorPicker:Show()
+DisplayFrame.InputBegan:Connect(function(Input)
+			if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+				local Position = Input.UserInputType == Enum.UserInputType.Touch and Input.Position or Vector2.new(Mouse.X, Mouse.Y);
+				if not EZ:MouseIsOverOpenedFrame(Position) then
+					if not EZ:IsTap(Input) then
+						ContextMenu:Show()
+						ColorPicker:Hide()
+					elseif PickerFrameOuter.Visible then
+						ColorPicker:Hide()
+					else
+						ContextMenu:Hide()
+						ColorPicker:Show()
+					end;
 				end;
-			elseif Input.UserInputType == Enum.UserInputType.MouseButton2 and not EZ:MouseIsOverOpenedFrame() then
-				ContextMenu:Show()
-				ColorPicker:Hide()
+			elseif Input.UserInputType == Enum.UserInputType.MouseButton2 then
+				if not EZ:MouseIsOverOpenedFrame() then
+					ContextMenu:Show()
+					ColorPicker:Hide()
+				end;
 			end
 		end);
 
 		if TransparencyBoxInner then
 			TransparencyBoxInner.InputBegan:Connect(function(Input)
-				if Input.UserInputType == Enum.UserInputType.MouseButton1 then
-					while InputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) do
+				if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+					local isTouch = Input.UserInputType == Enum.UserInputType.Touch;
+					while isTouch and Input.UserInputState ~= Enum.UserInputState.End or not isTouch and InputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) do
 						local MinX = TransparencyBoxInner.AbsolutePosition.X;
 						local MaxX = MinX + TransparencyBoxInner.AbsoluteSize.X;
-						local MouseX = math.clamp(Mouse.X, MinX, MaxX);
+						local MouseX = math.clamp(isTouch and Input.Position.X or Mouse.X, MinX, MaxX);
 
 						ColorPicker.Transparency = 1 - ((MouseX - MinX) / (MaxX - MinX));
 
@@ -1818,23 +1833,27 @@ do
 		end;
 
 		EZ:GiveSignal(InputService.InputBegan:Connect(function(Input)
-			if Input.UserInputType == Enum.UserInputType.MouseButton1 then
+			local Position = Input.UserInputType == Enum.UserInputType.Touch and Input.Position or Vector2.new(Mouse.X, Mouse.Y);
+
+			if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
 				local AbsPos, AbsSize = PickerFrameOuter.AbsolutePosition, PickerFrameOuter.AbsoluteSize;
 
-				if Mouse.X < AbsPos.X or Mouse.X > AbsPos.X + AbsSize.X
-					or Mouse.Y < (AbsPos.Y - 20 - 1) or Mouse.Y > AbsPos.Y + AbsSize.Y then
+				if Position.X < AbsPos.X or Position.X > AbsPos.X + AbsSize.X
+					or Position.Y < (AbsPos.Y - 20 - 1) or Position.Y > AbsPos.Y + AbsSize.Y then
 
 					ColorPicker:Hide();
 				end;
 
-				if not EZ:IsMouseOverFrame(ContextMenu.Container) then
+				if not EZ:IsMouseOverFrame(ContextMenu.Container, Position) then
 					ContextMenu:Hide()
 				end
 			end;
 
-			if Input.UserInputType == Enum.UserInputType.MouseButton2 and ContextMenu.Container.Visible then
-				if not EZ:IsMouseOverFrame(ContextMenu.Container) and not EZ:IsMouseOverFrame(DisplayFrame) then
-					ContextMenu:Hide()
+			if Input.UserInputType == Enum.UserInputType.MouseButton2 or Input.UserInputType == Enum.UserInputType.Touch then
+				if ContextMenu.Container.Visible then
+					if not EZ:IsMouseOverFrame(ContextMenu.Container, Position) and not EZ:IsMouseOverFrame(DisplayFrame, Position) then
+						ContextMenu:Hide()
+					end
 				end
 			end
 		end))
