@@ -4570,7 +4570,7 @@ function EZ:CreateTargetHUD(Config)
 			Position = UDim2.new(Column, Column == 1 and -(Edge + Slot) or Edge, 0, Top + Row * (Slot + RowGap));
 			BackgroundColor3 = EZ.BackgroundColor;
 			BorderSizePixel = 0;
-			ClipsDescendants = true;
+			ClipsDescendants = false;
 			ZIndex = ZSlot;
 			Parent = Body;
 		});
@@ -4588,7 +4588,7 @@ function EZ:CreateTargetHUD(Config)
 			BackgroundTransparency = 1;
 			ScaleType = Enum.ScaleType.Fit;
 			Image = '';
-			ZIndex = ZText;
+			ZIndex = ZSlot + 2;
 			Parent = Holder;
 		});
 
@@ -4765,7 +4765,7 @@ local Items = Data.Items;
 		local Muted = Data.Placeholder or not Items;
 		local Tint = Muted and EZ.OutlineColor or Color3.new(1, 1, 1);
 		local Size = Muted and UDim2.fromScale(0.85, 0.85)
-			or UDim2.new(2.6, -6 * 2.6, 2.6, -6 * 2.6);
+			or UDim2.new(1.8, -6 * 1.8, 1.8, -6 * 1.8);
 
 		for Index = 1, 4 do
 			local Image = Items and Items[Index] or '';
