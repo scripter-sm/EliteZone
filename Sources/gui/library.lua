@@ -4561,9 +4561,6 @@ function EZ:CreateTargetHUD(Config)
 	local Icons = {};
 	local Borders = {};
 	local Shades = {};
-	local Gradients = {};
-	local Edges = {};
-	local Applied;
 	local IconScale = 1.6;
 	local Muted;
 
@@ -4620,8 +4617,13 @@ function EZ:CreateTargetHUD(Config)
 			Parent = Shade;
 		});
 
-		Gradients[Index] = Fade;
-		Edges[Index] = Edge_;
+		EZ:AddToRegistry(Shade, {
+			BackgroundColor3 = 'AccentColor';
+		});
+
+		EZ:AddToRegistry(Edge_, {
+			Color = 'AccentColor';
+		});
 
 		Slots[Index] = Holder;
 		Icons[Index] = Icon;
@@ -4742,15 +4744,7 @@ function EZ:CreateTargetHUD(Config)
 	local Labels = { Name, Stats, HealthLabel, HealthValue, RatioLabel, RatioValue };
 
 function HUD:Apply(Data)
-		local Current = EZ.AccentColor;
-		if Current ~= Applied then
-			Applied = Current;
-			for Slot = 1, 4 do
-				Gradients[Slot].Transparency = NumberSequence.new(0.85, 0.55);
-			end;
-		end;
-
-		local accent = Current:ToHex();
+		local accent = EZ.AccentColor:ToHex();
 
 		local text = Data.Name or '';
 		if Name.Text ~= text then
@@ -4823,14 +4817,6 @@ local Items = Data.Items;
 
 			if Shade.Visible ~= Held then
 				Shade.Visible = Held;
-			end;
-
-			if Held then
-				local Line = Edges[Index];
-
-				if Line.Color ~= Current then
-					Line.Color = Current;
-				end;
 			end;
 
 			if Icon.Image ~= Image or Icon.ImageColor3 ~= Tint then
