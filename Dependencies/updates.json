@@ -105,5 +105,40 @@
       "[~] fixed mobile button check",
       "[-] old default ragebot strafe mode [ replaced by hitboxgluer ]"
     ]
+  },
+  {
+    "date": "2026-10-11",
+    "version": "v3.11",
+    "game": "Rivals",
+    "changes": [
+      "[+] target hud",
+      "[+] manipluation",
+      "[+] manipluation indicator",
+      "[+] name spoofer",
+      "[+] display spoofer",
+      "[+] melee cooldown override",
+      "[+] dash cooldown override",
+      "[+] melee range extender",
+      "[+] avatar spoofer",
+      "[+] \"wave\", \"bounce\", \"zigzag\" and \"sway\" animation in texts",
+      "[+] fade animation in text",
+      "[+] 7 more hit effects",
+      "[~] fixed color pickers on mobile",
+      "[~] fixed buttons on mobile",
+      "[~] fixed unusual characters from names",
+      "[~] fixed \"position on barrel\" for fov",
+      "[~] fixed unusual characters from names",
+      "[~] fixed team checks",
+      "[~] improved always backstab calculations",
+      "[~] improved world esp",
+      "[~] improved esp flags",
+      "[~] improved all texts",
+      "[~] improved full auto",
+      "[~] renamed \"weapon cusmetize\" to \"client-side spoofers\"",
+      "[~] moved spoofers from character tab to client-side spoofers",
+      "[~] enhanced \"[CLOSEST] NOT SO HOT\" config",
+      "[~] optimized targeting",
+      "[~] much more that i forgot"
+    ]
   }
 ]
