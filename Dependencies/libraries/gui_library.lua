@@ -1,5 +1,5 @@
 -- This file was compiled by Elite Zone's Compiler. [v3.11]
---Library Version (Used for caching purposes.) v10.6
+--Library Version (Used for caching purposes.) v10.7
 
 --[[ Library ]]
 
@@ -4605,7 +4605,7 @@ function EZ:CreateTargetHUD(Config)
 	local Shades = {};
 	local IconScale = 1.6;
 	local Muted;
-	local MutedSize = UDim2.fromScale(1, 1);
+local MutedSize = UDim2.fromScale(1, 1);
 
 	for Index = 1, 4 do
 		local Column = Index % 2 == 0 and 1 or 0;
@@ -4845,7 +4845,7 @@ function HUD:Apply(Data)
 			Seam.Position = UDim2.fromScale(Ratio, 0);
 		end;
 local Items = Data.Items;
-				local MutedNow = Data.Placeholder or not Items;
+		local MutedNow = Data.Placeholder or not Items;
 		if MutedNow ~= Muted then
 			Muted = MutedNow;
 			MutedSize = Muted and UDim2.fromScale(0.85, 0.85)
@@ -4868,11 +4868,11 @@ local Items = Data.Items;
 				Shade.Visible = Held;
 			end;
 
-			if Icon.Image ~= Image or Icon.ImageColor3 ~= Tint then
-				Icon.Image = Image;
-				Icon.ImageColor3 = Tint;
-				Icon.Size = MutedSize;
-			end;
+if Icon.Image ~= Image or Icon.ImageColor3 ~= Tint then
+			Icon.Image = Image;
+			Icon.ImageColor3 = Tint;
+			Icon.Size = MutedSize;
+		end;
 		end;
 	end;
 
@@ -7611,27 +7611,16 @@ do
 		end;
 	end;
 
-	function ThemeManager:ReadDefaultName()
-		return EZ:ReadCache().theme or self.DefaultTheme;
-	end;
-
-	function ThemeManager:RefreshDefaultLabel()
-		if not ThemeManager.DefaultLabel then return end;
-		ThemeManager.DefaultLabel:SetText('Current default theme: ' .. self:ReadDefaultName());
-	end;
-
 	function ThemeManager:SaveDefault(Name)
 		local Cache = EZ:ReadCache();
 		Cache.theme = Name;
 		EZ:WriteCache(Cache);
-		self:RefreshDefaultLabel();
 	end;
 
 	function ThemeManager:ResetDefault()
 		local Cache = EZ:ReadCache();
 		Cache.theme = nil;
 		EZ:WriteCache(Cache);
-		self:RefreshDefaultLabel();
 	end;
 
 	function ThemeManager:GetCustomTheme(File)
@@ -8065,9 +8054,6 @@ do
 			Options.ThemeManager_CustomThemeList:SetValues(self:ReloadCustomThemes());
 			Options.ThemeManager_CustomThemeList:SetValue(nil);
 		end);
-
-		ThemeManager.DefaultLabel = Groupbox:AddLabel('Current default theme: ' .. self:ReadDefaultName());
-		self:RefreshDefaultLabel();
 
 		for _, Key in next, self.ColorKeys do
 			if Options[Key] then
