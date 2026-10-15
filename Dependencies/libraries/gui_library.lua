@@ -1,5 +1,5 @@
 -- This file was compiled by Elite Zone's Compiler. [v3.11]
---Library Version (Used for caching purposes.) v10.5
+--Library Version (Used for caching purposes.) v10.6
 
 --[[ Library ]]
 
@@ -4498,6 +4498,18 @@ function EZ:CreateTargetHUD(Config)
 		return Line;
 	end
 
+	local Round = Config.Round or false;
+	local Radius = Config.Radius or 8;
+	local Rounded = {};
+
+	local function rounded(Inst)
+		Rounded[#Rounded + 1] = Inst;
+
+		if Round then
+			EZ:Create('UICorner', { CornerRadius = UDim.new(0, Radius); Parent = Inst; });
+		end;
+	end;
+
 	local Root = EZ:Create('Frame', {
 		Name = 'TargetHUD';
 		Size = UDim2.fromOffset(Width, Height);
@@ -4530,6 +4542,9 @@ function EZ:CreateTargetHUD(Config)
 	EZ:AddToRegistry(Panel, {
 		BackgroundColor3 = 'MainColor';
 	});
+
+	rounded(Root);
+	rounded(Panel);
 
 	local Scale = Instance.new('UIScale');
 	Scale.Scale = Config.Scale or 1;
@@ -4574,6 +4589,9 @@ function EZ:CreateTargetHUD(Config)
 			BackgroundColor3 = FillKey;
 		});
 
+		rounded(Layer);
+		rounded(Inner);
+
 		Body = Inner;
 	end
 
@@ -4607,6 +4625,8 @@ function EZ:CreateTargetHUD(Config)
 		EZ:AddToRegistry(Holder, {
 			BackgroundColor3 = 'BackgroundColor';
 		});
+
+		rounded(Holder);
 
 		local Icon = EZ:Create('ImageLabel', {
 			AnchorPoint = Vector2.new(0.5, 0.5);
@@ -4713,6 +4733,8 @@ function EZ:CreateTargetHUD(Config)
 			BackgroundColor3 = 'OutlineColor';
 		});
 
+		rounded(Track);
+
 		local Fill = EZ:Create('Frame', {
 			Size = UDim2.fromScale(0, 1);
 			BackgroundColor3 = EZ.AccentColor;
@@ -4743,6 +4765,8 @@ function EZ:CreateTargetHUD(Config)
 	EZ:AddToRegistry(Seam, {
 		BackgroundColor3 = 'BackgroundColor';
 	});
+
+	rounded(Seam);
 
 	HUD.ScreenGui = ScreenGui;
 	HUD.Root = Root;
@@ -4878,6 +4902,44 @@ local Items = Data.Items;
 		Font = NewFont;
 		for _, Item in next, Labels do
 			Item.FontFace = Font;
+		end;
+	end;
+
+	function HUD:SetFonts(NewFont, NewKey)
+		if NewFont then
+			Font = NewFont;
+			Name.FontFace = NewFont;
+			HealthLabel.FontFace = NewFont;
+			HealthValue.FontFace = NewFont;
+			RatioLabel.FontFace = NewFont;
+			RatioValue.FontFace = NewFont;
+		end;
+
+		if NewKey then
+			KeyFont = NewKey;
+			Stats.FontFace = NewKey;
+		end;
+	end;
+
+	function HUD:SetRound(Bool, Amount)
+		Round = Bool and true or false;
+
+		if Amount then
+			Radius = Amount;
+		end;
+
+		for _, Inst in next, Rounded do
+			local Corner = Inst:FindFirstChildOfClass('UICorner');
+
+			if Round then
+				if Corner then
+					Corner.CornerRadius = UDim.new(0, Radius);
+				else
+					EZ:Create('UICorner', { CornerRadius = UDim.new(0, Radius); Parent = Inst; });
+				end;
+			elseif Corner then
+				Corner:Destroy();
+			end;
 		end;
 	end;
 
