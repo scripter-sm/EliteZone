@@ -157,16 +157,27 @@ do
 		end;
 	end;
 
+	function ThemeManager:ReadDefaultName()
+		return EZ:ReadCache().theme or self.DefaultTheme;
+	end;
+
+	function ThemeManager:RefreshDefaultLabel()
+		if not ThemeManager.DefaultLabel then return end;
+		ThemeManager.DefaultLabel:SetText('Current default theme: ' .. self:ReadDefaultName());
+	end;
+
 	function ThemeManager:SaveDefault(Name)
 		local Cache = EZ:ReadCache();
 		Cache.theme = Name;
 		EZ:WriteCache(Cache);
+		self:RefreshDefaultLabel();
 	end;
 
 	function ThemeManager:ResetDefault()
 		local Cache = EZ:ReadCache();
 		Cache.theme = nil;
 		EZ:WriteCache(Cache);
+		self:RefreshDefaultLabel();
 	end;
 
 	function ThemeManager:GetCustomTheme(File)
@@ -600,6 +611,9 @@ do
 			Options.ThemeManager_CustomThemeList:SetValues(self:ReloadCustomThemes());
 			Options.ThemeManager_CustomThemeList:SetValue(nil);
 		end);
+
+		ThemeManager.DefaultLabel = Groupbox:AddLabel('Current default theme: ' .. self:ReadDefaultName());
+		self:RefreshDefaultLabel();
 
 		for _, Key in next, self.ColorKeys do
 			if Options[Key] then
