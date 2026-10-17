@@ -1,5 +1,5 @@
 -- This file was compiled by Elite Zone's Compiler. [v3.11]
---Library Version (Used for caching purposes.) v10.8
+--Library Version (Used for caching purposes.) v10.9
 
 --[[ Library ]]
 
@@ -5901,6 +5901,26 @@ function EZ:CreateWindow(...)
 					BoxOuter.Size = UDim2.new(1, 0, 0, 20 + Size + 2 + 2);
 				end;
 
+				function Tab:Remove()
+					Container:Destroy();
+					Button:Destroy();
+					table.clear(self);
+					Tabbox.Tabs[Name] = nil;
+
+					for _, Tab in next, Tabbox.Tabs do
+						Tab:Hide();
+					end;
+
+					for _, Tab in next, Tabbox.Tabs do
+						Tab:Show();
+						break;
+					end;
+
+					if not next(Tabbox.Tabs) then
+						BoxOuter.Visible = false;
+					end;
+				end;
+
 				Button.InputBegan:Connect(function(Input)
 					if (Input.UserInputType == Enum.UserInputType.MouseButton1 and not EZ:MouseIsOverOpenedFrame())
 						or Input.UserInputType == Enum.UserInputType.Touch and EZ:IsTap(Input) then
@@ -5916,6 +5936,8 @@ function EZ:CreateWindow(...)
 
 				Tab:AddBlank(3);
 				Tab:Resize();
+
+				BoxOuter.Visible = true;
 
 				if #TabboxButtons:GetChildren() == 2 then
 					Tab:Show();
